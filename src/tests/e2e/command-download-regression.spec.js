@@ -61,9 +61,10 @@ test.describe('Command And Download Regression E2E', () => {
     await page.goto(`${fixtureHost}${fixturePath}`);
     await page.bringToFront();
 
-    const calls = await serviceWorker.evaluate(async () => {
+    const calls = await serviceWorker.evaluate(async ({ fixtureUrl }) => {
       const requiredFns = [
         'handleCommands',
+        'getCommandTargetTab',
         'downloadMarkdownFromContext',
         'copyMarkdownFromContext',
         'copyTabAsMarkdownLink',
@@ -75,8 +76,11 @@ test.describe('Command And Download Regression E2E', () => {
         }
       }
 
-      const originals = {};
+      const originals = {
+        getCommandTargetTab: self.getCommandTargetTab,
+      };
       const calls = [];
+      const targetTab = { id: 4242, url: fixtureUrl, active: true };
 
       const spy = (name, projector) => {
         originals[name] = self[name];
@@ -97,6 +101,11 @@ test.describe('Command And Download Regression E2E', () => {
       spy('copyTabAsMarkdownLink', ([tab]) => ({ tabId: tab?.id ?? null }));
       spy('copySelectedTabAsMarkdownLink', ([tab]) => ({ tabId: tab?.id ?? null }));
 
+      // Chromium 156 / Playwright 1.64 can report a restricted about:blank or
+      // extension page as lastFocusedWindow mid-evaluate, which makes
+      // handleCommands no-op. Pin the target tab so this test covers routing.
+      self.getCommandTargetTab = async () => targetTab;
+
       try {
         await handleCommands('download_tab_as_markdown');
         await handleCommands('copy_tab_as_markdown');
@@ -112,7 +121,7 @@ test.describe('Command And Download Regression E2E', () => {
       }
 
       return calls;
-    });
+    }, { fixtureUrl: `${fixtureHost}${fixturePath}` });
 
     expect(calls).toHaveLength(7);
     expect(calls).toEqual([
