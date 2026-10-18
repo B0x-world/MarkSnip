@@ -1,0 +1,927 @@
+﻿2026-10-18T11:21:38.9654858Z Current runner version: '2.337.0'
+2026-10-18T11:21:38.9676626Z ##[group]Runner Image Provisioner
+2026-10-18T11:21:38.9677349Z Hosted Compute Agent
+2026-10-18T11:21:38.9677948Z Version: 20261012.601
+2026-10-18T11:21:38.9678496Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+2026-10-18T11:21:38.9679109Z Build Date: 2026-10-12T17:48:21Z
+2026-10-18T11:21:38.9679721Z Worker ID: {1063af00-0e1d-4838-959a-903d967829ba}
+2026-10-18T11:21:38.9680292Z Region: westus3
+2026-10-18T11:21:38.9680774Z Cloud: Azure
+2026-10-18T11:21:38.9681234Z ##[endgroup]
+2026-10-18T11:21:38.9682443Z ##[group]Operating System
+2026-10-18T11:21:38.9683005Z Ubuntu
+2026-10-18T11:21:38.9683465Z 24.04.5
+2026-10-18T11:21:38.9683945Z LTS
+2026-10-18T11:21:38.9684382Z ##[endgroup]
+2026-10-18T11:21:38.9684863Z ##[group]Runner Image
+2026-10-18T11:21:38.9685871Z Image: ubuntu-24.04
+2026-10-18T11:21:38.9686337Z Version: 20261012.334.1
+2026-10-18T11:21:38.9687403Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-18T11:21:38.9688631Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-18T11:21:38.9689466Z ##[endgroup]
+2026-10-18T11:21:38.9690523Z ##[group]GITHUB_TOKEN Permissions
+2026-10-18T11:21:38.9692310Z Contents: read
+2026-10-18T11:21:38.9692843Z Metadata: read
+2026-10-18T11:21:38.9693309Z Packages: read
+2026-10-18T11:21:38.9693866Z ##[endgroup]
+2026-10-18T11:21:38.9695843Z Secret source: Actions
+2026-10-18T11:21:38.9696738Z Cache mode: write
+2026-10-18T11:21:38.9697364Z Prepare workflow directory
+2026-10-18T11:21:38.9991703Z Prepare all required actions
+2026-10-18T11:21:39.0046778Z Getting action download info
+2026-10-18T11:21:39.3134466Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-18T11:21:39.4034678Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-10-18T11:21:39.5170479Z Download action repository 'actions/setup-go@v5' (SHA:40f1582b2485089dde7abd97c1529aa768e1baff)
+2026-10-18T11:21:40.3296479Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-18T11:21:40.5791813Z Complete job name: Build Extension Packages
+2026-10-18T11:21:40.6455812Z ##[group]Run actions/checkout@v4
+2026-10-18T11:21:40.6456562Z with:
+2026-10-18T11:21:40.6456962Z   repository: B0x-world/MarkSnip
+2026-10-18T11:21:40.6460620Z   token: ***
+2026-10-18T11:21:40.6461005Z   ssh-strict: true
+2026-10-18T11:21:40.6461395Z   ssh-user: git
+2026-10-18T11:21:40.6461789Z   persist-credentials: true
+2026-10-18T11:21:40.6462219Z   clean: true
+2026-10-18T11:21:40.6462614Z   sparse-checkout-cone-mode: true
+2026-10-18T11:21:40.6463111Z   fetch-depth: 1
+2026-10-18T11:21:40.6463501Z   fetch-tags: false
+2026-10-18T11:21:40.6463895Z   show-progress: true
+2026-10-18T11:21:40.6464302Z   lfs: false
+2026-10-18T11:21:40.6464678Z   submodules: false
+2026-10-18T11:21:40.6465250Z   set-safe-directory: true
+2026-10-18T11:21:40.6465726Z   allow-unsafe-pr-checkout: false
+2026-10-18T11:21:40.6466352Z ##[endgroup]
+2026-10-18T11:21:40.7284506Z Syncing repository: B0x-world/MarkSnip
+2026-10-18T11:21:40.7286882Z ##[group]Getting Git version info
+2026-10-18T11:21:40.7287955Z Working directory is '/home/runner/work/MarkSnip/MarkSnip'
+2026-10-18T11:21:40.7289451Z [command]/usr/bin/git version
+2026-10-18T11:21:40.7315892Z git version 2.55.0
+2026-10-18T11:21:40.7332373Z ##[endgroup]
+2026-10-18T11:21:40.7356624Z Temporarily overriding HOME='/home/runner/work/_temp/a4963a44-0508-446e-b766-d6f3d2e59885' before making global git config changes
+2026-10-18T11:21:40.7358798Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-18T11:21:40.7360483Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/MarkSnip/MarkSnip
+2026-10-18T11:21:40.7389970Z Deleting the contents of '/home/runner/work/MarkSnip/MarkSnip'
+2026-10-18T11:21:40.7397400Z ##[group]Initializing the repository
+2026-10-18T11:21:40.7399118Z [command]/usr/bin/git init /home/runner/work/MarkSnip/MarkSnip
+2026-10-18T11:21:40.7597072Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-18T11:21:40.7598664Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-18T11:21:40.7600233Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-18T11:21:40.7601441Z hint: call:
+2026-10-18T11:21:40.7602330Z hint:
+2026-10-18T11:21:40.7603257Z hint: 	git config --global init.defaultBranch <name>
+2026-10-18T11:21:40.7604290Z hint:
+2026-10-18T11:21:40.7605381Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-18T11:21:40.7606956Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-18T11:21:40.7608335Z hint:
+2026-10-18T11:21:40.7621796Z hint: 	git branch -m <name>
+2026-10-18T11:21:40.7622633Z hint:
+2026-10-18T11:21:40.7623575Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-18T11:21:40.7625344Z Initialized empty Git repository in /home/runner/work/MarkSnip/MarkSnip/.git/
+2026-10-18T11:21:40.7627884Z [command]/usr/bin/git remote add origin https://github.com/B0x-world/MarkSnip
+2026-10-18T11:21:40.7652038Z ##[endgroup]
+2026-10-18T11:21:40.7653089Z ##[group]Disabling automatic garbage collection
+2026-10-18T11:21:40.7653996Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-18T11:21:40.7687908Z ##[endgroup]
+2026-10-18T11:21:40.7689371Z ##[group]Setting up auth
+2026-10-18T11:21:40.7692340Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-18T11:21:40.7719589Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-18T11:21:40.8012696Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-18T11:21:40.8043097Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-18T11:21:40.8234173Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-18T11:21:40.8264093Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-18T11:21:40.8452587Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-18T11:21:40.8488063Z ##[endgroup]
+2026-10-18T11:21:40.8488798Z ##[group]Fetching the repository
+2026-10-18T11:21:40.8495627Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +a6192af640b4856908dc10f6dad94a0bc0f932a6:refs/remotes/origin/main
+2026-10-18T11:21:42.6206491Z From https://github.com/B0x-world/MarkSnip
+2026-10-18T11:21:42.6208509Z  * [new ref]         a6192af640b4856908dc10f6dad94a0bc0f932a6 -> origin/main
+2026-10-18T11:21:42.6211809Z ##[endgroup]
+2026-10-18T11:21:42.6213114Z ##[group]Determining the checkout info
+2026-10-18T11:21:42.6214548Z ##[endgroup]
+2026-10-18T11:21:42.6216131Z [command]/usr/bin/git sparse-checkout disable
+2026-10-18T11:21:42.6262151Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-18T11:21:42.6290667Z ##[group]Checking out the ref
+2026-10-18T11:21:42.6294297Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-10-18T11:21:42.7420465Z Switched to a new branch 'main'
+2026-10-18T11:21:42.7423069Z branch 'main' set up to track 'origin/main'.
+2026-10-18T11:21:42.7435124Z ##[endgroup]
+2026-10-18T11:21:42.7474188Z [command]/usr/bin/git log -1 --format=%H
+2026-10-18T11:21:42.7497761Z a6192af640b4856908dc10f6dad94a0bc0f932a6
+2026-10-18T11:21:42.7812776Z ##[group]Run actions/setup-node@v4
+2026-10-18T11:21:42.7813966Z with:
+2026-10-18T11:21:42.7814821Z   node-version: 20
+2026-10-18T11:21:42.7816136Z   cache: npm
+2026-10-18T11:21:42.7817166Z   cache-dependency-path: src/package-lock.json
+2026-10-18T11:21:42.7818512Z   always-auth: false
+2026-10-18T11:21:42.7819486Z   check-latest: false
+2026-10-18T11:21:42.7831506Z   token: ***
+2026-10-18T11:21:42.7832450Z ##[endgroup]
+2026-10-18T11:21:42.9535733Z Attempting to download 20...
+2026-10-18T11:21:42.9650572Z (node:2079) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-18T11:21:43.9558168Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-18T11:21:43.9598725Z Acquiring 20.20.2 - x64 from https://github.com/actions/node-versions/releases/download/20.20.2-23521894959/node-20.20.2-linux-x64.tar.gz
+2026-10-18T11:21:44.4267585Z Extracting ...
+2026-10-18T11:21:44.4360320Z [command]/usr/bin/tar xz --strip 1 --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/ba32da56-2564-4b73-8b35-c44fe99c602d -f /home/runner/work/_temp/363a1804-097b-48a8-a8e9-cf7c2879fd84
+2026-10-18T11:21:45.2804320Z Adding to the cache ...
+2026-10-18T11:21:47.2457888Z ##[group]Environment details
+2026-10-18T11:21:47.4196499Z node: v20.20.2
+2026-10-18T11:21:47.4196833Z npm: 10.8.2
+2026-10-18T11:21:47.4197091Z yarn: 1.22.22
+2026-10-18T11:21:47.4197671Z ##[endgroup]
+2026-10-18T11:21:47.4213082Z [command]/opt/hostedtoolcache/node/20.20.2/x64/bin/npm config get cache
+2026-10-18T11:21:47.5021152Z /home/runner/.npm
+2026-10-18T11:21:47.7203869Z Cache hit for: node-cache-Linux-x64-npm-ab2f9d29f55fbe1027f96bbc4d38df996317c3ccea80b629fde645d6d7a9fb44
+2026-10-18T11:21:47.7290321Z (node:2079) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-18T11:21:48.8636720Z Received 34107262 of 34107262 (100.0%), 35.7 MBs/sec
+2026-10-18T11:21:48.8637384Z Cache Size: ~33 MB (34107262 B)
+2026-10-18T11:21:48.8661871Z [command]/usr/bin/tar -xf /home/runner/work/_temp/06d1e5d3-7b26-40e1-b58d-16579cd8ffe9/cache.tzst -P -C /home/runner/work/MarkSnip/MarkSnip --use-compress-program unzstd
+2026-10-18T11:21:49.2993785Z Cache restored successfully
+2026-10-18T11:21:49.3015181Z Cache restored from key: node-cache-Linux-x64-npm-ab2f9d29f55fbe1027f96bbc4d38df996317c3ccea80b629fde645d6d7a9fb44
+2026-10-18T11:21:49.3614607Z ##[group]Run npm install --global npm@11.8.0
+2026-10-18T11:21:49.3615206Z [36;1mnpm install --global npm@11.8.0[0m
+2026-10-18T11:21:49.3832884Z shell: /usr/bin/bash -e {0}
+2026-10-18T11:21:49.3833146Z ##[endgroup]
+2026-10-18T11:21:50.9899790Z 
+2026-10-18T11:21:50.9908537Z removed 47 packages, and changed 107 packages in 2s
+2026-10-18T11:21:50.9909121Z 
+2026-10-18T11:21:50.9909600Z 15 packages are looking for funding
+2026-10-18T11:21:50.9910034Z   run `npm fund` for details
+2026-10-18T11:21:51.0187891Z ##[group]Run node --version
+2026-10-18T11:21:51.0188180Z [36;1mnode --version[0m
+2026-10-18T11:21:51.0188402Z [36;1mnpm --version[0m
+2026-10-18T11:21:51.0245270Z shell: /usr/bin/bash -e {0}
+2026-10-18T11:21:51.0245497Z ##[endgroup]
+2026-10-18T11:21:51.1371389Z v20.20.2
+2026-10-18T11:21:51.2053513Z 11.8.0
+2026-10-18T11:21:51.2136680Z ##[group]Run actions/setup-go@v5
+2026-10-18T11:21:51.2136909Z with:
+2026-10-18T11:21:51.2137090Z   go-version: 1.22
+2026-10-18T11:21:51.2137273Z   check-latest: false
+2026-10-18T11:21:51.2139315Z   token: ***
+2026-10-18T11:21:51.2139496Z   cache: true
+2026-10-18T11:21:51.2139670Z ##[endgroup]
+2026-10-18T11:21:51.3172150Z Setup go version spec 1.22
+2026-10-18T11:21:51.3360273Z Attempting to download 1.22...
+2026-10-18T11:21:51.3447192Z (node:2155) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-18T11:21:52.2065779Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-18T11:21:52.2066311Z matching 1.22...
+2026-10-18T11:21:52.2095014Z Acquiring 1.22.12 from https://github.com/actions/go-versions/releases/download/1.22.12-13149489080/go-1.22.12-linux-x64.tar.gz
+2026-10-18T11:21:52.7745570Z Extracting Go...
+2026-10-18T11:21:52.7852447Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/6bbcec71-e68e-4763-998e-97b2fc4a3ffc -f /home/runner/work/_temp/15e2b576-cfec-420c-adb8-5777bc6170f3
+2026-10-18T11:21:54.1194273Z Successfully extracted go to /home/runner/work/_temp/6bbcec71-e68e-4763-998e-97b2fc4a3ffc
+2026-10-18T11:21:54.1195110Z Adding to the cache ...
+2026-10-18T11:22:00.1109174Z Successfully cached go to /opt/hostedtoolcache/go/1.22.12/x64
+2026-10-18T11:22:00.1111669Z Added go to the path
+2026-10-18T11:22:00.1113763Z Successfully set up Go version 1.22
+2026-10-18T11:22:00.1280534Z [command]/opt/hostedtoolcache/go/1.22.12/x64/bin/go env GOMODCACHE
+2026-10-18T11:22:00.1314073Z [command]/opt/hostedtoolcache/go/1.22.12/x64/bin/go env GOCACHE
+2026-10-18T11:22:00.1348123Z /home/runner/go/pkg/mod
+2026-10-18T11:22:00.1358294Z /home/runner/.cache/go-build
+2026-10-18T11:22:00.1379849Z ##[warning]Restore cache failed: Dependencies file is not found in /home/runner/work/MarkSnip/MarkSnip. Supported file pattern: go.sum
+2026-10-18T11:22:00.1389415Z go version go1.22.12 linux/amd64
+2026-10-18T11:22:00.1389581Z 
+2026-10-18T11:22:00.1389817Z ##[group]go env
+2026-10-18T11:22:00.2473935Z GO111MODULE=''
+2026-10-18T11:22:00.2474303Z GOARCH='amd64'
+2026-10-18T11:22:00.2474588Z GOBIN=''
+2026-10-18T11:22:00.2475078Z GOCACHE='/home/runner/.cache/go-build'
+2026-10-18T11:22:00.2493389Z GOENV='/home/runner/.config/go/env'
+2026-10-18T11:22:00.2493777Z GOEXE=''
+2026-10-18T11:22:00.2494045Z GOEXPERIMENT=''
+2026-10-18T11:22:00.2494366Z GOFLAGS=''
+2026-10-18T11:22:00.2494661Z GOHOSTARCH='amd64'
+2026-10-18T11:22:00.2495053Z GOHOSTOS='linux'
+2026-10-18T11:22:00.2495324Z GOINSECURE=''
+2026-10-18T11:22:00.2495579Z GOMODCACHE='/home/runner/go/pkg/mod'
+2026-10-18T11:22:00.2495825Z GONOPROXY=''
+2026-10-18T11:22:00.2495998Z GONOSUMDB=''
+2026-10-18T11:22:00.2496236Z GOOS='linux'
+2026-10-18T11:22:00.2496455Z GOPATH='/home/runner/go'
+2026-10-18T11:22:00.2496680Z GOPRIVATE=''
+2026-10-18T11:22:00.2496988Z GOPROXY='https://proxy.golang.org,direct'
+2026-10-18T11:22:00.2497404Z GOROOT='/opt/hostedtoolcache/go/1.22.12/x64'
+2026-10-18T11:22:00.2497749Z GOSUMDB='sum.golang.org'
+2026-10-18T11:22:00.2497969Z GOTMPDIR=''
+2026-10-18T11:22:00.2498183Z GOTOOLCHAIN='auto'
+2026-10-18T11:22:00.2498551Z GOTOOLDIR='/opt/hostedtoolcache/go/1.22.12/x64/pkg/tool/linux_amd64'
+2026-10-18T11:22:00.2498876Z GOVCS=''
+2026-10-18T11:22:00.2499084Z GOVERSION='go1.22.12'
+2026-10-18T11:22:00.2499288Z GCCGO='gccgo'
+2026-10-18T11:22:00.2499483Z GOAMD64='v1'
+2026-10-18T11:22:00.2499666Z AR='ar'
+2026-10-18T11:22:00.2499856Z CC='gcc'
+2026-10-18T11:22:00.2500033Z CXX='g++'
+2026-10-18T11:22:00.2500199Z CGO_ENABLED='1'
+2026-10-18T11:22:00.2500408Z GOMOD='/dev/null'
+2026-10-18T11:22:00.2500602Z GOWORK=''
+2026-10-18T11:22:00.2500797Z CGO_CFLAGS='-O2 -g'
+2026-10-18T11:22:00.2500994Z CGO_CPPFLAGS=''
+2026-10-18T11:22:00.2501200Z CGO_CXXFLAGS='-O2 -g'
+2026-10-18T11:22:00.2501419Z CGO_FFLAGS='-O2 -g'
+2026-10-18T11:22:00.2501611Z CGO_LDFLAGS='-O2 -g'
+2026-10-18T11:22:00.2501839Z PKG_CONFIG='pkg-config'
+2026-10-18T11:22:00.2502856Z GOGCCFLAGS='-fPIC -m64 -pthread -Wl,--no-gc-sections -fmessage-length=0 -ffile-prefix-map=/tmp/go-build3507013199=/tmp/go-build -gno-record-gcc-switches'
+2026-10-18T11:22:00.2503334Z 
+2026-10-18T11:22:00.2503638Z ##[endgroup]
+2026-10-18T11:22:00.2654245Z ##[group]Run npm ci || npm ci || npm ci
+2026-10-18T11:22:00.2654509Z [36;1mnpm ci || npm ci || npm ci[0m
+2026-10-18T11:22:00.2709776Z shell: /usr/bin/bash -e {0}
+2026-10-18T11:22:00.2709991Z ##[endgroup]
+2026-10-18T11:22:02.1072658Z npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+2026-10-18T11:22:02.1552493Z npm warn deprecated rimraf@2.4.5: Rimraf versions prior to v4 are no longer supported
+2026-10-18T11:22:02.1904753Z npm warn deprecated @humanwhocodes/config-array@0.11.14: Use @eslint/config-array instead
+2026-10-18T11:22:02.1975137Z npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+2026-10-18T11:22:02.2361263Z npm warn deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead
+2026-10-18T11:22:02.2472571Z npm warn deprecated har-validator@5.1.5: this library is no longer supported
+2026-10-18T11:22:02.2482532Z npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+2026-10-18T11:22:02.2541076Z npm warn deprecated glob@6.0.4: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+2026-10-18T11:22:02.2565115Z npm warn deprecated whatwg-encoding@2.0.0: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+2026-10-18T11:22:02.3086559Z npm warn deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead
+2026-10-18T11:22:02.4392809Z npm warn deprecated domexception@4.0.0: Use your platform's native DOMException instead
+2026-10-18T11:22:02.4765093Z npm warn deprecated sign-addon@5.3.0: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+2026-10-18T11:22:02.5444529Z npm warn deprecated uuid@3.4.0: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+2026-10-18T11:22:02.6600772Z npm warn deprecated request@2.88.2: request has been deprecated, see https://github.com/request/request/issues/3142
+2026-10-18T11:22:02.8544423Z npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+2026-10-18T11:22:02.8852195Z npm warn deprecated deepcopy@2.1.0: No longer maintained. Use structuredClone instead.
+2026-10-18T11:22:03.1388799Z npm warn deprecated glob@10.4.1: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+2026-10-18T11:22:03.7810049Z npm warn deprecated eslint@8.57.0: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+2026-10-18T11:22:07.3470343Z 
+2026-10-18T11:22:07.3471211Z added 783 packages, and audited 784 packages in 7s
+2026-10-18T11:22:07.3471592Z 
+2026-10-18T11:22:07.3471821Z 140 packages are looking for funding
+2026-10-18T11:22:07.3472755Z   run `npm fund` for details
+2026-10-18T11:22:07.4236053Z 
+2026-10-18T11:22:07.4237043Z 64 vulnerabilities (2 low, 12 moderate, 43 high, 7 critical)
+2026-10-18T11:22:07.4237673Z 
+2026-10-18T11:22:07.4237989Z To address issues that do not require attention, run:
+2026-10-18T11:22:07.4238509Z   npm audit fix
+2026-10-18T11:22:07.4238760Z 
+2026-10-18T11:22:07.4239250Z To address all issues (including breaking changes), run:
+2026-10-18T11:22:07.4239802Z   npm audit fix --force
+2026-10-18T11:22:07.4240046Z 
+2026-10-18T11:22:07.4240860Z Run `npm audit` for details.
+2026-10-18T11:22:07.4540802Z ##[group]Run npm run lint:js
+2026-10-18T11:22:07.4541061Z [36;1mnpm run lint:js[0m
+2026-10-18T11:22:07.4598642Z shell: /usr/bin/bash -e {0}
+2026-10-18T11:22:07.4598882Z ##[endgroup]
+2026-10-18T11:22:07.5569654Z 
+2026-10-18T11:22:07.5569995Z > lint:js
+2026-10-18T11:22:07.5570430Z > eslint .
+2026-10-18T11:22:07.5570644Z 
+2026-10-18T11:22:09.5690425Z 
+2026-10-18T11:22:09.5691466Z /home/runner/work/MarkSnip/MarkSnip/src/contentScript/contentScript.js
+2026-10-18T11:22:09.5712799Z ##[warning]   485:53  warning  'sender' is defined but never used. Allowed unused args must match /^_/u        no-unused-vars
+2026-10-18T11:22:09.5715083Z ##[warning]   485:61  warning  'sendResponse' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+2026-10-18T11:22:09.5716530Z ##[warning]   807:29  warning  'colors' is defined but never used. Allowed unused args must match /^_/u        no-unused-vars
+2026-10-18T11:22:09.5717879Z ##[warning]  1132:18  warning  'err' is defined but never used. Allowed unused args must match /^_/u           no-unused-vars
+2026-10-18T11:22:09.5719189Z ##[warning]  1198:18  warning  'err' is defined but never used. Allowed unused args must match /^_/u           no-unused-vars
+2026-10-18T11:22:09.5720496Z ##[warning]  1280:53  warning  'sender' is defined but never used. Allowed unused args must match /^_/u        no-unused-vars
+2026-10-18T11:22:09.5721811Z ##[warning]  1280:61  warning  'sendResponse' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+2026-10-18T11:22:09.5722523Z 
+2026-10-18T11:22:09.5722768Z /home/runner/work/MarkSnip/MarkSnip/src/offscreen/offscreen.js
+2026-10-18T11:22:09.5723736Z ##[warning]   136:34  warning  'sender' is defined but never used. Allowed unused args must match /^_/u   no-unused-vars
+2026-10-18T11:22:09.5725266Z ##[warning]  1231:28  warning  'tdopts' is defined but never used. Allowed unused args must match /^_/u   no-unused-vars
+2026-10-18T11:22:09.5727447Z ##[warning]  1234:36  warning  'node' is defined but never used. Allowed unused args must match /^_/u     no-unused-vars
+2026-10-18T11:22:09.5728773Z ##[warning]  1234:42  warning  'tdopts' is defined but never used. Allowed unused args must match /^_/u   no-unused-vars
+2026-10-18T11:22:09.5730106Z ##[warning]  1387:29  warning  'tdopts' is defined but never used. Allowed unused args must match /^_/u   no-unused-vars
+2026-10-18T11:22:09.5731370Z ##[warning]  1432:43  warning  'tdopts' is defined but never used. Allowed unused args must match /^_/u   no-unused-vars
+2026-10-18T11:22:09.5732702Z ##[warning]  1452:23  warning  'options' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+2026-10-18T11:22:09.5733964Z ##[warning]  1484:34  warning  'tdopts' is defined but never used. Allowed unused args must match /^_/u   no-unused-vars
+2026-10-18T11:22:09.5735306Z ##[warning]  1504:18  warning  'options' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+2026-10-18T11:22:09.5736548Z ##[warning]  1507:32  warning  'options' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+2026-10-18T11:22:09.5737788Z ##[warning]  1672:20  warning  'tdopts' is defined but never used. Allowed unused args must match /^_/u   no-unused-vars
+2026-10-18T11:22:09.5738457Z 
+2026-10-18T11:22:09.5738734Z /home/runner/work/MarkSnip/MarkSnip/src/scripts/run-firefox-live-smoke.js
+2026-10-18T11:22:09.5739682Z ##[warning]  4:7  warning  'os' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+2026-10-18T11:22:09.5740365Z 
+2026-10-18T11:22:09.5740603Z /home/runner/work/MarkSnip/MarkSnip/src/shared/context-menus.js
+2026-10-18T11:22:09.5741526Z ##[warning]  320:16  warning  'createMenus' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+2026-10-18T11:22:09.5742213Z 
+2026-10-18T11:22:09.5742471Z /home/runner/work/MarkSnip/MarkSnip/src/tests/e2e/notifications.spec.js
+2026-10-18T11:22:09.5743752Z ##[warning]  132:7  warning  'extensionId' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+2026-10-18T11:22:09.5744466Z 
+2026-10-18T11:22:09.5744775Z /home/runner/work/MarkSnip/MarkSnip/src/tests/integration/html-to-markdown-real.test.js
+2026-10-18T11:22:09.5746089Z ##[warning]  7:7  warning  'htmlSamples' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+2026-10-18T11:22:09.5746842Z 
+2026-10-18T11:22:09.5747137Z /home/runner/work/MarkSnip/MarkSnip/src/tests/integration/readability-real.test.js
+2026-10-18T11:22:09.5748209Z ##[warning]  444:15  warning  'article' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+2026-10-18T11:22:09.5748917Z 
+2026-10-18T11:22:09.5749176Z /home/runner/work/MarkSnip/MarkSnip/src/tests/mocks/browser-api.js
+2026-10-18T11:22:09.5750101Z ##[warning]  266:27  warning  'injection' is defined but never used. Allowed unused args must match /^_/u   no-unused-vars
+2026-10-18T11:22:09.5751385Z ##[warning]  269:23  warning  'injection' is defined but never used. Allowed unused args must match /^_/u   no-unused-vars
+2026-10-18T11:22:09.5752711Z ##[warning]  301:28  warning  'parameters' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+2026-10-18T11:22:09.5753375Z 
+2026-10-18T11:22:09.5753681Z /home/runner/work/MarkSnip/MarkSnip/src/tests/unit/offscreen-image-bundle-zip.test.js
+2026-10-18T11:22:09.5754688Z ##[warning]  175:43  warning  'blobStore' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+2026-10-18T11:22:09.5755480Z 
+2026-10-18T11:22:09.5755887Z ✖ 27 problems (0 errors, 27 warnings)
+2026-10-18T11:22:09.5756064Z 
+2026-10-18T11:22:09.5967485Z ##[group]Run VERSION=$(node -p "require('./manifest.json').version")
+2026-10-18T11:22:09.5967884Z [36;1mVERSION=$(node -p "require('./manifest.json').version")[0m
+2026-10-18T11:22:09.5968208Z [36;1mecho "version=$VERSION" >> $GITHUB_OUTPUT[0m
+2026-10-18T11:22:09.5968472Z [36;1mecho "Extension version: $VERSION"[0m
+2026-10-18T11:22:09.6028169Z shell: /usr/bin/bash -e {0}
+2026-10-18T11:22:09.6028399Z ##[endgroup]
+2026-10-18T11:22:09.6329877Z Extension version: 5.2.0
+2026-10-18T11:22:09.6374560Z ##[group]Run npm run build:manifests
+2026-10-18T11:22:09.6374836Z [36;1mnpm run build:manifests[0m
+2026-10-18T11:22:09.6430053Z shell: /usr/bin/bash -e {0}
+2026-10-18T11:22:09.6430268Z ##[endgroup]
+2026-10-18T11:22:09.7332326Z 
+2026-10-18T11:22:09.7332794Z > build:manifests
+2026-10-18T11:22:09.7333436Z > npm run generate:release-highlights && npm run build:browser-manifests
+2026-10-18T11:22:09.7333860Z 
+2026-10-18T11:22:09.8211277Z 
+2026-10-18T11:22:09.8211734Z > generate:release-highlights
+2026-10-18T11:22:09.8212109Z > node scripts/generate-release-highlights.js
+2026-10-18T11:22:09.8212300Z 
+2026-10-18T11:22:09.8475536Z Generated release highlights for 42 version(s): shared/release-highlights.json
+2026-10-18T11:22:09.9434744Z 
+2026-10-18T11:22:09.9435742Z > build:browser-manifests
+2026-10-18T11:22:09.9436306Z > node scripts/generate-browser-manifests.js
+2026-10-18T11:22:09.9436605Z 
+2026-10-18T11:22:10.0567544Z Generated browser manifests:
+2026-10-18T11:22:10.0571317Z - Chrome:  .build/chrome/manifest.json
+2026-10-18T11:22:10.0572186Z - Firefox: .build/firefox/manifest.json
+2026-10-18T11:22:10.0713952Z ##[group]Run npx web-ext lint -s .build/firefox
+2026-10-18T11:22:10.0714255Z [36;1mnpx web-ext lint -s .build/firefox[0m
+2026-10-18T11:22:10.0769752Z shell: /usr/bin/bash -e {0}
+2026-10-18T11:22:10.0769973Z ##[endgroup]
+2026-10-18T11:22:10.7614604Z Applying config file: ./package.json
+2026-10-18T11:22:13.6695413Z Validation Summary:
+2026-10-18T11:22:13.6695653Z 
+2026-10-18T11:22:13.6695829Z errors          0              
+2026-10-18T11:22:13.6696267Z notices         0              
+2026-10-18T11:22:13.6696624Z warnings        47             
+2026-10-18T11:22:13.6696784Z 
+2026-10-18T11:22:13.6696864Z WARNINGS:
+2026-10-18T11:22:13.6696965Z 
+2026-10-18T11:22:13.6697239Z Code                    Message       Description              File          Line   Column
+2026-10-18T11:22:13.6698527Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     guide/guid…   167    7     
+2026-10-18T11:22:13.6699412Z                         assignment    and performance          e.js                       
+2026-10-18T11:22:13.6700125Z                         to            concerns, this may not                              
+2026-10-18T11:22:13.6700819Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6701642Z                                       values which have not                               
+2026-10-18T11:22:13.6702830Z                                       been adequately                                     
+2026-10-18T11:22:13.6703619Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6704412Z                                       lead to security                                    
+2026-10-18T11:22:13.6705594Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6706629Z                                       serious performance                                 
+2026-10-18T11:22:13.6707722Z                                       degradation.                                        
+2026-10-18T11:22:13.6708399Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     highlights…   520    5     
+2026-10-18T11:22:13.6709236Z                         assignment    and performance          /highlight…                
+2026-10-18T11:22:13.6709959Z                         to            concerns, this may not   s.js                       
+2026-10-18T11:22:13.6710631Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6711439Z                                       values which have not                               
+2026-10-18T11:22:13.6712211Z                                       been adequately                                     
+2026-10-18T11:22:13.6712993Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6713780Z                                       lead to security                                    
+2026-10-18T11:22:13.6714551Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6716268Z                                       serious performance                                 
+2026-10-18T11:22:13.6717091Z                                       degradation.                                        
+2026-10-18T11:22:13.6717647Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     highlights…   521    5     
+2026-10-18T11:22:13.6718453Z                         assignment    and performance          /highlight…                
+2026-10-18T11:22:13.6719150Z                         to            concerns, this may not   s.js                       
+2026-10-18T11:22:13.6719927Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6720847Z                                       values which have not                               
+2026-10-18T11:22:13.6722130Z                                       been adequately                                     
+2026-10-18T11:22:13.6723130Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6724100Z                                       lead to security                                    
+2026-10-18T11:22:13.6736378Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6737827Z                                       serious performance                                 
+2026-10-18T11:22:13.6738833Z                                       degradation.                                        
+2026-10-18T11:22:13.6739440Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     offscreen/…   820    7     
+2026-10-18T11:22:13.6740308Z                         assignment    and performance          reader-sem…                
+2026-10-18T11:22:13.6741049Z                         to            concerns, this may not   antics.js                  
+2026-10-18T11:22:13.6741770Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6742595Z                                       values which have not                               
+2026-10-18T11:22:13.6743394Z                                       been adequately                                     
+2026-10-18T11:22:13.6744476Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6745490Z                                       lead to security                                    
+2026-10-18T11:22:13.6746304Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6747126Z                                       serious performance                                 
+2026-10-18T11:22:13.6747937Z                                       degradation.                                        
+2026-10-18T11:22:13.6748475Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     reader/ren…   177    5     
+2026-10-18T11:22:13.6749237Z                         assignment    and performance          derer.js                   
+2026-10-18T11:22:13.6749943Z                         to            concerns, this may not                              
+2026-10-18T11:22:13.6750644Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6751472Z                                       values which have not                               
+2026-10-18T11:22:13.6752272Z                                       been adequately                                     
+2026-10-18T11:22:13.6753090Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6753897Z                                       lead to security                                    
+2026-10-18T11:22:13.6754697Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6755713Z                                       serious performance                                 
+2026-10-18T11:22:13.6756528Z                                       degradation.                                        
+2026-10-18T11:22:13.6757068Z UNSAFE_VAR_ASSIGNMENT   Unsafe call   Due to both security     reader/too…   59     20    
+2026-10-18T11:22:13.6757834Z                         to            and performance          lbar.js                    
+2026-10-18T11:22:13.6758618Z                         button.ins…   concerns, this may not                              
+2026-10-18T11:22:13.6759420Z                         ertAdjacen…   be set using dynamic                                
+2026-10-18T11:22:13.6760271Z                         tHTML for     values which have not                               
+2026-10-18T11:22:13.6761031Z                         argument 1    been adequately                                     
+2026-10-18T11:22:13.6762030Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6762849Z                                       lead to security                                    
+2026-10-18T11:22:13.6763675Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6764518Z                                       serious performance                                 
+2026-10-18T11:22:13.6765511Z                                       degradation.                                        
+2026-10-18T11:22:13.6766071Z UNSAFE_VAR_ASSIGNMENT   Unsafe call   Due to both security     reader/too…   83     5     
+2026-10-18T11:22:13.6766840Z                         to            and performance          lbar.js                    
+2026-10-18T11:22:13.6767606Z                         dec.insert…   concerns, this may not                              
+2026-10-18T11:22:13.6768391Z                         AdjacentHT…   be set using dynamic                                
+2026-10-18T11:22:13.6769120Z                         ML for        values which have not                               
+2026-10-18T11:22:13.6769839Z                         argument 1    been adequately                                     
+2026-10-18T11:22:13.6770678Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6771657Z                                       lead to security                                    
+2026-10-18T11:22:13.6772485Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6773296Z                                       serious performance                                 
+2026-10-18T11:22:13.6774105Z                                       degradation.                                        
+2026-10-18T11:22:13.6774628Z UNSAFE_VAR_ASSIGNMENT   Unsafe call   Due to both security     reader/too…   94     5     
+2026-10-18T11:22:13.6775551Z                         to            and performance          lbar.js                    
+2026-10-18T11:22:13.6776340Z                         inc.insert…   concerns, this may not                              
+2026-10-18T11:22:13.6777138Z                         AdjacentHT…   be set using dynamic                                
+2026-10-18T11:22:13.6777859Z                         ML for        values which have not                               
+2026-10-18T11:22:13.6778567Z                         argument 1    been adequately                                     
+2026-10-18T11:22:13.6779395Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6780243Z                                       lead to security                                    
+2026-10-18T11:22:13.6781063Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6781913Z                                       serious performance                                 
+2026-10-18T11:22:13.6782739Z                                       degradation.                                        
+2026-10-18T11:22:13.6783280Z UNSAFE_VAR_ASSIGNMENT   Unsafe call   Due to both security     reader/too…   310    7     
+2026-10-18T11:22:13.6784033Z                         to            and performance          lbar.js                    
+2026-10-18T11:22:13.6784803Z                         button.ins…   concerns, this may not                              
+2026-10-18T11:22:13.6785745Z                         ertAdjacen…   be set using dynamic                                
+2026-10-18T11:22:13.6786468Z                         tHTML for     values which have not                               
+2026-10-18T11:22:13.6787176Z                         argument 1    been adequately                                     
+2026-10-18T11:22:13.6788002Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6788933Z                                       lead to security                                    
+2026-10-18T11:22:13.6789758Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6790560Z                                       serious performance                                 
+2026-10-18T11:22:13.6791373Z                                       degradation.                                        
+2026-10-18T11:22:13.6791889Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     shared/has…   45     5     
+2026-10-18T11:22:13.6792692Z                         assignment    and performance          htag-utils…                
+2026-10-18T11:22:13.6793398Z                         to            concerns, this may not   .js                        
+2026-10-18T11:22:13.6794098Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6795045Z                                       values which have not                               
+2026-10-18T11:22:13.6795867Z                                       been adequately                                     
+2026-10-18T11:22:13.6796677Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6797474Z                                       lead to security                                    
+2026-10-18T11:22:13.6798399Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6799205Z                                       serious performance                                 
+2026-10-18T11:22:13.6800014Z                                       degradation.                                        
+2026-10-18T11:22:13.6800529Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     shared/i18…   312    7     
+2026-10-18T11:22:13.6801271Z                         assignment    and performance          n.js                       
+2026-10-18T11:22:13.6801970Z                         to            concerns, this may not                              
+2026-10-18T11:22:13.6802659Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6803524Z                                       values which have not                               
+2026-10-18T11:22:13.6804336Z                                       been adequately                                     
+2026-10-18T11:22:13.6805287Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6806093Z                                       lead to security                                    
+2026-10-18T11:22:13.6806899Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6807702Z                                       serious performance                                 
+2026-10-18T11:22:13.6808499Z                                       degradation.                                        
+2026-10-18T11:22:13.6809027Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     shared/i18…   348    11    
+2026-10-18T11:22:13.6809770Z                         assignment    and performance          n.js                       
+2026-10-18T11:22:13.6810463Z                         to            concerns, this may not                              
+2026-10-18T11:22:13.6811157Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6811976Z                                       values which have not                               
+2026-10-18T11:22:13.6812769Z                                       been adequately                                     
+2026-10-18T11:22:13.6813570Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6814372Z                                       lead to security                                    
+2026-10-18T11:22:13.6815458Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6816283Z                                       serious performance                                 
+2026-10-18T11:22:13.6817086Z                                       degradation.                                        
+2026-10-18T11:22:13.6817604Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     shared/rea…   487    13    
+2026-10-18T11:22:13.6818415Z                         assignment    and performance          dability-r…                
+2026-10-18T11:22:13.6819119Z                         to            concerns, this may not   ecovery.js                 
+2026-10-18T11:22:13.6819811Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6820630Z                                       values which have not                               
+2026-10-18T11:22:13.6821428Z                                       been adequately                                     
+2026-10-18T11:22:13.6822244Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6823046Z                                       lead to security                                    
+2026-10-18T11:22:13.6823842Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6824779Z                                       serious performance                                 
+2026-10-18T11:22:13.6825734Z                                       degradation.                                        
+2026-10-18T11:22:13.6826248Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     shared/rea…   644    5     
+2026-10-18T11:22:13.6827089Z                         assignment    and performance          dability-r…                
+2026-10-18T11:22:13.6827793Z                         to            concerns, this may not   ecovery.js                 
+2026-10-18T11:22:13.6828500Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6829325Z                                       values which have not                               
+2026-10-18T11:22:13.6830124Z                                       been adequately                                     
+2026-10-18T11:22:13.6830931Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6831761Z                                       lead to security                                    
+2026-10-18T11:22:13.6832571Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6833383Z                                       serious performance                                 
+2026-10-18T11:22:13.6834184Z                                       degradation.                                        
+2026-10-18T11:22:13.6834695Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     shared/sel…   27     9     
+2026-10-18T11:22:13.6835645Z                         assignment    and performance          ection-uti…                
+2026-10-18T11:22:13.6836357Z                         to            concerns, this may not   ls.js                      
+2026-10-18T11:22:13.6837065Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6837893Z                                       values which have not                               
+2026-10-18T11:22:13.6838691Z                                       been adequately                                     
+2026-10-18T11:22:13.6839498Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6840298Z                                       lead to security                                    
+2026-10-18T11:22:13.6841091Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6841898Z                                       serious performance                                 
+2026-10-18T11:22:13.6842821Z                                       degradation.                                        
+2026-10-18T11:22:13.6843365Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     background…   1610   9     
+2026-10-18T11:22:13.6844177Z                         assignment    and performance          /Readabili…                
+2026-10-18T11:22:13.6845008Z                         to            concerns, this may not   ty.js                      
+2026-10-18T11:22:13.6845727Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6846542Z                                       values which have not                               
+2026-10-18T11:22:13.6847333Z                                       been adequately                                     
+2026-10-18T11:22:13.6848134Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6848946Z                                       lead to security                                    
+2026-10-18T11:22:13.6849772Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6850582Z                                       serious performance                                 
+2026-10-18T11:22:13.6851499Z                                       degradation.                                        
+2026-10-18T11:22:13.6852033Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     background…   1989   7     
+2026-10-18T11:22:13.6852841Z                         assignment    and performance          /Readabili…                
+2026-10-18T11:22:13.6853546Z                         to            concerns, this may not   ty.js                      
+2026-10-18T11:22:13.6854235Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6855210Z                                       values which have not                               
+2026-10-18T11:22:13.6856018Z                                       been adequately                                     
+2026-10-18T11:22:13.6856823Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6857622Z                                       lead to security                                    
+2026-10-18T11:22:13.6858426Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6859242Z                                       serious performance                                 
+2026-10-18T11:22:13.6860041Z                                       degradation.                                        
+2026-10-18T11:22:13.6860558Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     contentScr…   427    5     
+2026-10-18T11:22:13.6861360Z                         assignment    and performance          ipt/conten…                
+2026-10-18T11:22:13.6862073Z                         to            concerns, this may not   tScript.js                 
+2026-10-18T11:22:13.6862759Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6863578Z                                       values which have not                               
+2026-10-18T11:22:13.6864393Z                                       been adequately                                     
+2026-10-18T11:22:13.6865326Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6866140Z                                       lead to security                                    
+2026-10-18T11:22:13.6866934Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6867733Z                                       serious performance                                 
+2026-10-18T11:22:13.6868543Z                                       degradation.                                        
+2026-10-18T11:22:13.6869165Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     contentScr…   1123   5     
+2026-10-18T11:22:13.6869976Z                         assignment    and performance          ipt/highli…                
+2026-10-18T11:22:13.6870712Z                         to            concerns, this may not   ghter.js                   
+2026-10-18T11:22:13.6871423Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6872242Z                                       values which have not                               
+2026-10-18T11:22:13.6873086Z                                       been adequately                                     
+2026-10-18T11:22:13.6873879Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6874687Z                                       lead to security                                    
+2026-10-18T11:22:13.6875640Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6876452Z                                       serious performance                                 
+2026-10-18T11:22:13.6877291Z                                       degradation.                                        
+2026-10-18T11:22:13.6877913Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     contentScr…   1144   5     
+2026-10-18T11:22:13.6878715Z                         assignment    and performance          ipt/highli…                
+2026-10-18T11:22:13.6879433Z                         to            concerns, this may not   ghter.js                   
+2026-10-18T11:22:13.6880122Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6880946Z                                       values which have not                               
+2026-10-18T11:22:13.6881758Z                                       been adequately                                     
+2026-10-18T11:22:13.6882567Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6883389Z                                       lead to security                                    
+2026-10-18T11:22:13.6884187Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6885155Z                                       serious performance                                 
+2026-10-18T11:22:13.6885973Z                                       degradation.                                        
+2026-10-18T11:22:13.6886491Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     contentScr…   1362   5     
+2026-10-18T11:22:13.6887294Z                         assignment    and performance          ipt/highli…                
+2026-10-18T11:22:13.6888011Z                         to            concerns, this may not   ghter.js                   
+2026-10-18T11:22:13.6888708Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6889525Z                                       values which have not                               
+2026-10-18T11:22:13.6890324Z                                       been adequately                                     
+2026-10-18T11:22:13.6891129Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6891930Z                                       lead to security                                    
+2026-10-18T11:22:13.6892724Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6893520Z                                       serious performance                                 
+2026-10-18T11:22:13.6894341Z                                       degradation.                                        
+2026-10-18T11:22:13.6894861Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     contentScr…   1378   5     
+2026-10-18T11:22:13.6895943Z                         assignment    and performance          ipt/highli…                
+2026-10-18T11:22:13.6896675Z                         to            concerns, this may not   ghter.js                   
+2026-10-18T11:22:13.6897364Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6898188Z                                       values which have not                               
+2026-10-18T11:22:13.6898993Z                                       been adequately                                     
+2026-10-18T11:22:13.6899811Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6900634Z                                       lead to security                                    
+2026-10-18T11:22:13.6901448Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6902260Z                                       serious performance                                 
+2026-10-18T11:22:13.6903073Z                                       degradation.                                        
+2026-10-18T11:22:13.6903579Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     offscreen/…   123    7     
+2026-10-18T11:22:13.6904498Z                         assignment    and performance          offscreen.…                
+2026-10-18T11:22:13.6905362Z                         to            concerns, this may not   js                         
+2026-10-18T11:22:13.6906056Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6906877Z                                       values which have not                               
+2026-10-18T11:22:13.6907682Z                                       been adequately                                     
+2026-10-18T11:22:13.6908476Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6909309Z                                       lead to security                                    
+2026-10-18T11:22:13.6910111Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6910911Z                                       serious performance                                 
+2026-10-18T11:22:13.6911732Z                                       degradation.                                        
+2026-10-18T11:22:13.6912239Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     offscreen/…   1079   3     
+2026-10-18T11:22:13.6913040Z                         assignment    and performance          offscreen.…                
+2026-10-18T11:22:13.6913754Z                         to            concerns, this may not   js                         
+2026-10-18T11:22:13.6914432Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6915426Z                                       values which have not                               
+2026-10-18T11:22:13.6916235Z                                       been adequately                                     
+2026-10-18T11:22:13.6917045Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6917878Z                                       lead to security                                    
+2026-10-18T11:22:13.6918696Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6919509Z                                       serious performance                                 
+2026-10-18T11:22:13.6920334Z                                       degradation.                                        
+2026-10-18T11:22:13.6920853Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     offscreen/…   1259   13    
+2026-10-18T11:22:13.6921694Z                         assignment    and performance          offscreen.…                
+2026-10-18T11:22:13.6922564Z                         to            concerns, this may not   js                         
+2026-10-18T11:22:13.6923262Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6924101Z                                       values which have not                               
+2026-10-18T11:22:13.6925041Z                                       been adequately                                     
+2026-10-18T11:22:13.6925858Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6926656Z                                       lead to security                                    
+2026-10-18T11:22:13.6927453Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6928265Z                                       serious performance                                 
+2026-10-18T11:22:13.6929071Z                                       degradation.                                        
+2026-10-18T11:22:13.6929582Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     offscreen/…   2011   5     
+2026-10-18T11:22:13.6930405Z                         assignment    and performance          offscreen.…                
+2026-10-18T11:22:13.6931130Z                         to            concerns, this may not   js                         
+2026-10-18T11:22:13.6931955Z                         outerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6932788Z                                       values which have not                               
+2026-10-18T11:22:13.6933587Z                                       been adequately                                     
+2026-10-18T11:22:13.6934393Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6935540Z                                       lead to security                                    
+2026-10-18T11:22:13.6936807Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6938133Z                                       serious performance                                 
+2026-10-18T11:22:13.6939482Z                                       degradation.                                        
+2026-10-18T11:22:13.6940432Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     highlight.…   271    6     
+2026-10-18T11:22:13.6941697Z                         assignment    and performance          min.js                     
+2026-10-18T11:22:13.6942858Z                         to            concerns, this may not                              
+2026-10-18T11:22:13.6944045Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6945706Z                                       values which have not                               
+2026-10-18T11:22:13.6947171Z                                       been adequately                                     
+2026-10-18T11:22:13.6948616Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6950058Z                                       lead to security                                    
+2026-10-18T11:22:13.6951505Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6953018Z                                       serious performance                                 
+2026-10-18T11:22:13.6954451Z                                       degradation.                                        
+2026-10-18T11:22:13.6955492Z UNSUPPORTED_API         downloads.…   This API has not been    service-wo…   1003   5     
+2026-10-18T11:22:13.6956914Z                         onDetermin…   implemented by           rker.js                    
+2026-10-18T11:22:13.6958206Z                         ingFilename   Firefox.                                            
+2026-10-18T11:22:13.6959629Z                         is not                                                            
+2026-10-18T11:22:13.6960843Z                         supported                                                         
+2026-10-18T11:22:13.6961785Z UNSUPPORTED_API         downloads.…   This API has not been    service-wo…   1004   3     
+2026-10-18T11:22:13.6963231Z                         onDetermin…   implemented by           rker.js                    
+2026-10-18T11:22:13.6964538Z                         ingFilename   Firefox.                                            
+2026-10-18T11:22:13.6965928Z                         is not                                                            
+2026-10-18T11:22:13.6967114Z                         supported                                                         
+2026-10-18T11:22:13.6968050Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     service-wo…   1687   9     
+2026-10-18T11:22:13.6969296Z                         assignment    and performance          rker.js                    
+2026-10-18T11:22:13.6970185Z                         to            concerns, this may not                              
+2026-10-18T11:22:13.6971464Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6972807Z                                       values which have not                               
+2026-10-18T11:22:13.6974265Z                                       been adequately                                     
+2026-10-18T11:22:13.6975737Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6977041Z                                       lead to security                                    
+2026-10-18T11:22:13.6978299Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6979509Z                                       serious performance                                 
+2026-10-18T11:22:13.6980354Z                                       degradation.                                        
+2026-10-18T11:22:13.6980943Z UNSUPPORTED_API         runtime.ge…   This API has not been    service-wo…   2312   36    
+2026-10-18T11:22:13.6981709Z                         tContexts     implemented by           rker.js                    
+2026-10-18T11:22:13.6982422Z                         is not        Firefox.                                            
+2026-10-18T11:22:13.6983095Z                         supported                                                         
+2026-10-18T11:22:13.6983610Z UNSUPPORTED_API         offscreen.…   This API has not been    service-wo…   2319   11    
+2026-10-18T11:22:13.6984435Z                         createDocu…   implemented by           rker.js                    
+2026-10-18T11:22:13.6985354Z                         ment is not   Firefox.                                            
+2026-10-18T11:22:13.6986059Z                         supported                                                         
+2026-10-18T11:22:13.6986604Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     options/op…   714    13    
+2026-10-18T11:22:13.6987369Z                         assignment    and performance          tions.js                   
+2026-10-18T11:22:13.6988098Z                         to            concerns, this may not                              
+2026-10-18T11:22:13.6988797Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6989631Z                                       values which have not                               
+2026-10-18T11:22:13.6990458Z                                       been adequately                                     
+2026-10-18T11:22:13.6991311Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.6992128Z                                       lead to security                                    
+2026-10-18T11:22:13.6993127Z                                       issues or fairly                                    
+2026-10-18T11:22:13.6993948Z                                       serious performance                                 
+2026-10-18T11:22:13.6994759Z                                       degradation.                                        
+2026-10-18T11:22:13.6995438Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     options/op…   1976   6     
+2026-10-18T11:22:13.6996196Z                         assignment    and performance          tions.js                   
+2026-10-18T11:22:13.6996904Z                         to            concerns, this may not                              
+2026-10-18T11:22:13.6997593Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.6998411Z                                       values which have not                               
+2026-10-18T11:22:13.6999218Z                                       been adequately                                     
+2026-10-18T11:22:13.7000021Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.7000822Z                                       lead to security                                    
+2026-10-18T11:22:13.7001624Z                                       issues or fairly                                    
+2026-10-18T11:22:13.7002561Z                                       serious performance                                 
+2026-10-18T11:22:13.7003397Z                                       degradation.                                        
+2026-10-18T11:22:13.7003917Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     popup/popu…   620    5     
+2026-10-18T11:22:13.7004662Z                         assignment    and performance          p.js                       
+2026-10-18T11:22:13.7005609Z                         to            concerns, this may not                              
+2026-10-18T11:22:13.7006893Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.7008088Z                                       values which have not                               
+2026-10-18T11:22:13.7008916Z                                       been adequately                                     
+2026-10-18T11:22:13.7009732Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.7010533Z                                       lead to security                                    
+2026-10-18T11:22:13.7011342Z                                       issues or fairly                                    
+2026-10-18T11:22:13.7012149Z                                       serious performance                                 
+2026-10-18T11:22:13.7012965Z                                       degradation.                                        
+2026-10-18T11:22:13.7013513Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     popup/popu…   652    9     
+2026-10-18T11:22:13.7014293Z                         assignment    and performance          p.js                       
+2026-10-18T11:22:13.7015204Z                         to            concerns, this may not                              
+2026-10-18T11:22:13.7015967Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.7016799Z                                       values which have not                               
+2026-10-18T11:22:13.7017602Z                                       been adequately                                     
+2026-10-18T11:22:13.7018398Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.7019195Z                                       lead to security                                    
+2026-10-18T11:22:13.7020016Z                                       issues or fairly                                    
+2026-10-18T11:22:13.7020969Z                                       serious performance                                 
+2026-10-18T11:22:13.7021811Z                                       degradation.                                        
+2026-10-18T11:22:13.7022355Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     popup/popu…   1446   9     
+2026-10-18T11:22:13.7023135Z                         assignment    and performance          p.js                       
+2026-10-18T11:22:13.7023852Z                         to            concerns, this may not                              
+2026-10-18T11:22:13.7024539Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.7025540Z                                       values which have not                               
+2026-10-18T11:22:13.7026350Z                                       been adequately                                     
+2026-10-18T11:22:13.7027146Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.7027955Z                                       lead to security                                    
+2026-10-18T11:22:13.7028770Z                                       issues or fairly                                    
+2026-10-18T11:22:13.7029582Z                                       serious performance                                 
+2026-10-18T11:22:13.7030527Z                                       degradation.                                        
+2026-10-18T11:22:13.7031059Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     popup/popu…   2919   5     
+2026-10-18T11:22:13.7031821Z                         assignment    and performance          p.js                       
+2026-10-18T11:22:13.7032538Z                         to            concerns, this may not                              
+2026-10-18T11:22:13.7033227Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.7034061Z                                       values which have not                               
+2026-10-18T11:22:13.7034880Z                                       been adequately                                     
+2026-10-18T11:22:13.7035920Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.7036734Z                                       lead to security                                    
+2026-10-18T11:22:13.7037556Z                                       issues or fairly                                    
+2026-10-18T11:22:13.7038368Z                                       serious performance                                 
+2026-10-18T11:22:13.7039185Z                                       degradation.                                        
+2026-10-18T11:22:13.7039708Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     popup/popu…   2982   17    
+2026-10-18T11:22:13.7040457Z                         assignment    and performance          p.js                       
+2026-10-18T11:22:13.7041170Z                         to            concerns, this may not                              
+2026-10-18T11:22:13.7041873Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.7042709Z                                       values which have not                               
+2026-10-18T11:22:13.7043533Z                                       been adequately                                     
+2026-10-18T11:22:13.7044333Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.7045308Z                                       lead to security                                    
+2026-10-18T11:22:13.7046128Z                                       issues or fairly                                    
+2026-10-18T11:22:13.7046939Z                                       serious performance                                 
+2026-10-18T11:22:13.7047880Z                                       degradation.                                        
+2026-10-18T11:22:13.7048409Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     popup/popu…   2999   17    
+2026-10-18T11:22:13.7049172Z                         assignment    and performance          p.js                       
+2026-10-18T11:22:13.7049885Z                         to            concerns, this may not                              
+2026-10-18T11:22:13.7050577Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.7051407Z                                       values which have not                               
+2026-10-18T11:22:13.7052214Z                                       been adequately                                     
+2026-10-18T11:22:13.7053014Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.7053854Z                                       lead to security                                    
+2026-10-18T11:22:13.7054670Z                                       issues or fairly                                    
+2026-10-18T11:22:13.7055640Z                                       serious performance                                 
+2026-10-18T11:22:13.7056467Z                                       degradation.                                        
+2026-10-18T11:22:13.7057127Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     popup/popu…   5018   5     
+2026-10-18T11:22:13.7057891Z                         assignment    and performance          p.js                       
+2026-10-18T11:22:13.7058606Z                         to            concerns, this may not                              
+2026-10-18T11:22:13.7059297Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.7060124Z                                       values which have not                               
+2026-10-18T11:22:13.7060938Z                                       been adequately                                     
+2026-10-18T11:22:13.7061753Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.7062565Z                                       lead to security                                    
+2026-10-18T11:22:13.7063376Z                                       issues or fairly                                    
+2026-10-18T11:22:13.7064193Z                                       serious performance                                 
+2026-10-18T11:22:13.7065220Z                                       degradation.                                        
+2026-10-18T11:22:13.7065751Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     popup/popu…   5027   9     
+2026-10-18T11:22:13.7066501Z                         assignment    and performance          p.js                       
+2026-10-18T11:22:13.7067211Z                         to            concerns, this may not                              
+2026-10-18T11:22:13.7067898Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.7068769Z                                       values which have not                               
+2026-10-18T11:22:13.7069611Z                                       been adequately                                     
+2026-10-18T11:22:13.7070432Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.7071248Z                                       lead to security                                    
+2026-10-18T11:22:13.7072063Z                                       issues or fairly                                    
+2026-10-18T11:22:13.7072876Z                                       serious performance                                 
+2026-10-18T11:22:13.7073688Z                                       degradation.                                        
+2026-10-18T11:22:13.7074204Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     popup/popu…   5479   13    
+2026-10-18T11:22:13.7075220Z                         assignment    and performance          p.js                       
+2026-10-18T11:22:13.7075958Z                         to            concerns, this may not                              
+2026-10-18T11:22:13.7076654Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.7077497Z                                       values which have not                               
+2026-10-18T11:22:13.7078322Z                                       been adequately                                     
+2026-10-18T11:22:13.7079130Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.7079963Z                                       lead to security                                    
+2026-10-18T11:22:13.7080775Z                                       issues or fairly                                    
+2026-10-18T11:22:13.7081590Z                                       serious performance                                 
+2026-10-18T11:22:13.7082399Z                                       degradation.                                        
+2026-10-18T11:22:13.7082922Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     popup/popu…   5497   13    
+2026-10-18T11:22:13.7083804Z                         assignment    and performance          p.js                       
+2026-10-18T11:22:13.7084520Z                         to            concerns, this may not                              
+2026-10-18T11:22:13.7085367Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.7086223Z                                       values which have not                               
+2026-10-18T11:22:13.7087399Z                                       been adequately                                     
+2026-10-18T11:22:13.7088304Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.7089126Z                                       lead to security                                    
+2026-10-18T11:22:13.7089940Z                                       issues or fairly                                    
+2026-10-18T11:22:13.7090762Z                                       serious performance                                 
+2026-10-18T11:22:13.7091609Z                                       degradation.                                        
+2026-10-18T11:22:13.7092148Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     popup/popu…   5526   13    
+2026-10-18T11:22:13.7092927Z                         assignment    and performance          p.js                       
+2026-10-18T11:22:13.7093658Z                         to            concerns, this may not                              
+2026-10-18T11:22:13.7094355Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.7095394Z                                       values which have not                               
+2026-10-18T11:22:13.7096219Z                                       been adequately                                     
+2026-10-18T11:22:13.7097028Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.7097841Z                                       lead to security                                    
+2026-10-18T11:22:13.7098658Z                                       issues or fairly                                    
+2026-10-18T11:22:13.7099470Z                                       serious performance                                 
+2026-10-18T11:22:13.7100285Z                                       degradation.                                        
+2026-10-18T11:22:13.7100803Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     popup/popu…   5558   17    
+2026-10-18T11:22:13.7101556Z                         assignment    and performance          p.js                       
+2026-10-18T11:22:13.7102395Z                         to            concerns, this may not                              
+2026-10-18T11:22:13.7103111Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.7103938Z                                       values which have not                               
+2026-10-18T11:22:13.7104757Z                                       been adequately                                     
+2026-10-18T11:22:13.7105734Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.7106548Z                                       lead to security                                    
+2026-10-18T11:22:13.7107356Z                                       issues or fairly                                    
+2026-10-18T11:22:13.7108166Z                                       serious performance                                 
+2026-10-18T11:22:13.7108992Z                                       degradation.                                        
+2026-10-18T11:22:13.7109502Z UNSAFE_VAR_ASSIGNMENT   Unsafe        Due to both security     popup/popu…   5618   13    
+2026-10-18T11:22:13.7110254Z                         assignment    and performance          p.js                       
+2026-10-18T11:22:13.7111091Z                         to            concerns, this may not                              
+2026-10-18T11:22:13.7111785Z                         innerHTML     be set using dynamic                                
+2026-10-18T11:22:13.7112610Z                                       values which have not                               
+2026-10-18T11:22:13.7113424Z                                       been adequately                                     
+2026-10-18T11:22:13.7114230Z                                       sanitized. This can                                 
+2026-10-18T11:22:13.7115207Z                                       lead to security                                    
+2026-10-18T11:22:13.7116028Z                                       issues or fairly                                    
+2026-10-18T11:22:13.7116844Z                                       serious performance                                 
+2026-10-18T11:22:13.7117658Z                                       degradation.                                        
+2026-10-18T11:22:13.7143070Z ##[group]Run mkdir -p dist
+2026-10-18T11:22:13.7143326Z [36;1mmkdir -p dist[0m
+2026-10-18T11:22:13.7198471Z shell: /usr/bin/bash -e {0}
+2026-10-18T11:22:13.7198691Z ##[endgroup]
+2026-10-18T11:22:13.7302842Z ##[group]Run mkdir -p ../dist
+2026-10-18T11:22:13.7303106Z [36;1mmkdir -p ../dist[0m
+2026-10-18T11:22:13.7303301Z [36;1m[0m
+2026-10-18T11:22:13.7303464Z [36;1mbuild_bridge() {[0m
+2026-10-18T11:22:13.7303652Z [36;1m  local goos="$1"[0m
+2026-10-18T11:22:13.7303857Z [36;1m  local goarch="$2"[0m
+2026-10-18T11:22:13.7304057Z [36;1m  local archive_name="$3"[0m
+2026-10-18T11:22:13.7304337Z [36;1m  local stage_dir="../dist/.agent-bridge-${goos}-${goarch}"[0m
+2026-10-18T11:22:13.7304624Z [36;1m  local cli_name="marksnip"[0m
+2026-10-18T11:22:13.7304870Z [36;1m  local host_name="marksnip-native-host"[0m
+2026-10-18T11:22:13.7305307Z [36;1m[0m
+2026-10-18T11:22:13.7305476Z [36;1m  rm -rf "$stage_dir"[0m
+2026-10-18T11:22:13.7305717Z [36;1m  mkdir -p "$stage_dir"[0m
+2026-10-18T11:22:13.7305919Z [36;1m[0m
+2026-10-18T11:22:13.7306065Z [36;1m[0m
+2026-10-18T11:22:13.7306353Z [36;1m  GOOS="$goos" GOARCH="$goarch" go build -o "${stage_dir}/${cli_name}" ./cmd/marksnip[0m
+2026-10-18T11:22:13.7306864Z [36;1m  GOOS="$goos" GOARCH="$goarch" go build -o "${stage_dir}/${host_name}" ./cmd/marksnip-native-host[0m
+2026-10-18T11:22:13.7307245Z [36;1m  cp README.md "${stage_dir}/README.md"[0m
+2026-10-18T11:22:13.7307474Z [36;1m[0m
+2026-10-18T11:22:13.7307678Z [36;1m    (cd "$stage_dir" && tar -czf "../${archive_name}" .)[0m
+2026-10-18T11:22:13.7307932Z [36;1m[0m
+2026-10-18T11:22:13.7308077Z [36;1m[0m
+2026-10-18T11:22:13.7308280Z [36;1m  rm -rf "$stage_dir"[0m
+2026-10-18T11:22:13.7308574Z [36;1m}[0m
+2026-10-18T11:22:13.7308933Z [36;1m[0m
+2026-10-18T11:22:13.7309331Z [36;1mbuild_bridge linux amd64 marksnip-agent-bridge-linux-amd64.tar.gz[0m
+2026-10-18T11:22:13.7359384Z shell: /usr/bin/bash -e {0}
+2026-10-18T11:22:13.7359686Z ##[endgroup]
+2026-10-18T11:22:21.6341586Z ##[group]Run actions/upload-artifact@v4
+2026-10-18T11:22:21.6341834Z with:
+2026-10-18T11:22:21.6342015Z   name: marksnip-agent-bridge
+2026-10-18T11:22:21.6342280Z   path: dist/marksnip-agent-bridge-windows-amd64.zip
+
+2026-10-18T11:22:21.6342538Z   retention-days: 30
+2026-10-18T11:22:21.6342730Z   if-no-files-found: warn
+2026-10-18T11:22:21.6342923Z   compression-level: 6
+2026-10-18T11:22:21.6343104Z   overwrite: false
+2026-10-18T11:22:21.6343291Z   include-hidden-files: false
+2026-10-18T11:22:21.6343485Z ##[endgroup]
+2026-10-18T11:22:21.7715346Z (node:3757) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-18T11:22:21.7716046Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-18T11:22:21.7729722Z ##[warning]No files were found with the provided path: dist/marksnip-agent-bridge-windows-amd64.zip. No artifacts will be uploaded.
+2026-10-18T11:22:21.7906506Z Post job cleanup.
+2026-10-18T11:22:21.8952911Z (node:3769) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-18T11:22:21.8954011Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-18T11:22:21.9008375Z [command]/opt/hostedtoolcache/go/1.22.12/x64/bin/go env GOMODCACHE
+2026-10-18T11:22:21.9043330Z [command]/opt/hostedtoolcache/go/1.22.12/x64/bin/go env GOCACHE
+2026-10-18T11:22:21.9076624Z /home/runner/go/pkg/mod
+2026-10-18T11:22:21.9081596Z /home/runner/.cache/go-build
+2026-10-18T11:22:21.9086808Z [warning]Cache folder path is retrieved but doesn't exist on disk: /home/runner/go/pkg/mod
+2026-10-18T11:22:21.9087860Z Primary key was not generated. Please check the log messages above for more errors or information
+2026-10-18T11:22:21.9221685Z Post job cleanup.
+2026-10-18T11:22:22.0321634Z (node:3792) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-18T11:22:22.0322717Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-18T11:22:22.0324223Z Cache hit occurred on the primary key node-cache-Linux-x64-npm-ab2f9d29f55fbe1027f96bbc4d38df996317c3ccea80b629fde645d6d7a9fb44, not saving cache.
+2026-10-18T11:22:22.0462864Z Post job cleanup.
+2026-10-18T11:22:22.1139271Z [command]/usr/bin/git version
+2026-10-18T11:22:22.1175162Z git version 2.55.0
+2026-10-18T11:22:22.1204409Z Temporarily overriding HOME='/home/runner/work/_temp/73361c7c-3146-4856-8f1c-de36f05fa38d' before making global git config changes
+2026-10-18T11:22:22.1205759Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-18T11:22:22.1209108Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/MarkSnip/MarkSnip
+2026-10-18T11:22:22.1240334Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-18T11:22:22.1269906Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-18T11:22:22.1476229Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-18T11:22:22.1500088Z http.https://github.com/.extraheader
+2026-10-18T11:22:22.1510058Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-18T11:22:22.1539236Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-18T11:22:22.1757736Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-18T11:22:22.1791416Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-18T11:22:22.2133809Z Evaluate and set job outputs
+2026-10-18T11:22:22.2139583Z Set output 'version'
+2026-10-18T11:22:22.2140935Z Cleaning up orphan processes
+2026-10-18T11:22:22.2399943Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-go@v5, actions/setup-node@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
