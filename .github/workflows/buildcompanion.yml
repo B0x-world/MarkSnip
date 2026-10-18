@@ -103,7 +103,7 @@ jobs:
 
       - name: Run web-ext lint (Firefox)
         working-directory: src
-        run: npx web-ext lint -s .build/firefox
+        run: node scripts/run-web-ext.js lint -s .build/firefox
 
       - name: Create dist directory
         run: mkdir -p dist

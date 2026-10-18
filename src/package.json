@@ -6,17 +6,17 @@
     "audit:i18n": "node scripts/audit-i18n.js",
     "build:browser-manifests": "node scripts/generate-browser-manifests.js",
     "build:manifests": "npm run generate:release-highlights && npm run build:browser-manifests",
-    "build": "npm run build:manifests && web-ext build -s .build/firefox",
+    "build": "npm run build:manifests && node scripts/run-web-ext.js build -s .build/firefox",
     "build:chrome": "npm run build:manifests && cd .build/chrome && zip -r ../../../dist/marksnip-chrome-$(node -p \"require('../../manifest.json').version\").zip . -x '*.DS_Store'",
     "build:all": "npm run build && npm run build:chrome",
     "benchmark:popup": "node scripts/benchmark-popup-startup.js",
     "capture:store-gallery": "node scripts/capture-store-gallery.js",
     "capture:promo-marquee": "node scripts/capture-marquee-promo.js",
     "capture:promo-small": "node scripts/capture-small-promo-tile.js",
-    "start:firefoxdeveloper": "web-ext run -f firefoxdeveloperedition -u https://en.wikipedia.org/wiki/Special:Random --bc",
-    "start:chromedevwin": "web-ext run -t chromium --chromium-binary \"C:\\Program Files\\Google\\Chrome Dev\\Application\\chrome.exe\" -u https://en.wikipedia.org/wiki/Special:Random --bc",
-    "start:waveboxwin": "web-ext run -t chromium --chromium-binary %localappdata%/WaveboxApp/Application/wavebox.exe",
-    "start:androidwin11": "adb connect 127.0.0.1:58526 && web-ext run -t firefox-android --adb-device 127.0.0.1:58526 --firefox-apk org.mozilla.fenix",
+    "start:firefoxdeveloper": "node scripts/run-web-ext.js run -f firefoxdeveloperedition -u https://en.wikipedia.org/wiki/Special:Random --bc",
+    "start:chromedevwin": "node scripts/run-web-ext.js run -t chromium --chromium-binary \"C:\\Program Files\\Google\\Chrome Dev\\Application\\chrome.exe\" -u https://en.wikipedia.org/wiki/Special:Random --bc",
+    "start:waveboxwin": "node scripts/run-web-ext.js run -t chromium --chromium-binary %localappdata%/WaveboxApp/Application/wavebox.exe",
+    "start:androidwin11": "adb connect 127.0.0.1:58526 && node scripts/run-web-ext.js run -t firefox-android --adb-device 127.0.0.1:58526 --firefox-apk org.mozilla.fenix",
     "test": "jest",
     "test:unit": "jest --testPathPatterns=tests/unit",
     "test:integration": "jest --testPathPatterns=tests/integration",
@@ -28,7 +28,7 @@
     "snapshot:live-markdown": "node scripts/capture-live-markdown-snapshots.js",
     "verify:live-snapshots": "npm run snapshot:live-markdown",
     "verify:live-snapshots:hidden": "npm run snapshot:live-markdown -- --include-hidden-content",
-    "verify:firefox": "npm run test:firefox:focused && npm run test:firefox:live -- --headless && web-ext lint -s .build/firefox",
+    "verify:firefox": "npm run test:firefox:focused && npm run test:firefox:live -- --headless && node scripts/run-web-ext.js lint -s .build/firefox",
     "lint:js": "eslint .",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -36,20 +36,19 @@
     "test:all": "npm run test && npm run test:e2e"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.64.1",
     "@types/jest": "^30.0.0",
     "eslint": "^10.13.0",
     "eslint-config-prettier": "^10.1.8",
+    "esbuild": "^0.28.2",
     "globals": "^17.13.0",
     "jest": "^30.5.2",
-    "jest-environment-jsdom": "^30.5.2",
-    "playwright-extra": "^4.3.6",
-    "puppeteer-extra-plugin-stealth": "^2.11.2",
-    "web-ext": "^10.8.0"
+    "jest-environment-jsdom": "^30.5.2"
   },
   "overrides": {
     "test-exclude": "^8.0.0",
-    "jsdom": "^26.1.0",
-    "encoding-sniffer": "^1.0.2"
+    "jsdom": "^27.4.0",
+    "js-yaml": "^4.1.1"
   }
 }

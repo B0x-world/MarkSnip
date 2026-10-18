@@ -90,6 +90,9 @@ module.exports = [
       "no-useless-escape": "off",
       "no-async-promise-executor": "off",
       "no-empty-pattern": "off",
+      // Added to eslint:recommended after ESLint 8; keep the previous baseline.
+      "no-useless-assignment": "off",
+      "preserve-caught-error": "off",
     },
   },
   {

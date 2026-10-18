@@ -3,25 +3,8 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
-const { chromium } = require('playwright-extra');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+const { chromium } = require('@playwright/test');
 const { liveClipCases } = require('../tests/helpers/live-public-cases');
-
-const STEALTH_DISABLED_EVASIONS = [
-  'chrome.runtime',
-  'chrome.app',
-  'chrome.csi',
-  'chrome.loadTimes',
-  'iframe.contentWindow'
-];
-
-function buildStealthPlugin() {
-  const stealth = StealthPlugin();
-  for (const name of STEALTH_DISABLED_EVASIONS) {
-    stealth.enabledEvasions.delete(name);
-  }
-  return stealth;
-}
 
 const extensionRoot = path.resolve(__dirname, '..');
 const repoRoot = path.resolve(extensionRoot, '..');
@@ -36,7 +19,6 @@ function parseArgs(argv) {
     keepWorkDir: false,
     waitAfterLoadMs: 0,
     storageOptions: {},
-    stealth: true,
     captchaWaitMs: 60000,
     allowSkips: false
   };
@@ -68,7 +50,7 @@ function parseArgs(argv) {
     } else if (arg === '--keep-work-dir') {
       args.keepWorkDir = true;
     } else if (arg === '--no-stealth') {
-      args.stealth = false;
+      // Kept so existing invocations still parse; Playwright extra/stealth is no longer used.
     } else if (arg === '--captcha-wait' && next) {
       const seconds = Number(next);
       if (!Number.isFinite(seconds) || seconds < 0) {
@@ -116,7 +98,7 @@ Options:
   --include-hidden-content
                       Alias for --skip-hidden-content off
   --keep-work-dir     Keep the exported base extension copy
-  --no-stealth        Disable Playwright stealth evasions (debug aid)
+  --no-stealth        Ignored (Playwright extra/stealth is no longer installed)
   --captcha-wait <seconds>
                       Window for manually solving captcha (default 60)
   --allow-skips       Treat captcha-/permission-blocked cases as non-failures
@@ -460,7 +442,7 @@ async function captureCase(context, extensionId, serviceWorker, liveCase, option
   }
 }
 
-function buildCaseRecord(versionLabel, liveCase, result, options) {
+function buildCaseRecord(versionLabel, liveCase, result) {
   const markdown = result.clip?.markdown || '';
   const versionSnippets = versionLabel === 'current'
     ? liveCase.currentSnippets || []
@@ -484,9 +466,7 @@ function buildCaseRecord(versionLabel, liveCase, result, options) {
     ok: status === 'passed',
     blocked,
     error: result.error || null,
-    stealth: options?.stealth
-      ? { enabled: true, disabledEvasions: STEALTH_DISABLED_EVASIONS }
-      : { enabled: false },
+    stealth: { enabled: false },
     page: result.page,
     clip: {
       title: result.clip?.title || '',
@@ -528,7 +508,7 @@ async function captureVersion(versionLabel, extensionPath, cases, runDir, option
         ...(liveCase.storageOptions || {})
       });
       const result = await captureCase(context, extensionId, serviceWorker, liveCase, options);
-      const record = buildCaseRecord(versionLabel, liveCase, result, options);
+      const record = buildCaseRecord(versionLabel, liveCase, result);
       records.push(record);
 
       writeText(path.join(markdownDir, `${liveCase.id}.md`), result.clip?.markdown || '');
@@ -644,13 +624,6 @@ async function main() {
   const runDir = path.join(options.outputRoot, runId);
   ensureDir(runDir);
 
-  if (options.stealth) {
-    chromium.use(buildStealthPlugin());
-    console.log(`Stealth enabled (disabled evasions: ${STEALTH_DISABLED_EVASIONS.join(', ')})`);
-  } else {
-    console.log('Stealth disabled (--no-stealth)');
-  }
-
   console.log(`Writing live markdown comparison artifacts to ${runDir}`);
   const baseExport = exportBaseExtension(options.ref, runDir);
 
@@ -665,9 +638,7 @@ async function main() {
     waitAfterLoadMs: options.waitAfterLoadMs,
     captchaWaitMs: options.captchaWaitMs,
     allowSkips: options.allowSkips,
-    stealth: options.stealth
-      ? { enabled: true, disabledEvasions: STEALTH_DISABLED_EVASIONS }
-      : { enabled: false },
+    stealth: { enabled: false },
     platform: `${os.platform()} ${os.release()}`,
     cases: cases.map(liveCase => ({
       id: liveCase.id,

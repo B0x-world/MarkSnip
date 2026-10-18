@@ -69,8 +69,14 @@ module.exports = {
   // Module paths
   moduleDirectories: ['node_modules', '<rootDir>'],
 
-  // Transform files
-  transform: {},
+  // Transform ESM-only jsdom 27+ deps so Jest on Node 20/22 can require them.
+  transform: {
+    "[/\\\\](@exodus[/\\\\]bytes|parse5|html-encoding-sniffer|entities|@asamuzakjp[/\\\\][^/\\\\]+|@csstools[/\\\\][^/\\\\]+)[/\\\\].+\\.(js|mjs|cjs|ts)$":
+      "<rootDir>/tests/helpers/esm-cjs-transformer.js",
+  },
+  transformIgnorePatterns: [
+    "/node_modules/(?!.*(?:parse5|html-encoding-sniffer|entities|@exodus/bytes|@asamuzakjp/|@csstools/))",
+  ],
 
   // Ignore patterns
   testPathIgnorePatterns: [
