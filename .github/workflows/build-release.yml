@@ -236,7 +236,7 @@ jobs:
           zip -r "../../../dist/marksnip-firefox-${{ needs.resolve.outputs.version }}${{ needs.resolve.outputs.artifact_suffix }}.xpi" . -x "*.DS_Store"
 
       - name: Upload Firefox artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: marksnip-firefox
           path: dist/marksnip-firefox-${{ needs.resolve.outputs.version }}${{ needs.resolve.outputs.artifact_suffix }}.xpi
@@ -285,7 +285,7 @@ jobs:
           zip -r "../../../dist/marksnip-chrome-${{ needs.resolve.outputs.version }}${{ needs.resolve.outputs.artifact_suffix }}.zip" . -x "*.DS_Store"
 
       - name: Upload Chrome artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: marksnip-chrome
           path: dist/marksnip-chrome-${{ needs.resolve.outputs.version }}${{ needs.resolve.outputs.artifact_suffix }}.zip
@@ -337,7 +337,7 @@ jobs:
         run: bash xcode/build-safari-app.sh
 
       - name: Upload Safari artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: marksnip-safari
           path: dist/marksnip-safari-${{ needs.resolve.outputs.version }}${{ needs.resolve.outputs.artifact_suffix }}.zip
@@ -393,7 +393,7 @@ jobs:
           rm -rf "$stage"
 
       - name: Upload helper artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: marksnip-agent-bridge-${{ matrix.id }}
           path: dist/${{ matrix.archive }}
