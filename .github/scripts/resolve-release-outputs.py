@@ -28,22 +28,9 @@ def to_bool(raw: str | None, fallback: bool) -> bool:
     return fallback
 
 
-def is_release_tag(ref: str) -> bool:
-    return (ref or "").startswith("refs/tags/")
-
-
-def resolve(
-    event_name: str,
-    input_val: str | None,
-    var_val: str | None,
-    pr_value: bool,
-    tag_push: bool,
-) -> bool:
+def resolve(event_name: str, input_val: str | None, var_val: str | None, pr_value: bool) -> bool:
     if event_name == "pull_request":
         return pr_value
-    # v*.*.* tag pushes always build every artifact.
-    if tag_push:
-        return True
     if event_name == "workflow_dispatch":
         return to_bool(input_val, True)
     return to_bool(var_val, True)
@@ -55,29 +42,16 @@ def env(name: str) -> str:
 
 def main() -> None:
     event_name = env("EVENT_NAME")
-    tag_push = event_name == "push" and is_release_tag(env("GITHUB_REF"))
     flags = {
-        "firefox": resolve(event_name, env("INPUT_FIREFOX"), env("VAR_FIREFOX"), True, tag_push),
-        "chrome": resolve(event_name, env("INPUT_CHROME"), env("VAR_CHROME"), True, tag_push),
-        "safari": resolve(event_name, env("INPUT_SAFARI"), env("VAR_SAFARI"), True, tag_push),
-        "windows_amd64": resolve(
-            event_name, env("INPUT_WINDOWS_AMD64"), env("VAR_WINDOWS_AMD64"), False, tag_push
-        ),
-        "windows_arm64": resolve(
-            event_name, env("INPUT_WINDOWS_ARM64"), env("VAR_WINDOWS_ARM64"), False, tag_push
-        ),
-        "linux_amd64": resolve(
-            event_name, env("INPUT_LINUX_AMD64"), env("VAR_LINUX_AMD64"), False, tag_push
-        ),
-        "linux_arm64": resolve(
-            event_name, env("INPUT_LINUX_ARM64"), env("VAR_LINUX_ARM64"), False, tag_push
-        ),
-        "macos_amd64": resolve(
-            event_name, env("INPUT_MACOS_AMD64"), env("VAR_MACOS_AMD64"), False, tag_push
-        ),
-        "macos_arm64": resolve(
-            event_name, env("INPUT_MACOS_ARM64"), env("VAR_MACOS_ARM64"), False, tag_push
-        ),
+        "firefox": resolve(event_name, env("INPUT_FIREFOX"), env("VAR_FIREFOX"), True),
+        "chrome": resolve(event_name, env("INPUT_CHROME"), env("VAR_CHROME"), True),
+        "safari": resolve(event_name, env("INPUT_SAFARI"), env("VAR_SAFARI"), True),
+        "windows_amd64": resolve(event_name, env("INPUT_WINDOWS_AMD64"), env("VAR_WINDOWS_AMD64"), False),
+        "windows_arm64": resolve(event_name, env("INPUT_WINDOWS_ARM64"), env("VAR_WINDOWS_ARM64"), False),
+        "linux_amd64": resolve(event_name, env("INPUT_LINUX_AMD64"), env("VAR_LINUX_AMD64"), False),
+        "linux_arm64": resolve(event_name, env("INPUT_LINUX_ARM64"), env("VAR_LINUX_ARM64"), False),
+        "macos_amd64": resolve(event_name, env("INPUT_MACOS_AMD64"), env("VAR_MACOS_AMD64"), False),
+        "macos_arm64": resolve(event_name, env("INPUT_MACOS_ARM64"), env("VAR_MACOS_ARM64"), False),
     }
 
     if event_name == "pull_request":
@@ -87,7 +61,6 @@ def main() -> None:
         publish = to_bool(env("INPUT_PUBLISH"), True)
         debug = to_bool(env("INPUT_DEBUG"), False)
     else:
-        # Tag pushes always publish a production (non-debug) release.
         publish = True
         debug = False
 

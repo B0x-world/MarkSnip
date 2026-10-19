@@ -1,11 +1,9 @@
 # Build and Release Extension
 #
 # Every packaged output has its own workflow_dispatch boolean and its own job
-# (or helper matrix cell). Tag pushes (`v*.*.*`) have no inputs and enable
-# every output (then always publish). There is no push-to-main trigger (that
-# would duplicate the pull_request packaging jobs). Pull requests force
-# Firefox + Chrome + Safari (helpers off, no publish) so CI covers the
-# unsigned Safari wrapper.
+# (or helper matrix cell). Tag pushes (`v*`) have no inputs; they fall back to
+# repository variables, then to "on". Pull requests force Firefox + Chrome +
+# Safari (helpers off, no publish) so CI covers the unsigned Safari wrapper.
 #
 #   Input                 Repo variable            Default (tag/dispatch)
 #   --------------------  -----------------------  ----------------------
@@ -26,10 +24,10 @@
 # and a small set of info logs remain. Tag releases and publish_release=true
 # always build with debug off.
 #
-# Safari builds the MarkSnip Xcode wrapper at xcode/MarkSnip/. Display names
-# are MarkSnip; bundle IDs stay au.death.MarkDownload /
-# au.death.MarkDownload.Extension. It embeds src/.build/safari. Builds are
-# unsigned (CODE_SIGNING_ALLOWED=NO).
+# Safari builds the legacy Xcode wrapper at
+# xcode/MarkDownload - Markdown Web Clipper/ (bundle IDs still MarkDownload).
+# It embeds src/.build/safari. Unsigned/ad-hoc unless MACOS_DEVELOPMENT_TEAM
+# (and optional MACOS_CODE_SIGN_IDENTITY / MACOS_CODE_SIGN_STYLE) are set.
 #
 # The release job downloads whatever artifacts exist and attaches only those.
 
@@ -38,7 +36,7 @@ name: Build and Release Extension
 on:
   push:
     tags:
-      - "v*.*.*"
+      - "v*"
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -55,7 +53,7 @@ on:
         type: boolean
         default: true
       build_safari:
-        description: "Safari wrapper .app zip (macos runner, MarkSnip Xcode project)"
+        description: "Safari wrapper .app zip (macos runner, MarkDownload Xcode project)"
         type: boolean
         default: true
       build_windows_amd64:
@@ -97,7 +95,7 @@ permissions:
 jobs:
   resolve:
     name: Resolve build toggles
-    runs-on: ${{ vars.RUNNER_LINUX || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.resolve.outputs.version }}
       firefox: ${{ steps.resolve.outputs.firefox }}
@@ -146,7 +144,7 @@ jobs:
 
   test:
     name: Run Tests
-    runs-on: ${{ vars.RUNNER_LINUX || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     needs: resolve
     steps:
       - name: Checkout repository
@@ -187,7 +185,7 @@ jobs:
 
   firefox:
     name: Firefox extension
-    runs-on: ${{ vars.RUNNER_LINUX || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     needs: [resolve, test]
     if: needs.resolve.outputs.firefox == 'true'
     steps:
@@ -241,7 +239,7 @@ jobs:
 
   chrome:
     name: Chrome extension
-    runs-on: ${{ vars.RUNNER_LINUX || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     needs: [resolve, test]
     if: needs.resolve.outputs.chrome == 'true'
     steps:
@@ -287,9 +285,13 @@ jobs:
 
   safari:
     name: Safari wrapper
-    runs-on: ${{ vars.RUNNER_MACOS || 'macos-latest' }}
+    runs-on: macos-latest
     needs: [resolve, test]
     if: needs.resolve.outputs.safari == 'true'
+    env:
+      MACOS_DEVELOPMENT_TEAM: ${{ secrets.MACOS_DEVELOPMENT_TEAM }}
+      MACOS_CODE_SIGN_IDENTITY: ${{ secrets.MACOS_CODE_SIGN_IDENTITY }}
+      MACOS_CODE_SIGN_STYLE: ${{ secrets.MACOS_CODE_SIGN_STYLE }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -332,7 +334,7 @@ jobs:
 
   helpers:
     name: Helpers
-    runs-on: ${{ vars.RUNNER_LINUX || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     needs: [resolve, test]
     if: needs.resolve.outputs.helper_count != '0'
     strategy:
@@ -388,7 +390,7 @@ jobs:
 
   release:
     name: Create GitHub Release
-    runs-on: ${{ vars.RUNNER_LINUX || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     needs: [resolve, test, firefox, chrome, safari, helpers]
     if: |
       always() &&
@@ -467,7 +469,7 @@ jobs:
           fi
           if ls ./artifacts/marksnip-safari-*.zip >/dev/null 2>&1; then
             INSTALL_LINES="${INSTALL_LINES}
-          **Safari:** download \`marksnip-safari-${EXT_VERSION}.zip\` and open \`MarkSnip.app\`, then enable the extension in Safari settings. Unsigned builds need **Safari → Develop → Allow Unsigned Extensions**.
+          **Safari:** download \`marksnip-safari-${EXT_VERSION}.zip\` and open the \`MarkDownload - Markdown Web Clipper.app\` wrapper (legacy MarkDownload naming), then enable the extension in Safari settings. Ad-hoc/unsigned builds may require Gatekeeper override.
           "
           fi
           if ls ./artifacts/marksnip-agent-bridge-* >/dev/null 2>&1; then
@@ -507,6 +509,5 @@ jobs:
             artifacts/*.tar.gz
             artifacts/*.xpi
           fail_on_unmatched_files: false
-          generate_release_notes: true
           draft: false
           prerelease: false

@@ -1,6 +1,6 @@
 //
 //  AppDelegate.swift
-//  MarkSnip
+//  MarkDownload - Markdown Web Clipper
 //
 //  Created by Gordon Pedersen on 17/2/21.
 //
