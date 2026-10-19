@@ -1,0 +1,4 @@
+$(SRCROOT)/../../src/.build/safari/manifest.json
+$(SRCROOT)/../../src/.build/safari/service-worker.js
+$(SRCROOT)/../../src/.build/safari/browser-polyfill.min.js
+$(SRCROOT)/../../src/.build/safari/highlight.min.js

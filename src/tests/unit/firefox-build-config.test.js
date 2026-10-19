@@ -3,7 +3,8 @@ const path = require('path');
 const {
   createChromeManifest,
   createFirefoxManifest,
-  createSafariManifest
+  createSafariManifest,
+  buildBrowserManifests
 } = require('../../scripts/generate-browser-manifests');
 
 const srcRoot = path.join(__dirname, '../..');
@@ -72,13 +73,44 @@ describe('Firefox build configuration', () => {
     const sourceManifest = readJson('manifest.json');
     const safariManifest = createSafariManifest(sourceManifest);
 
-    expect(safariManifest.background.scripts).toEqual(
-      expect.arrayContaining(['browser-polyfill.min.js', 'service-worker.js'])
-    );
-    expect(safariManifest.background.service_worker).toBeUndefined();
+    expect(safariManifest.background).toEqual({ service_worker: 'service-worker.js' });
+    expect(safariManifest.background.scripts).toBeUndefined();
     expect(safariManifest.permissions).not.toContain('offscreen');
     expect(safariManifest.browser_specific_settings?.safari?.strict_min_version).toBe('16.0');
     expect(safariManifest.browser_specific_settings?.gecko).toBeUndefined();
+  });
+
+  test('Safari build tree includes sources the old Xcode wrapper omitted', () => {
+    const os = require('os');
+    const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'marksnip-safari-build-'));
+    try {
+      const result = buildBrowserManifests({
+        srcDir: srcRoot,
+        buildRoot: tmpRoot,
+        logger() {},
+        assertArtifacts: false,
+        debug: false
+      });
+      const required = [
+        'manifest.json',
+        'service-worker.js',
+        'browser-polyfill.min.js',
+        'highlight.min.js',
+        'offscreen/offscreen.html',
+        'offscreen/offscreen.js',
+        '_locales/en/messages.json'
+      ];
+      for (const relativePath of required) {
+        expect(fs.existsSync(path.join(result.safariDir, relativePath))).toBe(true);
+      }
+      const safariManifest = JSON.parse(
+        fs.readFileSync(path.join(result.safariDir, 'manifest.json'), 'utf8')
+      );
+      expect(safariManifest.background.service_worker).toBe('service-worker.js');
+      expect(safariManifest.permissions).not.toContain('offscreen');
+    } finally {
+      fs.rmSync(tmpRoot, { recursive: true, force: true });
+    }
   });
 
   test('loads MathML conversion before the offscreen runtime', () => {

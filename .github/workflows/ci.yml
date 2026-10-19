@@ -1,21 +1,39 @@
 name: CI
 
+# PR + manual only. Merges to main would otherwise re-run the same checks
+# that already ran on the pull request.
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   test:
     name: Run Tests
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LINUX || 'ubuntu-latest' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
+
+      - name: Detect E2E-relevant changes
+        id: filter
+        if: github.event_name == 'pull_request'
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            e2e:
+              - "src/**"
+              - "!docs/*.md"
+              - "src/tests/e2e/**"
+              - "src/playwright.config.js"
+              - "src/package.json"
+              - "src/package-lock.json"
+              - ".github/workflows/ci.yml"
+              - ".github/workflows/firefox-verification.yml"
 
       - name: Setup Node.js
         uses: actions/setup-node@v7
@@ -42,16 +60,18 @@ jobs:
         run: npm run test:integration
 
       - name: Install Playwright browsers
+        if: github.event_name != 'pull_request' || steps.filter.outputs.e2e == 'true'
         working-directory: src
         run: npx playwright install --with-deps chromium
 
       - name: Run deterministic E2E tests
+        if: github.event_name != 'pull_request' || steps.filter.outputs.e2e == 'true'
         working-directory: src
         run: xvfb-run -a npx playwright test tests/e2e/extension.spec.js tests/e2e/notifications.spec.js tests/e2e/batch-processing.spec.js tests/e2e/command-download-regression.spec.js
 
   lint:
     name: Lint
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LINUX || 'ubuntu-latest' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7

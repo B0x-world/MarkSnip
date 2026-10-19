@@ -96,11 +96,14 @@ function createFirefoxManifest(sourceManifest, options = {}) {
   return applyScriptBackground(JSON.parse(JSON.stringify(sourceManifest)), options.debug === true);
 }
 
-function createSafariManifest(sourceManifest, options = {}) {
-  const safariManifest = applyScriptBackground(
-    JSON.parse(JSON.stringify(sourceManifest)),
-    options.debug === true
-  );
+function createSafariManifest(sourceManifest) {
+  // Safari 16+ supports MV3 service workers (importScripts in service-worker.js).
+  // It does not support chrome.offscreen documents; strip that Chrome-only
+  // permission the same way Firefox does so clipping falls back to loading
+  // offscreen/offscreen.html as an extension page.
+  const safariManifest = JSON.parse(JSON.stringify(sourceManifest));
+  safariManifest.background = { service_worker: "service-worker.js" };
+  safariManifest.permissions = safariManifest.permissions.filter((p) => p !== "offscreen");
   safariManifest.browser_specific_settings = {
     safari: {
       strict_min_version: "16.0"
@@ -243,7 +246,7 @@ function buildBrowserManifests(options = {}) {
 
   const chromeManifest = createChromeManifest(sourceManifest);
   const firefoxManifest = createFirefoxManifest(sourceManifest, { debug });
-  const safariManifest = createSafariManifest(sourceManifest, { debug });
+  const safariManifest = createSafariManifest(sourceManifest);
 
   writeManifest(chromeDir, chromeManifest);
   writeManifest(firefoxDir, firefoxManifest);
