@@ -258,6 +258,19 @@ npm run audit:i18n -- --allow-key someIntentionalEnglishKey
 
 The `.build/` directory is generated output and is not committed. Root-level `dist/` holds packaged release artifacts, and root-level `tmp/` is ignored local scratch space.
 
+## Continuous integration
+
+Workflows are set so a merge to `main` does **not** re-run the same test/package jobs that already ran on the pull request:
+
+| Workflow | `pull_request` | `push` to `main` | `push` tags `v*` | `workflow_dispatch` | schedule |
+| --- | --- | --- | --- | --- | --- |
+| [CI](.github/workflows/ci.yml) (unit, integration, E2E, lint) | yes | no | no | yes | no |
+| [Firefox Verification](.github/workflows/firefox-verification.yml) | yes | no | no | yes | no |
+| [Build and Release](.github/workflows/build-release.yml) | yes (package, no publish) | no | yes (GitHub Release) | yes | no |
+| [CodeQL](.github/workflows/codeql.yml) | yes | yes | no | no | weekly |
+
+CodeQL still analyzes `main` after merge so default-branch alerts stay current.
+
 ## Release flow
 
 GitHub Actions workflow [`.github/workflows/build-release.yml`](.github/workflows/build-release.yml):
@@ -267,7 +280,7 @@ GitHub Actions workflow [`.github/workflows/build-release.yml`](.github/workflow
 3. Builds each enabled output in its own job (helpers are a matrix cell per OS/arch).
 4. Publishes a GitHub Release on `v*` tags, or on a manual `workflow_dispatch` when **publish_release** is checked. The release job downloads `marksnip-*` artifacts and attaches only files that were actually built.
 
-Pull requests run the same workflow with **Firefox and Chrome only** (no helpers, no Safari, no GitHub Release) so a helpers-off packaging path is covered in CI.
+Pull requests run packaging (Firefox, Chrome, and Safari; helpers off; no GitHub Release). Merging to `main` does not start this workflow again; tag pushes and `workflow_dispatch` do.
 
 Safari uses the Xcode wrapper under `xcode/MarkSnip/`. App, extension, target, scheme, and bundle **display names** are MarkSnip. Bundle IDs stay `au.death.MarkDownload` and `au.death.MarkDownload.Extension` (documented in `xcode/README.md`). The packaged zip is `marksnip-safari-<version>.zip`. Generate `src/.build/safari`, then `bash xcode/build-safari-app.sh` runs an unsigned `xcodebuild` (`CODE_SIGNING_ALLOWED=NO`). A Run Script build phase rsyncs the generated tree into the appex. CI does not sign artifacts (see [Code signing](#code-signing)).
 

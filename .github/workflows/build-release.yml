@@ -2,8 +2,10 @@
 #
 # Every packaged output has its own workflow_dispatch boolean and its own job
 # (or helper matrix cell). Tag pushes (`v*`) have no inputs; they fall back to
-# repository variables, then to "on". Pull requests force Firefox + Chrome +
-# Safari (helpers off, no publish) so CI covers the unsigned Safari wrapper.
+# repository variables, then to "on". There is no push-to-main trigger (that
+# would duplicate the pull_request packaging jobs). Pull requests force
+# Firefox + Chrome + Safari (helpers off, no publish) so CI covers the
+# unsigned Safari wrapper.
 #
 #   Input                 Repo variable            Default (tag/dispatch)
 #   --------------------  -----------------------  ----------------------

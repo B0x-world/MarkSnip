@@ -1,10 +1,11 @@
 name: CI
 
+# PR + manual only. Merges to main would otherwise re-run the same checks
+# that already ran on the pull request.
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
