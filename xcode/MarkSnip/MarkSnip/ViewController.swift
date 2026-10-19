@@ -36,7 +36,9 @@ class ViewController: NSViewController {
     }
 
     @IBAction func openSafariExtensionPreferences(_ sender: AnyObject?) {
-        SFSafariApplication.showSettingsForExtension(withIdentifier: extensionBundleIdentifier) { error in
+        // Xcode 26.6's macOS SDK still declares showPreferencesForExtension
+        // and does not declare showSettingsForExtension (compile error).
+        SFSafariApplication.showPreferencesForExtension(withIdentifier: extensionBundleIdentifier) { error in
             guard error == nil else {
                 return
             }

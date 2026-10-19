@@ -223,16 +223,17 @@
 /* Begin PBXShellScriptBuildPhase section */
 		F879553027BCCC7700571DA8 /* Copy generated Safari web extension */ = {
 			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
+				"$(SRCROOT)/safari-extension-inputs.xcfilelist",
 			);
 			inputPaths = (
 			);
 			name = "Copy generated Safari web extension";
 			outputFileListPaths = (
+				"$(SRCROOT)/safari-extension-outputs.xcfilelist",
 			);
 			outputPaths = (
 			);
