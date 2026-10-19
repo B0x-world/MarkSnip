@@ -11,6 +11,7 @@ module.exports = defineConfig({
   // Headed extension contexts share the xvfb display. Parallel Chromium
   // instances make lastFocusedWindow / currentWindow tab queries race.
   workers: process.env.CI ? 1 : undefined,
+  reporter: process.env.CI ? [['list'], ['github']] : 'list',
   use: {
     headless: false, // Extensions require headed mode
     viewport: { width: 1280, height: 720 },
