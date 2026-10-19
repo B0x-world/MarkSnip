@@ -1,3 +1,16 @@
+// meta:
+//   id: "240-src-debug-build-artifacts-test"
+//   type: code
+//   domain: src
+//   subject: debug-build-artifacts-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-10-19
+//   updated: 2026-10-19
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const fs = require('fs');
 const path = require('path');
 const { stripLoggerDebugCalls } = require('../../scripts/debug-build');

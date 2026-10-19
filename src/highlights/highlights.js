@@ -1,3 +1,16 @@
+// meta:
+//   id: "129-src-src-highlights-highlights"
+//   type: code
+//   domain: src
+//   subject: src-highlights-highlights
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-25
+//   updated: 2026-05-25
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 (function () {
   const api = globalThis.markSnipHighlightState;
   const state = {

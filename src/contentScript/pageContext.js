@@ -1,3 +1,16 @@
+// meta:
+//   id: "120-src-page-context"
+//   type: code
+//   domain: src
+//   subject: page-context
+//   status: adopted
+//   owner: ""
+//   created: 2023-09-07
+//   updated: 2026-03-03
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 (function marksnipMathJaxBridge() {
     const latexAttr = 'marksnip-latex';
     const syncEventName = 'marksnip:mathjax-sync';

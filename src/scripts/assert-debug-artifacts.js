@@ -1,4 +1,17 @@
 #!/usr/bin/env node
+// meta:
+//   id: "155-src-assert-debug-artifacts"
+//   type: code
+//   domain: src
+//   subject: assert-debug-artifacts
+//   status: adopted
+//   owner: ""
+//   created: 2026-10-19
+//   updated: 2026-10-19
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["script"]
+//   usage: script
+
 const fs = require("fs");
 const os = require("os");
 const path = require("path");

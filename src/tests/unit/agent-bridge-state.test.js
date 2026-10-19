@@ -1,3 +1,16 @@
+// meta:
+//   id: "235-src-agent-bridge-state-test"
+//   type: code
+//   domain: src
+//   subject: agent-bridge-state-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-21
+//   updated: 2026-03-22
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const agentBridgeState = require('../../shared/agent-bridge-state');
 
 describe('agent-bridge-state helpers', () => {

@@ -1,3 +1,16 @@
+// meta:
+//   id: "185-src-popup-shortcuts"
+//   type: code
+//   domain: src
+//   subject: popup-shortcuts
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-28
+//   updated: 2026-05-26
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 (function (root) {
   const COMMAND_LABELS = {
     '_execute_action':                    'Open MarkSnip popup',

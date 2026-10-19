@@ -1,3 +1,16 @@
+// meta:
+//   id: "247-src-highlight-state-test"
+//   type: code
+//   domain: src
+//   subject: highlight-state-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-25
+//   updated: 2026-05-25
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const highlightState = require('../../shared/highlight-state');
 const { createTurndownService } = require('../helpers/browser-env');
 

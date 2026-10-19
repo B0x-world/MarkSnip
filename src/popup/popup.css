@@ -1,3 +1,17 @@
+/* meta:
+   id: "140-src-popup"
+   type: code
+   domain: src
+   subject: popup
+   status: adopted
+   owner: ""
+   created: 2021-02-18
+   updated: 2026-05-26
+   related: ["001-project-file-metadata-spec"]
+   tags: []
+   usage: source
+*/
+
 :root {
     /* Neutral Color Palette */
     --stone-50: #FAFAF9;

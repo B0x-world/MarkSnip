@@ -1,3 +1,16 @@
+// meta:
+//   id: "242-src-download-filename-conflict-test"
+//   type: code
+//   domain: src
+//   subject: download-filename-conflict-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-01
+//   updated: 2026-06-13
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 /**
  * Download Filename Conflict Tests
  * Tests for the fix that prevents conflicts with other extensions

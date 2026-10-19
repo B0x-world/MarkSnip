@@ -1,3 +1,16 @@
+// meta:
+//   id: "196-src-click-clip-spec"
+//   type: code
+//   domain: src
+//   subject: click-clip-spec
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-20
+//   updated: 2026-05-20
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 /**
  * Click & Clip E2E tests.
  * Drives the in-page picker with real Playwright clicks against routed local

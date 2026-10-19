@@ -1,3 +1,16 @@
+// meta:
+//   id: "265-src-reader-launch-pipeline-test"
+//   type: code
+//   domain: src
+//   subject: reader-launch-pipeline-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-26
+//   updated: 2026-05-26
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const fs = require('fs');
 const path = require('path');
 

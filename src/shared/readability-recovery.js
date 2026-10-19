@@ -1,3 +1,16 @@
+// meta:
+//   id: "186-src-readability-recovery"
+//   type: code
+//   domain: src
+//   subject: readability-recovery
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-14
+//   updated: 2026-05-10
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 (function(global) {
   const ANCHOR_ATTRIBUTE = 'data-marksnip-node-id';
   const STRUCTURAL_SELECTOR = 'article, section, main, div, aside, blockquote, pre, table, ul, ol';

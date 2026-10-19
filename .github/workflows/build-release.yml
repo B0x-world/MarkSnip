@@ -1,3 +1,16 @@
+# meta:
+#   id: "102-ci-build-release"
+#   type: ci
+#   domain: ci
+#   subject: build-release
+#   status: adopted
+#   owner: ""
+#   created: 2026-02-18
+#   updated: 2026-10-20
+#   related: ["001-project-file-metadata-spec"]
+#   tags: ["workflow", "ci"]
+#   usage: workflow
+
 # Build and Release Extension
 #
 # Every packaged output has its own workflow_dispatch boolean and its own job

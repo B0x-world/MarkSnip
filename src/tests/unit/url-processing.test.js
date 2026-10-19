@@ -1,3 +1,16 @@
+// meta:
+//   id: "279-src-url-processing-test"
+//   type: code
+//   domain: src
+//   subject: url-processing-test
+//   status: adopted
+//   owner: ""
+//   created: 2025-11-13
+//   updated: 2026-06-13
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 /**
  * URL processing and normalization tests for shared url helpers.
  */

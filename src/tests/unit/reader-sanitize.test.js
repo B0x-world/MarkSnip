@@ -1,3 +1,16 @@
+// meta:
+//   id: "268-src-reader-sanitize-test"
+//   type: code
+//   domain: src
+//   subject: reader-sanitize-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-26
+//   updated: 2026-05-26
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const { sanitizeArticleHtml } = require('../../reader/sanitize.js');
 
 describe('sanitizeArticleHtml', () => {

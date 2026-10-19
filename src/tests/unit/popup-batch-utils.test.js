@@ -1,3 +1,16 @@
+// meta:
+//   id: "260-src-popup-batch-utils-test"
+//   type: code
+//   domain: src
+//   subject: popup-batch-utils-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-17
+//   updated: 2026-03-17
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const popupBatchUtils = require('../../shared/popup-batch-utils.js');
 
 describe('popup-batch-utils', () => {

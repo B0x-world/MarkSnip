@@ -1,3 +1,16 @@
+// meta:
+//   id: "195-src-batch-processing-spec"
+//   type: code
+//   domain: src
+//   subject: batch-processing-spec
+//   status: adopted
+//   owner: ""
+//   created: 2026-02-25
+//   updated: 2026-05-20
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 /**
  * Batch processing regression tests.
  * Uses routed fixture pages so CI does not depend on external websites.

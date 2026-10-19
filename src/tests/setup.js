@@ -1,3 +1,16 @@
+// meta:
+//   id: "234-src-setup"
+//   type: code
+//   domain: src
+//   subject: setup
+//   status: adopted
+//   owner: ""
+//   created: 2025-11-13
+//   updated: 2025-11-13
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 /**
  * Jest Setup File
  * Runs before each test file to set up the testing environment

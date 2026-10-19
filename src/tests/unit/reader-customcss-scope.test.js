@@ -1,3 +1,16 @@
+// meta:
+//   id: "263-src-reader-customcss-scope-test"
+//   type: code
+//   domain: src
+//   subject: reader-customcss-scope-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-26
+//   updated: 2026-05-26
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const { scopeReaderCustomCss } = require('../../reader/renderer.js');
 
 describe('scopeReaderCustomCss', () => {

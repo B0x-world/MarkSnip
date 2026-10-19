@@ -1,3 +1,16 @@
+// meta:
+//   id: "241-src-debug-logging-test"
+//   type: code
+//   domain: src
+//   subject: debug-logging-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-10-19
+//   updated: 2026-10-19
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const { createLogger } = require('../../shared/debug-logging');
 
 describe('markSnip logger', () => {

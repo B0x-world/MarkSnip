@@ -1,3 +1,16 @@
+// meta:
+//   id: "253-src-mathml-to-tex-test"
+//   type: code
+//   domain: src
+//   subject: mathml-to-tex-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-10
+//   updated: 2026-05-10
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const { JSDOM } = require('jsdom');
 const mathMLApi = require('../../shared/mathml-to-tex');
 

@@ -1,3 +1,16 @@
+// meta:
+//   id: "223-src-live-public-artifacts"
+//   type: code
+//   domain: src
+//   subject: live-public-artifacts
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-17
+//   updated: 2026-03-17
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');

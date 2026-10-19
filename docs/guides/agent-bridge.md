@@ -1,3 +1,17 @@
+---
+id: "107-docs-agent-bridge"
+type: code
+domain: docs
+subject: agent-bridge
+status: adopted
+owner: ""
+created: 2026-04-02
+updated: 2026-04-02
+related: ["001-project-file-metadata-spec"]
+tags: []
+usage: doc
+---
+
 # MarkSnip Agent Bridge Walkthrough
 
 This guide is for a regular desktop user who wants to pull Markdown from the current browser tab into local tools without downloading a `.md` file first.

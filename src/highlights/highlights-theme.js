@@ -1,3 +1,16 @@
+// meta:
+//   id: "126-src-highlights-theme"
+//   type: code
+//   domain: src
+//   subject: highlights-theme
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-25
+//   updated: 2026-05-25
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 (function () {
   'use strict';
 

@@ -1,3 +1,16 @@
+// meta:
+//   id: "246-src-hashtag-handling-test"
+//   type: code
+//   domain: src
+//   subject: hashtag-handling-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-03
+//   updated: 2026-03-17
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 /**
  * Hashtag handling behavior tests.
  * Uses shared production helpers.

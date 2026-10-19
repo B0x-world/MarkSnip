@@ -1,3 +1,16 @@
+// meta:
+//   id: "231-src-security-surface-test"
+//   type: code
+//   domain: src
+//   subject: security-surface-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-06-05
+//   updated: 2026-06-05
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const fs = require('fs');
 const path = require('path');
 

@@ -1,3 +1,16 @@
+// meta:
+//   id: "167-src-context-menus"
+//   type: code
+//   domain: src
+//   subject: context-menus
+//   status: adopted
+//   owner: ""
+//   created: 2022-02-14
+//   updated: 2026-10-19
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 // create the context menus
 function contextMenuMessage(key, substitutions, fallback) {
   return globalThis.markSnipI18n?.t(key, substitutions, fallback) || fallback || key;

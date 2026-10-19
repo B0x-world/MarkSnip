@@ -1,3 +1,16 @@
+// meta:
+//   id: "161-src-generate-release-highlights"
+//   type: code
+//   domain: src
+//   subject: generate-release-highlights
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-16
+//   updated: 2026-03-16
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["script"]
+//   usage: script
+
 const fs = require('fs');
 const path = require('path');
 

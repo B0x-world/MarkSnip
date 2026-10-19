@@ -1,3 +1,16 @@
+// meta:
+//   id: "159-src-debug-build"
+//   type: code
+//   domain: src
+//   subject: debug-build
+//   status: adopted
+//   owner: ""
+//   created: 2026-10-19
+//   updated: 2026-10-19
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["script"]
+//   usage: script
+
 const fs = require("fs");
 const path = require("path");
 

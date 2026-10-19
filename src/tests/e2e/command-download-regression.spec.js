@@ -1,3 +1,16 @@
+// meta:
+//   id: "197-src-command-download-regression-spec"
+//   type: code
+//   domain: src
+//   subject: command-download-regression-spec
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-02
+//   updated: 2026-10-19
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 /**
  * Command and download regression tests.
  * Covers service worker routing and download mode behavior.

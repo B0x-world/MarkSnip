@@ -1,3 +1,16 @@
+// meta:
+//   id: "135-src-options-search"
+//   type: code
+//   domain: src
+//   subject: options-search
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-15
+//   updated: 2026-05-19
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 /**
  * MarkSnip — Options Search (adapter over shared search-core)
  *

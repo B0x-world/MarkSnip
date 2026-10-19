@@ -1,3 +1,16 @@
+// meta:
+//   id: "258-src-options-search-test"
+//   type: code
+//   domain: src
+//   subject: options-search-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-15
+//   updated: 2026-06-09
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const fs = require('fs');
 const path = require('path');
 const { JSDOM } = require('jsdom');

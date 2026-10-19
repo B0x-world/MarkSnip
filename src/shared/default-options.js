@@ -1,3 +1,16 @@
+// meta:
+//   id: "170-src-default-options"
+//   type: code
+//   domain: src
+//   subject: default-options
+//   status: adopted
+//   owner: ""
+//   created: 2022-02-14
+//   updated: 2026-06-13
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 const DEFAULT_CONTEXT_MENU_ITEMS = {
   downloadTab: true,
   downloadAllTabs: true,

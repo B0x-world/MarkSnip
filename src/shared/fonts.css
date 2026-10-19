@@ -1,3 +1,17 @@
+/* meta:
+   id: "172-src-fonts"
+   type: code
+   domain: src
+   subject: fonts
+   status: adopted
+   owner: ""
+   created: 2026-03-15
+   updated: 2026-03-15
+   related: ["001-project-file-metadata-spec"]
+   tags: []
+   usage: source
+*/
+
 /* DM Sans */
 @font-face {
     font-family: 'DM Sans';

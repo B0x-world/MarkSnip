@@ -78,7 +78,9 @@ Do **not** use YAML front matter on GitHub-special Markdown that would show the 
 
 ### JavaScript, TypeScript, Go, Swift, CSS
 
-Use a leading `//` or `/* */` block whose first line is `meta:`. Place it after a shebang or `'use strict'` when those must come first.
+Use a leading `//` or `/* */` block whose first line is `meta:`. Place it after a shebang, `'use strict'` / `"use strict"`, or `// @ts-check` when those must come first. Place it after a license comment or Xcode `//  File.swift` banner when that banner must stay first. Leave a blank line after the metadata block before the next code.
+
+`.mjs` and `.cjs` use the same `//` carrier as `.js`. CSS must use `/* meta: ... */` (`//` is not a CSS comment).
 
 Go: a comment block **before** `package` is fine. Leave a blank line before `package` so the block does not become the package doc comment.
 
@@ -114,9 +116,9 @@ Go: a comment block **before** `package` is fine. Leave a blank line before `pac
 package bridge
 ```
 
-### YAML workflows/configs and shell/Python
+### YAML workflows/configs and shell/Python/PowerShell
 
-Use a leading `#` block:
+Use a leading `#` block. `.ps1` uses the same carrier. Place it after a shebang when one is present:
 
 ```yaml
 # meta:
@@ -197,21 +199,26 @@ Binaries and images: no inline header; sidecar only if the rollout asks for one.
 
 ### Generated or vendored files
 
-Excluded. Do not add headers under `src/.build/`, `node_modules/`, `dist/`, `tmp/`, `coverage/`, `test-artifacts/`, `web-ext-artifacts/`, or minified/vendored third-party sources.
+Excluded. The authoritative list lives in [`tools/metadata/rules.cjs`](../../tools/metadata/rules.cjs). That module is what `check:file-metadata` and `tools/metadata/apply-headers.mjs` both import. Do not add headers under skipped directories (`src/.build/`, `node_modules/`, `dist/`, `tmp/`, `coverage/`, `test-artifacts/`, `test-results/`, `web-ext-artifacts/`), minified files (`*.min.js`, `*.min.css`), vendored first-party copies (`src/popup/lib/**`, `src/background/Readability.js`, `src/background/turndown.js`, `src/background/turndown-plugin-gfm.js`, `src/background/apache-mime-types.js`, `src/browser-polyfill.min.js`, `src/highlight.min.js`), Xcode-generated files (`.pbxproj`, `.plist`, `.entitlements`, `.storyboard`, `.xcscheme`, `.xcfilelist`, `*.xcassets/**`), or golden Markdown fixtures under `src/tests/fixtures/e2e-markdown/` (front matter would change compared output).
+
+Every `README.md` and `CHANGELOG.md` is excluded (GitHub-special or generated narrative), not only the repository-root copies.
 
 ## Parse rule
 
 A tool finds the block as follows:
 
 1. Skip a shebang line (`#!...`) when present.
-2. If the file is comment-less (`json`, lockfiles, binaries, images), look for an optional sibling `<basename>.meta.yaml` and parse that YAML as the block. Otherwise stop: no header.
-3. If the remaining text starts with `---`, read until the next line that is only `---` and parse that YAML. Accept the block only when it includes `usage`.
-4. Else search the first comment region for `meta:` followed by indented `key: value` lines:
+2. Skip `'use strict'` / `"use strict"` and `// @ts-check` when those are the next non-empty lines.
+3. If the file is comment-less (`json`, lockfiles, binaries, images), look for an optional sibling `<basename>.meta.yaml` and parse that YAML as the block. Otherwise stop: no header.
+4. If the remaining text starts with `---`, read until the next line that is only `---` and parse that YAML. Accept the block only when it includes `usage`. If that front matter has no `usage`, keep looking for an HTML `<!-- meta: -->` comment (Cursor skill files already have their own front matter).
+5. Else search the first comment region for `meta:` followed by indented `key: value` lines. If the first comment region is a license or Xcode file banner (not `meta:`), skip it and read the next comment region:
    - Markdown/HTML/XML: `<!-- meta: ... -->`
    - `#` languages: consecutive `#` lines starting with `# meta:`
    - `//` languages: consecutive `//` lines starting with `// meta:`
    - or a `/* meta: ... */` block
-5. Parse the inner text as a small YAML mapping (scalars, quoted strings, `[]` / inline lists / `- item` lists).
-6. Validate required fields and enum values. `{{placeholder}}` is valid on fill-in fields.
+6. Parse the inner text as a small YAML mapping (scalars, quoted strings, `[]` / inline lists / `- item` lists).
+7. Validate required fields and enum values. `{{placeholder}}` is valid on fill-in fields.
 
-`src/scripts/check-file-metadata.js` implements this rule for files that already have a header. Files without a header are ignored.
+`src/scripts/check-file-metadata.js` implements this rule. Eligible files (inline-header extensions that are not in `tools/metadata/rules.cjs`) must have a valid header; missing or malformed headers fail `npm run check:file-metadata`. `tools/metadata/apply-headers.mjs` inserts headers using git history for `created` / `updated`.
+
+This rollout does **not** add JSON sidecars. Comment-less files stay header-less until a later decision.

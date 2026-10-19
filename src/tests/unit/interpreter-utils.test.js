@@ -1,3 +1,16 @@
+// meta:
+//   id: "250-src-interpreter-utils-test"
+//   type: code
+//   domain: src
+//   subject: interpreter-utils-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-21
+//   updated: 2026-06-05
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const interpreter = require('../../shared/interpreter-utils');
 
 function createStorageArea(initial = {}) {

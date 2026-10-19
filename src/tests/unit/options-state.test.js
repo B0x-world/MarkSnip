@@ -1,3 +1,16 @@
+// meta:
+//   id: "259-src-options-state-test"
+//   type: code
+//   domain: src
+//   subject: options-state-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-17
+//   updated: 2026-06-09
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const optionsState = require('../../shared/options-state');
 
 describe('options-state helpers', () => {

@@ -1,3 +1,16 @@
+// meta:
+//   id: "282-src-zip-utils-test"
+//   type: code
+//   domain: src
+//   subject: zip-utils-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-06-13
+//   updated: 2026-06-13
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const { Blob: NodeBlob } = require('buffer');
 const zipUtils = require('../../shared/zip-utils');
 

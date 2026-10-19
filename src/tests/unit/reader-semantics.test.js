@@ -1,3 +1,16 @@
+// meta:
+//   id: "269-src-reader-semantics-test"
+//   type: code
+//   domain: src
+//   subject: reader-semantics-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-26
+//   updated: 2026-05-27
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const { JSDOM } = require('jsdom');
 const fs = require('fs');
 const path = require('path');

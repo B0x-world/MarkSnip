@@ -1,3 +1,16 @@
+// meta:
+//   id: "165-src-agent-bridge-state"
+//   type: code
+//   domain: src
+//   subject: agent-bridge-state
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-21
+//   updated: 2026-03-22
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 (function (root) {
   const STORAGE_KEYS = Object.freeze({
     SETTINGS: 'agentBridgeSettings',

@@ -1,3 +1,16 @@
+// meta:
+//   id: "249-src-i18n-test"
+//   type: code
+//   domain: src
+//   subject: i18n-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-13
+//   updated: 2026-05-20
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const fs = require('fs');
 const path = require('path');
 const { JSDOM } = require('jsdom');

@@ -1,3 +1,16 @@
+// meta:
+//   id: "166-src-code-block-utils"
+//   type: code
+//   domain: src
+//   subject: code-block-utils
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-17
+//   updated: 2026-05-10
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) {
     module.exports = factory(root);

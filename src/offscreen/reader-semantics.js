@@ -1,3 +1,16 @@
+// meta:
+//   id: "134-src-reader-semantics"
+//   type: code
+//   domain: src
+//   subject: reader-semantics
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-26
+//   updated: 2026-05-27
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 (function (root, factory) {
   const api = factory(root);
   root.MarkSnipReaderSemantics = api;

@@ -1,3 +1,16 @@
+// meta:
+//   id: "224-src-live-public-cases"
+//   type: code
+//   domain: src
+//   subject: live-public-cases
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-10
+//   updated: 2026-06-08
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const liveClipCases = [
   {
     id: 'example-domain',

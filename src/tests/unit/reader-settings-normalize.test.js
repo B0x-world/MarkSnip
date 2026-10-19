@@ -1,3 +1,16 @@
+// meta:
+//   id: "270-src-reader-settings-normalize-test"
+//   type: code
+//   domain: src
+//   subject: reader-settings-normalize-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-26
+//   updated: 2026-06-13
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const {
   defaultOptions,
   getOptions,

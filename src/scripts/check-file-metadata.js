@@ -13,23 +13,22 @@
 
 const fs = require('fs');
 const path = require('path');
+const {
+  BLOCK_EXTS,
+  HASH_EXTS,
+  HTML_EXTS,
+  REQUIRED_FIELDS: RULE_REQUIRED_FIELDS,
+  SLASH_EXTS,
+  isEligiblePath,
+  shouldSkipDir,
+  skipPreambleLines,
+  toPosix
+} = require('../../tools/metadata/rules.cjs');
 
 const SRC_DIR = path.resolve(__dirname, '..');
 const ROOT_DIR = path.resolve(SRC_DIR, '..');
 
-const REQUIRED_FIELDS = [
-  'id',
-  'type',
-  'domain',
-  'subject',
-  'status',
-  'owner',
-  'created',
-  'updated',
-  'related',
-  'tags',
-  'usage'
-];
+const REQUIRED_FIELDS = RULE_REQUIRED_FIELDS;
 
 const ALLOWED_STATUS = new Set(['draft', 'proposed', 'adopted', 'superseded', 'deprecated']);
 const ALLOWED_USAGE = new Set([
@@ -54,18 +53,6 @@ const ALLOWED_TYPE = new Set([
   'policy',
   'code',
   'form'
-]);
-
-const SKIP_DIR_NAMES = new Set([
-  '.git',
-  'node_modules',
-  '.build',
-  'dist',
-  'tmp',
-  'coverage',
-  'test-artifacts',
-  'test-results',
-  'web-ext-artifacts'
 ]);
 
 const PLACEHOLDER = /^\{\{[^}]+\}\}$/;
@@ -126,10 +113,21 @@ function parseYamlBlock(block) {
     }
     const keyMatch = line.match(/^\s*([A-Za-z0-9_]+):\s*(.*)$/);
     if (!keyMatch) {
+      if (currentKey && /^\s+\S/.test(line)) {
+        if (typeof data[currentKey] !== 'string') {
+          data[currentKey] = '';
+        }
+        data[currentKey] = `${data[currentKey]} ${line.trim()}`.trim();
+        continue;
+      }
       throw new Error(`Invalid metadata line: ${line}`);
     }
     currentKey = keyMatch[1];
     const rest = keyMatch[2];
+    if (rest === '>' || rest === '|' || rest === '>-' || rest === '|-') {
+      data[currentKey] = '';
+      continue;
+    }
     data[currentKey] = rest === '' ? [] : parseScalar(rest);
   }
   return data;
@@ -164,16 +162,7 @@ function extractHtmlMeta(text) {
 
 function extractPrefixedMeta(text, prefixRe) {
   const lines = text.split(/\r?\n/);
-  let index = 0;
-  if (lines[0] && lines[0].startsWith('#!')) {
-    index = 1;
-    if (lines[1] === '') {
-      index = 2;
-    }
-  }
-  while (index < lines.length && lines[index].trim() === '') {
-    index += 1;
-  }
+  let index = skipPreambleLines(lines, prefixRe);
   if (index >= lines.length || !prefixRe.test(lines[index]) || !/meta:\s*$/.test(lines[index])) {
     return null;
   }
@@ -192,15 +181,19 @@ function extractPrefixedMeta(text, prefixRe) {
 function extractMetadataBlock(text, filePath) {
   const ext = path.extname(filePath).toLowerCase();
   if (ext === '.md') {
-    return extractFrontMatter(text) || extractHtmlMeta(text);
-  }
-  if (ext === '.html' || ext === '.xml') {
+    const frontMatter = extractFrontMatter(text);
+    if (frontMatter && frontMatter.usage) {
+      return frontMatter;
+    }
     return extractHtmlMeta(text);
   }
-  if (ext === '.yml' || ext === '.yaml' || ext === '.sh' || ext === '.py') {
+  if (HTML_EXTS.has(ext)) {
+    return extractHtmlMeta(text);
+  }
+  if (HASH_EXTS.has(ext)) {
     return extractPrefixedMeta(text, /^#\s?/);
   }
-  if (ext === '.js' || ext === '.ts' || ext === '.go' || ext === '.swift' || ext === '.css') {
+  if (SLASH_EXTS.has(ext) || BLOCK_EXTS.has(ext)) {
     const slash = extractPrefixedMeta(text, /^\/\/\s?/);
     if (slash) {
       return slash;
@@ -256,10 +249,6 @@ function validateMetadata(meta, filePath) {
   return errors;
 }
 
-function shouldSkipDir(name) {
-  return SKIP_DIR_NAMES.has(name);
-}
-
 function walkFiles(rootDir) {
   const files = [];
   const stack = [rootDir];
@@ -283,10 +272,13 @@ function walkFiles(rootDir) {
 function checkFileMetadata(options = {}) {
   const rootDir = options.rootDir || ROOT_DIR;
   const files = options.files || walkFiles(rootDir);
+  const requireHeaders = options.requireHeaders !== false;
   const checked = [];
+  const missing = [];
   const errors = [];
 
   for (const filePath of files) {
+    const relPosix = toPosix(path.relative(rootDir, filePath));
     if (filePath.endsWith('.meta.yaml')) {
       const meta = parseYamlBlock(fs.readFileSync(filePath, 'utf8'));
       const target = filePath.slice(0, -'.meta.yaml'.length);
@@ -295,10 +287,10 @@ function checkFileMetadata(options = {}) {
       continue;
     }
 
-    const ext = path.extname(filePath).toLowerCase();
-    if (['.png', '.jpg', '.jpeg', '.gif', '.webp', '.ico', '.zip', '.xpi'].includes(ext)) {
+    if (!isEligiblePath(relPosix)) {
       continue;
     }
+
     let text;
     try {
       text = fs.readFileSync(filePath, 'utf8');
@@ -316,22 +308,26 @@ function checkFileMetadata(options = {}) {
       continue;
     }
     if (!meta || !meta.usage) {
+      if (requireHeaders) {
+        missing.push(relPosix);
+        errors.push(`${relPosix}: missing file metadata header`);
+      }
       continue;
     }
     checked.push(filePath);
     errors.push(...validateMetadata(meta, filePath));
   }
 
-  return { ok: errors.length === 0, checked, errors };
+  return { ok: errors.length === 0, checked, missing, errors };
 }
 
 function main() {
   const result = checkFileMetadata();
-  if (result.checked.length === 0) {
-    console.log('No file metadata headers found.');
-    return;
-  }
-  console.log(`Checked ${result.checked.length} file(s) with metadata headers.`);
+  console.log(
+    `Checked ${result.checked.length} file(s) with metadata headers` +
+      (result.missing && result.missing.length ? `; ${result.missing.length} missing` : '') +
+      '.'
+  );
   if (!result.ok) {
     for (const error of result.errors) {
       console.error(error);

@@ -1,3 +1,16 @@
+// meta:
+//   id: "176-src-interpreter-utils"
+//   type: code
+//   domain: src
+//   subject: interpreter-utils
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-21
+//   updated: 2026-10-20
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) {
     module.exports = factory(root);

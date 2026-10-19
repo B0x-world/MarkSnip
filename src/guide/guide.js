@@ -1,3 +1,16 @@
+// meta:
+//   id: "125-src-src-guide-guide"
+//   type: code
+//   domain: src
+//   subject: src-guide-guide
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-17
+//   updated: 2026-05-13
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 /**
  * MarkSnip — User Guide Page
  *

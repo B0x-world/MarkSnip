@@ -1,3 +1,17 @@
+/* meta:
+   id: "150-src-reader"
+   type: code
+   domain: src
+   subject: reader
+   status: adopted
+   owner: ""
+   created: 2026-05-26
+   updated: 2026-05-27
+   related: ["001-project-file-metadata-spec"]
+   tags: []
+   usage: source
+*/
+
 /* ============================================================
    MarkSnip Reader View
    Scoped under .ms-reader-root so the same stylesheet works

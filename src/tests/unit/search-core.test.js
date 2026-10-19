@@ -1,3 +1,16 @@
+// meta:
+//   id: "273-src-search-core-test"
+//   type: code
+//   domain: src
+//   subject: search-core-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-17
+//   updated: 2026-03-17
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const searchCore = require('../../shared/search-core.js');
 
 describe('search-core — normalizeSearchText', () => {

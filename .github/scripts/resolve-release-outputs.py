@@ -1,4 +1,17 @@
 #!/usr/bin/env python3
+# meta:
+#   id: "101-ci-resolve-release-outputs"
+#   type: code
+#   domain: ci
+#   subject: resolve-release-outputs
+#   status: adopted
+#   owner: ""
+#   created: 2026-10-19
+#   updated: 2026-10-20
+#   related: ["001-project-file-metadata-spec"]
+#   tags: ["script", "ci"]
+#   usage: script
+
 """Resolve selectable build outputs for build-release.yml."""
 from __future__ import annotations
 

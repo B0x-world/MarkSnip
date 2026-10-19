@@ -1,3 +1,16 @@
+// meta:
+//   id: "221-src-browser-env"
+//   type: code
+//   domain: src
+//   subject: browser-env
+//   status: adopted
+//   owner: ""
+//   created: 2025-11-13
+//   updated: 2026-05-10
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 /**
  * Browser Environment Setup for Tests
  * Loads browser libraries (Turndown, Readability) in a JSDOM environment

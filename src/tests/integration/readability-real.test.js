@@ -1,3 +1,16 @@
+// meta:
+//   id: "229-src-readability-real-test"
+//   type: code
+//   domain: src
+//   subject: readability-real-test
+//   status: adopted
+//   owner: ""
+//   created: 2025-11-13
+//   updated: 2026-10-19
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 /**
  * Real Readability Integration Tests
  * Tests actual article extraction using Mozilla's Readability.js

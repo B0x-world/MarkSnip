@@ -1,3 +1,16 @@
+// meta:
+//   id: "271-src-reader-toolbar-test"
+//   type: code
+//   domain: src
+//   subject: reader-toolbar-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-26
+//   updated: 2026-05-27
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 describe('reader toolbar popovers', () => {
   let toolbarApi;
 

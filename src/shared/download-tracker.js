@@ -1,3 +1,16 @@
+// meta:
+//   id: "171-src-download-tracker"
+//   type: code
+//   domain: src
+//   subject: download-tracker
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-17
+//   updated: 2026-06-13
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 (function (root) {
   function createDownloadTracker(options = {}) {
     const activeDownloads = options.activeDownloads || new Map();

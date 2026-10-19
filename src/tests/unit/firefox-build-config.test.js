@@ -1,3 +1,16 @@
+// meta:
+//   id: "243-src-firefox-build-config-test"
+//   type: code
+//   domain: src
+//   subject: firefox-build-config-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-10
+//   updated: 2026-10-19
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const fs = require('fs');
 const path = require('path');
 const {

@@ -1,3 +1,16 @@
+// meta:
+//   id: "168-src-count-utils"
+//   type: code
+//   domain: src
+//   subject: count-utils
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-28
+//   updated: 2026-03-28
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 (function (root) {
   const COUNT_MODES = Object.freeze(['chars', 'words', 'minRead', 'tokens']);
   const DEFAULT_READING_WORDS_PER_MINUTE = 200;

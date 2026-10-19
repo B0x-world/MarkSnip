@@ -1,3 +1,16 @@
+// meta:
+//   id: "227-src-html-to-markdown-real-test"
+//   type: code
+//   domain: src
+//   subject: html-to-markdown-real-test
+//   status: adopted
+//   owner: ""
+//   created: 2025-11-13
+//   updated: 2026-10-19
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 /**
  * Real HTML to Markdown Conversion Tests
  * Tests actual conversion using Turndown.js library
