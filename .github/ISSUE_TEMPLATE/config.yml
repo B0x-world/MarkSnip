@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/B0x-world/MarkSnip/security/advisories/new
+    about: Use GitHub private vulnerability reporting. Do not file a public issue for security reports.
+  - name: User guide
+    url: https://github.com/B0x-world/MarkSnip/blob/main/docs/guides/user-guide.md
+    about: Clipping, export, Reader View, and settings help.

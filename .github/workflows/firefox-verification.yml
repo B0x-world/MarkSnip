@@ -7,6 +7,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 permissions:
   contents: read
   pull-requests: read
@@ -45,6 +49,19 @@ jobs:
       - name: Install dependencies
         working-directory: src
         run: npm ci
+
+      - name: Resolve Playwright version
+        if: github.event_name != 'pull_request' || steps.filter.outputs.e2e == 'true'
+        id: playwright
+        working-directory: src
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        if: github.event_name != 'pull_request' || steps.filter.outputs.e2e == 'true'
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.playwright.outputs.version }}
 
       - name: Run focused Firefox unit and integration tests
         working-directory: src
@@ -102,6 +119,17 @@ jobs:
       - name: Install dependencies
         working-directory: src
         run: npm ci
+
+      - name: Resolve Playwright version
+        id: playwright
+        working-directory: src
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.playwright.outputs.version }}
 
       - name: Install Playwright Chromium
         working-directory: src

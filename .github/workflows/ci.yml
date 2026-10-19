@@ -7,6 +7,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 permissions:
   contents: read
   pull-requests: read
@@ -51,6 +55,19 @@ jobs:
         working-directory: src
         run: npm ci
 
+      - name: Resolve Playwright version
+        if: github.event_name != 'pull_request' || steps.filter.outputs.e2e == 'true'
+        id: playwright
+        working-directory: src
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        if: github.event_name != 'pull_request' || steps.filter.outputs.e2e == 'true'
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.playwright.outputs.version }}
+
       - name: Run unit tests
         working-directory: src
         run: npm run test:unit
@@ -91,6 +108,14 @@ jobs:
       - name: Install dependencies
         working-directory: src
         run: npm ci
+
+      - name: Check version sync
+        working-directory: src
+        run: npm run check:version-sync
+
+      - name: Check file metadata headers
+        working-directory: src
+        run: npm run check:file-metadata
 
       - name: Run ESLint
         working-directory: src

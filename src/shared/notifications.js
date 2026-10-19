@@ -8,7 +8,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (root) {
   const SUPPORT_NOTIFICATION_THRESHOLDS = Object.freeze([25, 100, 500, 1000, 2500, 5000, 10000]);
   const REVIEW_REQUEST_THRESHOLD = 10;
-  const RELEASES_URL = 'https://github.com/DhruvParikh1/markdownload-extension-updated/releases';
+  const RELEASES_URL = 'https://github.com/B0x-world/MarkSnip/releases';
   const BUY_ME_A_COFFEE_URL = 'https://buymeacoffee.com/dhruvparikh';
   const CHROME_REVIEW_URL = 'https://chromewebstore.google.com/detail/marksnip-markdown-web-cli/kcbaglhfgbkjdnpeokaamjjkddempipm/reviews';
   const FIREFOX_REVIEW_URL = 'https://addons.mozilla.org/en-US/firefox/addon/marksnip-markdown-web-clipper/reviews/';

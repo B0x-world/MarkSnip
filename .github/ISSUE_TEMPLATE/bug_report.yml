@@ -1,0 +1,95 @@
+name: Bug report
+description: Report a bug with MarkSnip's clipping, conversion, or download behavior
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a MarkSnip bug. A public URL is evidence of a class of problem, not the full specification of the fix.
+  - type: textarea
+    id: describe
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what is wrong.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Feature / area affected
+      multiple: true
+      options:
+        - Page clipping (article extraction)
+        - Markdown conversion (formatting, tables, code blocks)
+        - Image downloading / handling
+        - Batch URL processing
+        - Obsidian integration
+        - Context menu options
+        - Keyboard shortcuts
+        - Front/back matter templates
+        - Extension popup / UI
+        - Safari wrapper
+        - Agent Bridge
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: URL where the bug occurs
+      description: Optional. Paste the page you were clipping.
+      placeholder: https://
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: To reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: media
+    attributes:
+      label: Screenshots or screen recording
+  - type: input
+    id: version
+    attributes:
+      label: MarkSnip version
+      placeholder: v5.2.0
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser
+      placeholder: Chrome 120, Firefox 121
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: OS
+      placeholder: Windows 11, macOS Sequoia, Ubuntu 24.04
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Settings you changed, site behavior, or anything else that helps.

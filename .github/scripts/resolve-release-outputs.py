@@ -44,7 +44,7 @@ def resolve(
     # v*.*.* tag pushes always build every artifact.
     if tag_push:
         return True
-    if event_name == "workflow_dispatch":
+    if event_name in {"workflow_dispatch", "workflow_call"}:
         return to_bool(input_val, True)
     return to_bool(var_val, True)
 
@@ -81,8 +81,12 @@ def main() -> None:
     }
 
     if event_name == "pull_request":
+        flags["safari"] = flags["safari"] and to_bool(env("SAFARI_RELEVANT"), True)
         publish = False
         debug = False
+    elif event_name == "workflow_call":
+        publish = to_bool(env("INPUT_PUBLISH"), False)
+        debug = to_bool(env("INPUT_DEBUG"), False)
     elif event_name == "workflow_dispatch":
         publish = to_bool(env("INPUT_PUBLISH"), True)
         debug = to_bool(env("INPUT_DEBUG"), False)

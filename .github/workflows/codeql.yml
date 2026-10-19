@@ -10,25 +10,68 @@
 #
 # The Safari wrapper under xcode/MarkSnip is scanned as Swift via a manual
 # unsigned xcodebuild (generate src/.build/safari, then build-safari-app.sh).
-# The release workflow can also package it when build_safari is enabled.
+# Analyze (swift) runs on tag releases, manual dispatch, and when the Mac
+# preset's workflow files or Safari/Swift sources change. On pull requests and
+# pushes to main it is path-filtered; the job still reports when skipped.
 
 name: CodeQL
 
 on:
   push:
     branches: [main]
+    tags:
+      - "v*.*.*"
   pull_request:
     branches: [main]
-  schedule:
-    - cron: "27 4 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
 
 jobs:
+  changes:
+    name: Resolve analysis scope
+    runs-on: ${{ vars.RUNNER_LINUX || 'ubuntu-latest' }}
+    outputs:
+      swift: ${{ steps.set.outputs.swift }}
+    steps:
+      - name: Checkout repository
+        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+        uses: actions/checkout@v7
+
+      - name: Detect Swift-relevant changes
+        id: filter
+        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            swift:
+              - "xcode/**"
+              - "**/*.swift"
+              - "src/scripts/generate-browser-manifests.js"
+              - ".github/scripts/resolve-release-outputs.py"
+              - ".github/workflows/build-release.yml"
+              - ".github/workflows/build-release-pc-mac.yml"
+              - ".github/workflows/codeql.yml"
+
+      - name: Set Swift analysis toggle
+        id: set
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ] || { [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; }; then
+            echo "swift=${{ steps.filter.outputs.swift }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "swift=true" >> "$GITHUB_OUTPUT"
+          fi
+
   analyze:
     name: Analyze (${{ matrix.language }})
-    runs-on: ${{ (matrix.language == 'swift' && (vars.RUNNER_MACOS || 'macos-latest')) || (vars.RUNNER_LINUX || 'ubuntu-latest') }}
+    needs: changes
+    runs-on: ${{ vars.RUNNER_LINUX || 'ubuntu-latest' }}
     permissions:
       security-events: write
       packages: read
@@ -43,8 +86,6 @@ jobs:
             build-mode: none
           - language: go
             build-mode: autobuild
-          - language: swift
-            build-mode: manual
           - language: actions
             build-mode: none
 
@@ -58,8 +99,38 @@ jobs:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
 
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:${{ matrix.language }}"
+
+  analyze-swift:
+    name: Analyze (swift)
+    needs: changes
+    runs-on: ${{ needs.changes.outputs.swift == 'true' && (vars.RUNNER_MACOS || 'macos-latest') || (vars.RUNNER_LINUX || 'ubuntu-latest') }}
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+    steps:
+      - name: Skip Swift analysis
+        if: needs.changes.outputs.swift != 'true'
+        run: echo "No Safari or Swift changes; Analyze (swift) is not required."
+
+      - name: Checkout repository
+        if: needs.changes.outputs.swift == 'true'
+        uses: actions/checkout@v7
+
+      - name: Initialize CodeQL
+        if: needs.changes.outputs.swift == 'true'
+        uses: github/codeql-action/init@v4
+        with:
+          languages: swift
+          build-mode: manual
+
       - name: Setup Node.js
-        if: matrix.build-mode == 'manual'
+        if: needs.changes.outputs.swift == 'true'
         uses: actions/setup-node@v7
         with:
           node-version: "24"
@@ -67,7 +138,7 @@ jobs:
           cache-dependency-path: "src/package-lock.json"
 
       - name: Build Safari wrapper (unsigned)
-        if: matrix.build-mode == 'manual'
+        if: needs.changes.outputs.swift == 'true'
         env:
           CONFIGURATION: Debug
         run: |
@@ -76,6 +147,7 @@ jobs:
           bash xcode/build-safari-app.sh
 
       - name: Perform CodeQL Analysis
+        if: needs.changes.outputs.swift == 'true'
         uses: github/codeql-action/analyze@v4
         with:
-          category: "/language:${{ matrix.language }}"
+          category: "/language:swift"

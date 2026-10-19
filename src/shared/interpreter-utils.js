@@ -189,7 +189,7 @@
 
   const PROVIDER_PRESETS = sanitizeProviderPresets(RAW_PROVIDER_PRESETS);
 
-  const OPENROUTER_REFERER = 'https://github.com/DhruvParikh1/markdownload-extension-updated';
+  const OPENROUTER_REFERER = 'https://github.com/B0x-world/MarkSnip';
   const OPENROUTER_TITLE = 'MarkSnip';
 
   const CURLY_DOUBLE_QUOTE_OPEN = String.fromCharCode(0x201c);
