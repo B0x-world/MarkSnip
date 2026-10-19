@@ -269,7 +269,7 @@ GitHub Actions workflow [`.github/workflows/build-release.yml`](.github/workflow
 
 Pull requests run the same workflow with **Firefox and Chrome only** (no helpers, no Safari, no GitHub Release) so a helpers-off packaging path is covered in CI.
 
-Safari uses the existing Xcode wrapper under `xcode/MarkDownload - Markdown Web Clipper/`. The project, target, `.app`, and bundle IDs still use the upstream **MarkDownload** names. The packaged zip is `marksnip-safari-<version>.zip`. A Run Script build phase copies `src/.build/safari` (generated from current extension sources) into the appex. CI signs ad-hoc / leaves the app unsigned unless `MACOS_DEVELOPMENT_TEAM` (optional `MACOS_CODE_SIGN_IDENTITY`, `MACOS_CODE_SIGN_STYLE`) is set as a repository secret.
+Safari uses the existing Xcode wrapper under `xcode/MarkDownload - Markdown Web Clipper/`. The project, target, `.app`, and bundle IDs still use the upstream **MarkDownload** names. The packaged zip is `marksnip-safari-<version>.zip`. A Run Script build phase copies `src/.build/safari` (generated from current extension sources) into the appex. CI does not sign artifacts (see [Code signing](#code-signing)).
 
 ### Build output toggles
 
@@ -317,6 +317,24 @@ To publish:
 git tag v5.2.0
 git push origin v5.2.0
 ```
+
+## Code signing
+
+All CI and release artifacts are built **unsigned**. Store or OS signing is a later, opt-in step and is not wired into the workflows today.
+
+| Artifact | Unsigned today | How it gets signed later |
+| --- | --- | --- |
+| Chrome `.zip` | Load unpacked / sideload only | Chrome Web Store signs the package on upload. A developer account is a one-time **$5** fee. |
+| Firefox `.xpi` | Temporary / unsigned sideload only | AMO must sign the add-on even for self-distribution. You can sign with `web-ext sign` plus a free AMO API key and secret. |
+| Safari `.app` zip | Local testing only | Apple Developer Program (**$99/yr**), a Developer ID certificate, and notarization. An unsigned `.app` runs locally only after **Safari → Develop → Allow Unsigned Extensions** (that setting resets every Safari restart). |
+| Agent Bridge helpers | Local / marked-untrusted binaries | Unsigned macOS binaries trip Gatekeeper. Unsigned Windows binaries trip SmartScreen. macOS helpers would use the same Apple Developer ID cert as Safari. Windows needs a code-signing certificate or Azure Trusted Signing. |
+
+If signing is added later, these repository secrets (or equivalents) would be required. None of them are consumed for signing in CI now:
+
+- **Firefox / AMO:** API key and secret for `web-ext sign` (commonly `WEB_EXT_API_KEY` and `WEB_EXT_API_SECRET`).
+- **Safari and macOS helpers:** Apple team and identity (`MACOS_DEVELOPMENT_TEAM`, optional `MACOS_CODE_SIGN_IDENTITY` / `MACOS_CODE_SIGN_STYLE`) plus notarization credentials (Apple ID, app-specific password, and team ID).
+- **Windows helpers:** a code-signing certificate (file + password) or Azure Trusted Signing credentials.
+- **Chrome:** Web Store upload credentials if CI publishes; the store itself applies the signature after upload.
 
 ## Project structure
 
