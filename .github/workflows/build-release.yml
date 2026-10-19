@@ -345,7 +345,7 @@ jobs:
           retention-days: 30
 
   helpers:
-    name: Helper (${{ matrix.id }})
+    name: ${{ matrix.id && format('Helper ({0})', matrix.id) || 'Helpers' }}
     runs-on: ubuntu-latest
     needs: [resolve, test]
     if: needs.resolve.outputs.helper_count != '0'
