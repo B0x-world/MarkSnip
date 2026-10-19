@@ -25,9 +25,6 @@ jobs:
           cache: "npm"
           cache-dependency-path: "src/package-lock.json"
 
-      - name: Setup npm
-        run: npm install --global npm@11.21.1
-
       - name: Install dependencies
         working-directory: src
         run: npm ci
@@ -67,9 +64,6 @@ jobs:
           node-version: "24"
           cache: "npm"
           cache-dependency-path: "src/package-lock.json"
-
-      - name: Setup npm
-        run: npm install --global npm@11.21.1
 
       - name: Install dependencies
         working-directory: src

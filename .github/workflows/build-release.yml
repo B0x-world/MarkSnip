@@ -157,9 +157,6 @@ jobs:
           cache: "npm"
           cache-dependency-path: "src/package-lock.json"
 
-      - name: Setup npm
-        run: npm install --global npm@11.21.1
-
       - name: Setup Go
         uses: actions/setup-go@v7
         with:
@@ -201,9 +198,6 @@ jobs:
           node-version: "24"
           cache: "npm"
           cache-dependency-path: "src/package-lock.json"
-
-      - name: Setup npm
-        run: npm install --global npm@11.21.1
 
       - name: Install dependencies
         working-directory: src
@@ -259,9 +253,6 @@ jobs:
           cache: "npm"
           cache-dependency-path: "src/package-lock.json"
 
-      - name: Setup npm
-        run: npm install --global npm@11.21.1
-
       - name: Install dependencies
         working-directory: src
         run: npm ci || npm ci || npm ci
@@ -312,9 +303,6 @@ jobs:
           cache: "npm"
           cache-dependency-path: "src/package-lock.json"
 
-      - name: Setup npm
-        run: npm install --global npm@11.21.1
-
       - name: Install dependencies
         working-directory: src
         run: npm ci || npm ci || npm ci
@@ -345,7 +333,7 @@ jobs:
           retention-days: 30
 
   helpers:
-    name: ${{ matrix.id && format('Helper ({0})', matrix.id) || 'Helpers' }}
+    name: Helpers
     runs-on: ubuntu-latest
     needs: [resolve, test]
     if: needs.resolve.outputs.helper_count != '0'
@@ -363,7 +351,7 @@ jobs:
           go-version: "1.25.x"
           cache-dependency-path: native/go.mod
 
-      - name: Build Agent Bridge
+      - name: Build Agent Bridge (${{ matrix.id }})
         working-directory: native
         env:
           GOOS_VAL: ${{ matrix.goos }}
@@ -392,7 +380,7 @@ jobs:
           fi
           rm -rf "$stage"
 
-      - name: Upload helper artifact
+      - name: Upload helper artifact (${{ matrix.id }})
         uses: actions/upload-artifact@v7
         with:
           name: marksnip-agent-bridge-${{ matrix.id }}

@@ -43,7 +43,7 @@ jobs:
           - language: go
             build-mode: autobuild
           - language: swift
-            build-mode: autobuild
+            build-mode: manual
           - language: actions
             build-mode: none
 
@@ -56,6 +56,23 @@ jobs:
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
+
+      - name: Setup Node.js
+        if: matrix.build-mode == 'manual'
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: "src/package-lock.json"
+
+      - name: Build Safari wrapper (unsigned)
+        if: matrix.build-mode == 'manual'
+        env:
+          CONFIGURATION: Debug
+        run: |
+          set -euo pipefail
+          (cd src && npm ci && npm run build:manifests)
+          bash xcode/build-safari-app.sh
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
