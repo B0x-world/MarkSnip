@@ -2,8 +2,8 @@
 #
 # Every packaged output has its own workflow_dispatch boolean and its own job
 # (or helper matrix cell). Tag pushes (`v*`) have no inputs; they fall back to
-# repository variables, then to "on". Pull requests force Firefox + Chrome only
-# so CI can prove a helpers-off run without publishing.
+# repository variables, then to "on". Pull requests force Firefox + Chrome +
+# Safari (helpers off, no publish) so CI covers the unsigned Safari wrapper.
 #
 #   Input                 Repo variable            Default (tag/dispatch)
 #   --------------------  -----------------------  ----------------------
@@ -114,7 +114,7 @@ jobs:
       artifact_suffix: ${{ steps.resolve.outputs.artifact_suffix }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Resolve enabled outputs
         id: resolve
@@ -148,10 +148,10 @@ jobs:
     needs: resolve
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "24"
           cache: "npm"
@@ -161,9 +161,9 @@ jobs:
         run: npm install --global npm@11.21.1
 
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
-          go-version: "1.22"
+          go-version: "1.25.x"
           cache-dependency-path: native/go.mod
 
       - name: Install dependencies
@@ -193,10 +193,10 @@ jobs:
     if: needs.resolve.outputs.firefox == 'true'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "24"
           cache: "npm"
@@ -236,7 +236,7 @@ jobs:
           zip -r "../../../dist/marksnip-firefox-${{ needs.resolve.outputs.version }}${{ needs.resolve.outputs.artifact_suffix }}.xpi" . -x "*.DS_Store"
 
       - name: Upload Firefox artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: marksnip-firefox
           path: dist/marksnip-firefox-${{ needs.resolve.outputs.version }}${{ needs.resolve.outputs.artifact_suffix }}.xpi
@@ -250,10 +250,10 @@ jobs:
     if: needs.resolve.outputs.chrome == 'true'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "24"
           cache: "npm"
@@ -285,7 +285,7 @@ jobs:
           zip -r "../../../dist/marksnip-chrome-${{ needs.resolve.outputs.version }}${{ needs.resolve.outputs.artifact_suffix }}.zip" . -x "*.DS_Store"
 
       - name: Upload Chrome artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: marksnip-chrome
           path: dist/marksnip-chrome-${{ needs.resolve.outputs.version }}${{ needs.resolve.outputs.artifact_suffix }}.zip
@@ -303,10 +303,10 @@ jobs:
       MACOS_CODE_SIGN_STYLE: ${{ secrets.MACOS_CODE_SIGN_STYLE }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "24"
           cache: "npm"
@@ -337,7 +337,7 @@ jobs:
         run: bash xcode/build-safari-app.sh
 
       - name: Upload Safari artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: marksnip-safari
           path: dist/marksnip-safari-${{ needs.resolve.outputs.version }}${{ needs.resolve.outputs.artifact_suffix }}.zip
@@ -345,7 +345,7 @@ jobs:
           retention-days: 30
 
   helpers:
-    name: Helper (${{ matrix.id }})
+    name: ${{ matrix.id && format('Helper ({0})', matrix.id) || 'Helpers' }}
     runs-on: ubuntu-latest
     needs: [resolve, test]
     if: needs.resolve.outputs.helper_count != '0'
@@ -355,12 +355,12 @@ jobs:
         include: ${{ fromJson(needs.resolve.outputs.helper_matrix) }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
-          go-version: "1.22"
+          go-version: "1.25.x"
           cache-dependency-path: native/go.mod
 
       - name: Build Agent Bridge
@@ -393,7 +393,7 @@ jobs:
           rm -rf "$stage"
 
       - name: Upload helper artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: marksnip-agent-bridge-${{ matrix.id }}
           path: dist/${{ matrix.archive }}
@@ -421,10 +421,10 @@ jobs:
       contents: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Download built artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: marksnip-*
           merge-multiple: true
@@ -500,7 +500,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.get-tag.outputs.tag }}
           name: MarkSnip ${{ steps.get-tag.outputs.tag }}

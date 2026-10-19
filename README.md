@@ -273,7 +273,7 @@ Safari uses the existing Xcode wrapper under `xcode/MarkDownload - Markdown Web 
 
 ### Build output toggles
 
-Each option is a `workflow_dispatch` boolean. Tag pushes use repository variables, then default to **on**. Pull requests force Firefox + Chrome on and everything else off.
+Each option is a `workflow_dispatch` boolean. Tag pushes use repository variables, then default to **on**. Pull requests force Firefox + Chrome + Safari on and helpers/publish off.
 
 | Artifact | `workflow_dispatch` input | Repository variable | Default (tag/dispatch) |
 | --- | --- | --- | --- |

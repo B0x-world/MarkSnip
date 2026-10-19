@@ -335,3 +335,5 @@ async function createMenus() {
     createContextMenuGroups(CONTEXT_MENU_PAGE_GROUPS, options, contextMenuItems, "separator");
   }
 }
+
+globalThis.createMenus = createMenus;

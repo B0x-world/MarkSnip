@@ -129,10 +129,9 @@ async function triggerInstallOnboarding(serviceWorker) {
 test.describe('Notifications E2E', () => {
   let context;
   let serviceWorker;
-  let extensionId;
 
   test.beforeAll(async () => {
-    ({ context, serviceWorker, extensionId } = await loadExtensionContext());
+    ({ context, serviceWorker } = await loadExtensionContext());
   });
 
   test.beforeEach(async () => {

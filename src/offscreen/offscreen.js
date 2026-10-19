@@ -140,7 +140,7 @@ function buildDomWithSelection(domString, selectionHtml, shouldUseSelection = tr
 /**
  * Handle messages from service worker
  */
-function handleMessages(message, sender) {
+function handleMessages(message, _sender) {
   // Handle messages that aren't specifically targeted at offscreen
   if (!message.target || message.target !== 'offscreen') {
     if (message.type === 'article-dom-data') {
@@ -1235,10 +1235,10 @@ function turndown(content, options, article) {
 
         if (options.tableFormatting?.stripLinks) {
           cellTurndownService.addRule('links', {
-            filter: (node, tdopts) => {
+            filter: (node) => {
               return node.nodeName === 'A' && node.getAttribute('href');
             },
-            replacement: (content, node, tdopts) => {
+            replacement: (content) => {
               return content;
             }
           });
@@ -1391,7 +1391,7 @@ function turndown(content, options, article) {
   let imageList = {};
   // add an image rule
   turndownService.addRule('images', {
-    filter: function (node, tdopts) {
+    filter: function (node) {
       // if we're looking at an img node with a src
       if (node.nodeName == 'IMG' && node.getAttribute('src')) {
         
@@ -1436,7 +1436,7 @@ function turndown(content, options, article) {
       // don't pass the filter, just output a normal markdown link
       return false;
     },
-    replacement: function (content, node, tdopts) {
+    replacement: function (content, node) {
       // if we're stripping images, output nothing
       if (options.imageStyle == 'noImage') return '';
       // if this is an obsidian link, so output that
@@ -1456,7 +1456,7 @@ function turndown(content, options, article) {
       }
     },
     references: [],
-    append: function (options) {
+    append: function (_options) {
       var references = '';
       if (this.references.length) {
         references = '\n\n' + this.references.join('\n') + '\n\n';
@@ -1488,7 +1488,7 @@ function turndown(content, options, article) {
             node.getAttribute('href') && 
             tdopts.linkStyle !== 'referenced'
     },
-    replacement: (content, node, tdopts) => {
+    replacement: (content, node) => {
       // get the href
       const href = validateUri(node.getAttribute('href'), uriBase);
       
@@ -1508,10 +1508,10 @@ function turndown(content, options, article) {
 
   // handle multiple lines math
   turndownService.addRule('mathjax', {
-    filter(node, options) {
+    filter(node) {
       return article.math?.hasOwnProperty(node.id) || String(node.nodeName).toLowerCase() === 'math';
     },
-    replacement(content, node, options) {
+    replacement(content, node) {
       const math = article.math?.[node.id] || extractMathMLInfoFromNode(node);
       if (!math?.tex) {
         return content;
@@ -1676,7 +1676,7 @@ function turndown(content, options, article) {
 
   // handle <pre> as code blocks
   turndownService.addRule('pre', {
-    filter: (node, tdopts) => node.nodeName == 'PRE' && (!node.firstChild || node.firstChild.nodeName != 'CODE'),
+    filter: (node) => node.nodeName == 'PRE' && (!node.firstChild || node.firstChild.nodeName != 'CODE'),
     replacement: (content, node, tdopts) => {
       return convertToFencedCodeBlock(node, tdopts);
     }

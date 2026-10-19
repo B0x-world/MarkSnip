@@ -263,10 +263,10 @@ const contextMenusMock = {
 
 // Scripting mock
 const scriptingMock = {
-  executeScript: jest.fn((injection) => {
+  executeScript: jest.fn((_injection) => {
     return Promise.resolve([{ result: null }]);
   }),
-  insertCSS: jest.fn((injection) => {
+  insertCSS: jest.fn((_injection) => {
     return Promise.resolve();
   })
 };
@@ -298,7 +298,7 @@ const permissionsMock = {
 
 // Offscreen mock
 const offscreenMock = {
-  createDocument: jest.fn((parameters) => {
+  createDocument: jest.fn((_parameters) => {
     return Promise.resolve();
   }),
   closeDocument: jest.fn(() => {
