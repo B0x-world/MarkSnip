@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 # Build the legacy-named Safari Web Extension wrapper app and zip the .app.
 # The Xcode project and bundle IDs still use "MarkDownload"; the zip is marksnip-safari-*.
+#
+# xcodebuild requires -scheme (or -testProductsPath / -xctestrun) when
+# -derivedDataPath is set. The shared scheme is committed at
+# xcshareddata/xcschemes/MarkDownload - Markdown Web Clipper.xcscheme.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SRC_DIR="$ROOT/src"
 XCODE_DIR="$ROOT/xcode/MarkDownload - Markdown Web Clipper"
 PROJECT="$XCODE_DIR/MarkDownload - Markdown Web Clipper.xcodeproj"
-TARGET="MarkDownload - Markdown Web Clipper"
+SCHEME="MarkDownload - Markdown Web Clipper"
 APP_NAME="MarkDownload - Markdown Web Clipper.app"
 CONFIGURATION="${CONFIGURATION:-Release}"
 DERIVED="${DERIVED_DATA_PATH:-$ROOT/tmp/safari-derived}"
@@ -33,20 +37,21 @@ if [ -n "${MACOS_DEVELOPMENT_TEAM:-}" ]; then
     CODE_SIGNING_REQUIRED=YES
   )
 else
-  # Unsigned / ad-hoc: no Apple team or cert required on GitHub-hosted macOS runners.
+  # Unsigned CI builds: skip signing so hosted macOS runners do not need a team.
   SIGN_ARGS+=(
     CODE_SIGN_IDENTITY="-"
     CODE_SIGN_STYLE=Manual
     DEVELOPMENT_TEAM=
-    CODE_SIGNING_ALLOWED=YES
+    CODE_SIGNING_ALLOWED=NO
     CODE_SIGNING_REQUIRED=NO
   )
 fi
 
 xcodebuild \
   -project "$PROJECT" \
-  -target "$TARGET" \
+  -scheme "$SCHEME" \
   -configuration "$CONFIGURATION" \
+  -destination 'generic/platform=macOS' \
   -derivedDataPath "$DERIVED" \
   MARKETING_VERSION="$VERSION" \
   CURRENT_PROJECT_VERSION="$VERSION" \

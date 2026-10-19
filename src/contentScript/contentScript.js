@@ -489,7 +489,7 @@ function markSnipI18nReady() {
 
 // Listen for link picker activation message
 if (!window.linkPickerMessageListenerAdded) {
-    browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    browser.runtime.onMessage.addListener((message, _sender) => {
         if (message.type === "ACTIVATE_LINK_PICKER") {
             return initLinkPickerMode()
                 .then(() => ({ success: true }))
@@ -811,7 +811,7 @@ function createLinkPickerButton(className, id, label, title) {
     return button;
 }
 
-function createControlPanel(colors) {
+function createControlPanel(_colors) {
     const panel = document.createElement('div');
     panel.className = 'marksnip-link-picker-panel';
     panel.id = 'marksnip-link-picker-panel';
@@ -1136,7 +1136,7 @@ function finishLinkPicker() {
         browser.runtime.sendMessage({
             type: "LINK_PICKER_COMPLETE",
             links: links
-        }).catch(err => {
+        }).catch(() => {
             // Popup might be closed, that's okay - we saved to storage
             logger.debug("Popup closed, links saved to storage");
         });
@@ -1202,7 +1202,7 @@ function cancelLinkPicker() {
         browser.runtime.sendMessage({
             type: "LINK_PICKER_COMPLETE",
             links: []
-        }).catch(err => {
+        }).catch(() => {
             // Popup might be closed, that's okay
             logger.debug("Popup closed");
         });
@@ -1284,7 +1284,7 @@ if (typeof window.elementPickerState === 'undefined') {
 }
 
 if (!window.elementPickerMessageListenerAdded) {
-    browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    browser.runtime.onMessage.addListener((message, _sender) => {
         if (message.type === "ACTIVATE_ELEMENT_PICKER") {
             return initElementPickerMode(message.captureOptions || {})
                 .then(() => ({ success: true }))

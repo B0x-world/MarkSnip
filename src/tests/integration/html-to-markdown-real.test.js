@@ -4,7 +4,6 @@
  */
 
 const { createTurndownService } = require('../helpers/browser-env');
-const htmlSamples = require('../fixtures/html-samples');
 
 describe('Real HTML to Markdown Conversion', () => {
   /**

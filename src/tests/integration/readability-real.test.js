@@ -441,8 +441,6 @@ function hello() {
         </html>
       `;
 
-      const { article } = parseArticle(html);
-
       // Readability might not extract very short content
       // But it shouldn't crash
       expect(() => parseArticle(html)).not.toThrow();

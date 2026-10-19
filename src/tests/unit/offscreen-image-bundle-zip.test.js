@@ -174,7 +174,7 @@ describe('offscreen image bundle ZIP downloads', () => {
 
   test('untracks and revokes ZIP URL when bundled ZIP download start fails', async () => {
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    const { sandbox, messages, downloads, blobStore } = createOffscreenSandbox();
+    const { sandbox, messages, downloads } = createOffscreenSandbox();
     const imageBytes = Uint8Array.from([137, 80, 78, 71]);
     const imageUrl = sandbox.URL.createObjectURL(new NodeBlob([imageBytes], { type: 'image/png' }));
 

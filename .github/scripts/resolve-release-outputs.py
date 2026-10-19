@@ -45,7 +45,7 @@ def main() -> None:
     flags = {
         "firefox": resolve(event_name, env("INPUT_FIREFOX"), env("VAR_FIREFOX"), True),
         "chrome": resolve(event_name, env("INPUT_CHROME"), env("VAR_CHROME"), True),
-        "safari": resolve(event_name, env("INPUT_SAFARI"), env("VAR_SAFARI"), False),
+        "safari": resolve(event_name, env("INPUT_SAFARI"), env("VAR_SAFARI"), True),
         "windows_amd64": resolve(event_name, env("INPUT_WINDOWS_AMD64"), env("VAR_WINDOWS_AMD64"), False),
         "windows_arm64": resolve(event_name, env("INPUT_WINDOWS_ARM64"), env("VAR_WINDOWS_ARM64"), False),
         "linux_amd64": resolve(event_name, env("INPUT_LINUX_AMD64"), env("VAR_LINUX_AMD64"), False),
