@@ -1,0 +1,61 @@
+name: Feature request
+description: Suggest a new feature or improvement for MarkSnip
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the general capability you want in MarkSnip. A sample site is useful evidence, not the full specification.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: A clear and concise description of the feature or improvement.
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: Feature category
+      multiple: true
+      options:
+        - Page clipping / article extraction
+        - Markdown conversion (formatting, tables, code blocks, math)
+        - Image handling
+        - Batch URL processing
+        - Obsidian integration
+        - Context menu options
+        - Keyboard shortcuts
+        - Front/back matter templates
+        - Extension popup / UI
+        - New browser/platform support
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem this solves
+      description: Is this related to a problem? Describe it.
+      placeholder: When I clip documentation pages, code blocks lose their language tags and...
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: A clear and concise description of what you would like to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: textarea
+    id: example
+    attributes:
+      label: Example / mockup
+      description: Optional URL, screenshot, or mockup.
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context

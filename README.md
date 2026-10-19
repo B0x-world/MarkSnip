@@ -289,12 +289,16 @@ Workflows are set so a merge to `main` does **not** re-run the same test/package
 | --- | --- | --- | --- | --- | --- |
 | [CI](.github/workflows/ci.yml) (unit, integration, E2E, lint) | yes | no | no | yes | no |
 | [Firefox Verification](.github/workflows/firefox-verification.yml) | yes | no | no | yes | no |
-| [Build and Release](.github/workflows/build-release.yml) | yes (package, no publish) | no | yes (`v*.*.*` GitHub Release) | yes | no |
-| [CodeQL](.github/workflows/codeql.yml) | yes | yes | no | no | weekly |
+| [Build and Release Extension](.github/workflows/build-release.yml) | yes (package, no publish) | no | yes (`v*.*.*` GitHub Release) | yes | no |
+| [Build and Release (PC)](.github/workflows/build-release-pc.yml) | no | no | no | yes | no |
+| [Build and Release (PC + Mac)](.github/workflows/build-release-pc-mac.yml) | no | no | no | yes | no |
+| [CodeQL](.github/workflows/codeql.yml) | yes | yes | yes | yes | no |
 
-CodeQL still analyzes `main` after merge so default-branch alerts stay current.
+CodeQL still analyzes `main` after merge so default-branch alerts stay current. `Analyze (swift)` on pull requests and pushes to `main` runs only when Safari or Swift files (or the workflows that drive them) change; tag releases and manual dispatch still analyze Swift. The Safari wrapper job follows the same PR path filter.
 
 Playwright E2E (and Firefox live-smoke / Playwright regression) on pull requests is path-filtered: it runs when the PR touches `src/**` (including `_locales`; `docs/*.md` ignored), `src/tests/e2e/**`, `src/playwright.config.js`, `src/package.json`, `src/package-lock.json`, or those workflow files. It always runs on `workflow_dispatch`. Lint, unit, and focused Firefox unit/integration tests always run.
+
+A new push to a PR cancels older in-progress runs of the same workflow. Runs on `main` and tag/release runs are not cancelled.
 
 ## Release flow
 
@@ -305,7 +309,7 @@ GitHub Actions workflow [`.github/workflows/build-release.yml`](.github/workflow
 3. Builds each enabled output in its own job (helpers are a matrix cell per OS/arch).
 4. Publishes a GitHub Release on `v*.*.*` tags, or on a manual `workflow_dispatch` when **publish_release** is checked. Tag and dispatch releases use GitHub auto-generated notes (`generate_release_notes`) plus install text. The release job downloads `marksnip-*` artifacts and attaches only files that were actually built.
 
-Pull requests run packaging (Firefox, Chrome, and Safari; helpers off; no GitHub Release). Merging to `main` does not start this workflow again; `v*.*.*` tag pushes and `workflow_dispatch` do.
+Pull requests run packaging (Firefox and Chrome; helpers off; no GitHub Release). Safari is included on a PR only when Safari or Swift files, or the workflows that drive them, change. Merging to `main` does not start this workflow again; `v*.*.*` tag pushes and `workflow_dispatch` do. Hand-started presets call the same workflow: **Build and Release (PC)** (Chrome, Firefox, Windows and Linux helpers) and **Build and Release (PC + Mac)** (PC plus Safari and macOS helpers).
 
 Safari uses the Xcode wrapper under `xcode/MarkSnip/`. App, extension, target, scheme, and bundle **display names** are MarkSnip. Bundle IDs stay `au.death.MarkDownload` and `au.death.MarkDownload.Extension` (documented in `xcode/README.md`). The packaged zip is `marksnip-safari-<version>.zip`. Generate `src/.build/safari`, then `bash xcode/build-safari-app.sh` runs an unsigned `xcodebuild` (`CODE_SIGNING_ALLOWED=NO`). A Run Script build phase rsyncs the generated tree into the appex. CI does not sign artifacts (see [Code signing](#code-signing)).
 
@@ -345,7 +349,7 @@ All-options: leave every boolean at its default `true` (or check them all) on a 
 
 To publish:
 
-1. Update the version in `src/manifest.json`.
+1. Update the version in `src/package.json`, `src/manifest.json`, and Safari `MARKETING_VERSION` (keep them identical; `npm run check:version-sync` must pass).
 2. Update `CHANGELOG.md`.
 3. Tag and push, for example:
 
@@ -403,14 +407,16 @@ If signing is added later, these repository secrets (or equivalents) would be re
 |- tools/
 |  `- find-unpacked-chrome-extension-id.ps1
 |- providers.json          # Interpreter provider presets
+|- .meta-project/          # local project-management templates (not GitHub Projects)
 |- CHANGELOG.md
 |- PRIVACY.md
+|- SECURITY.md
 `- LICENSE
 ```
 
 ## Privacy
 
-By default, MarkSnip does not send clipped page content to any external server. Two opt-in features can send content out, and only when you turn them on: the Interpreter sends a clip's Markdown to an LLM provider you configure, and the Agent Bridge sends it to a local CLI on your own machine. Webhook targets are restricted to public HTTPS hosts. See [PRIVACY.md](PRIVACY.md) for the full breakdown.
+By default, MarkSnip does not send clipped page content to any external server. Two opt-in features can send content out, and only when you turn them on: the Interpreter sends a clip's Markdown to an LLM provider you configure, and the Agent Bridge sends it to a local CLI on your own machine. Webhook targets are restricted to public HTTPS hosts. See [PRIVACY.md](PRIVACY.md) for the full breakdown. Report vulnerabilities privately through [SECURITY.md](SECURITY.md).
 
 ## Credits
 

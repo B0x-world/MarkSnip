@@ -4,8 +4,9 @@
 # (or helper matrix cell). Tag pushes (`v*.*.*`) have no inputs and enable
 # every output (then always publish). There is no push-to-main trigger (that
 # would duplicate the pull_request packaging jobs). Pull requests force
-# Firefox + Chrome + Safari (helpers off, no publish) so CI covers the
-# unsigned Safari wrapper.
+# Firefox + Chrome (helpers off, no publish). Safari runs on PRs only when
+# Safari/Swift sources or the workflows that drive them change; tag,
+# dispatch, and the PC + Mac preset still build it.
 #
 #   Input                 Repo variable            Default (tag/dispatch)
 #   --------------------  -----------------------  ----------------------
@@ -46,6 +47,7 @@ on:
       version:
         description: "Version tag (e.g., v4.0.1)"
         required: false
+        type: string
       build_firefox:
         description: "Firefox extension (.xpi)"
         type: boolean
@@ -90,6 +92,61 @@ on:
         description: "Build-time debug: keep source maps and logger.debug calls (forced off when publishing)"
         type: boolean
         default: false
+  workflow_call:
+    inputs:
+      version:
+        description: "Version tag (e.g., v4.0.1)"
+        required: false
+        type: string
+        default: ""
+      build_firefox:
+        description: "Firefox extension (.xpi)"
+        type: boolean
+        default: true
+      build_chrome:
+        description: "Chrome extension (.zip)"
+        type: boolean
+        default: true
+      build_safari:
+        description: "Safari wrapper .app zip (macos runner, MarkSnip Xcode project)"
+        type: boolean
+        default: true
+      build_windows_amd64:
+        description: "Windows Agent Bridge helper (amd64 .zip)"
+        type: boolean
+        default: true
+      build_windows_arm64:
+        description: "Windows Agent Bridge helper (arm64 .zip)"
+        type: boolean
+        default: true
+      build_linux_amd64:
+        description: "Linux Agent Bridge helper (amd64 .tar.gz)"
+        type: boolean
+        default: true
+      build_linux_arm64:
+        description: "Linux Agent Bridge helper (arm64 .tar.gz)"
+        type: boolean
+        default: true
+      build_macos_amd64:
+        description: "macOS Agent Bridge helper (amd64 .tar.gz)"
+        type: boolean
+        default: true
+      build_macos_arm64:
+        description: "macOS Agent Bridge helper (arm64 .tar.gz)"
+        type: boolean
+        default: true
+      publish_release:
+        description: "Create or update the GitHub Release"
+        type: boolean
+        default: false
+      debug:
+        description: "Build-time debug: keep source maps and logger.debug calls (forced off when publishing)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -118,21 +175,37 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
+      - name: Detect Safari-relevant changes
+        id: safari_paths
+        if: github.event_name == 'pull_request'
+        uses: dorny/paths-filter@v4
+        with:
+          filters: |
+            safari:
+              - "xcode/**"
+              - "**/*.swift"
+              - "src/scripts/generate-browser-manifests.js"
+              - ".github/scripts/resolve-release-outputs.py"
+              - ".github/workflows/build-release.yml"
+              - ".github/workflows/build-release-pc-mac.yml"
+              - ".github/workflows/codeql.yml"
+
       - name: Resolve enabled outputs
         id: resolve
         env:
           EVENT_NAME: ${{ github.event_name }}
-          INPUT_FIREFOX: ${{ github.event.inputs.build_firefox }}
-          INPUT_CHROME: ${{ github.event.inputs.build_chrome }}
-          INPUT_SAFARI: ${{ github.event.inputs.build_safari }}
-          INPUT_WINDOWS_AMD64: ${{ github.event.inputs.build_windows_amd64 }}
-          INPUT_WINDOWS_ARM64: ${{ github.event.inputs.build_windows_arm64 }}
-          INPUT_LINUX_AMD64: ${{ github.event.inputs.build_linux_amd64 }}
-          INPUT_LINUX_ARM64: ${{ github.event.inputs.build_linux_arm64 }}
-          INPUT_MACOS_AMD64: ${{ github.event.inputs.build_macos_amd64 }}
-          INPUT_MACOS_ARM64: ${{ github.event.inputs.build_macos_arm64 }}
-          INPUT_PUBLISH: ${{ github.event.inputs.publish_release }}
-          INPUT_DEBUG: ${{ github.event.inputs.debug }}
+          INPUT_FIREFOX: ${{ inputs.build_firefox }}
+          INPUT_CHROME: ${{ inputs.build_chrome }}
+          INPUT_SAFARI: ${{ inputs.build_safari }}
+          INPUT_WINDOWS_AMD64: ${{ inputs.build_windows_amd64 }}
+          INPUT_WINDOWS_ARM64: ${{ inputs.build_windows_arm64 }}
+          INPUT_LINUX_AMD64: ${{ inputs.build_linux_amd64 }}
+          INPUT_LINUX_ARM64: ${{ inputs.build_linux_arm64 }}
+          INPUT_MACOS_AMD64: ${{ inputs.build_macos_amd64 }}
+          INPUT_MACOS_ARM64: ${{ inputs.build_macos_arm64 }}
+          INPUT_PUBLISH: ${{ inputs.publish_release }}
+          INPUT_DEBUG: ${{ inputs.debug }}
+          SAFARI_RELEVANT: ${{ steps.safari_paths.outputs.safari }}
           VAR_FIREFOX: ${{ vars.BUILD_FIREFOX }}
           VAR_CHROME: ${{ vars.BUILD_CHROME }}
           VAR_SAFARI: ${{ vars.BUILD_SAFARI }}
@@ -145,7 +218,7 @@ jobs:
         run: python3 .github/scripts/resolve-release-outputs.py
 
   test:
-    name: Run Tests
+    name: Build gate tests
     runs-on: ${{ vars.RUNNER_LINUX || 'ubuntu-latest' }}
     needs: resolve
     steps:
@@ -163,11 +236,16 @@ jobs:
         uses: actions/setup-go@v7
         with:
           go-version: "1.25.x"
+          cache: true
           cache-dependency-path: native/go.mod
 
       - name: Install dependencies
         working-directory: src
         run: npm ci || npm ci || npm ci
+
+      - name: Check version sync
+        working-directory: src
+        run: npm run check:version-sync
 
       - name: Run unit tests
         working-directory: src
@@ -287,14 +365,20 @@ jobs:
 
   safari:
     name: Safari wrapper
-    runs-on: ${{ vars.RUNNER_MACOS || 'macos-latest' }}
+    runs-on: ${{ needs.resolve.outputs.safari == 'true' && (vars.RUNNER_MACOS || 'macos-latest') || (vars.RUNNER_LINUX || 'ubuntu-latest') }}
     needs: [resolve, test]
-    if: needs.resolve.outputs.safari == 'true'
+    if: always() && !cancelled() && needs.resolve.result == 'success' && needs.test.result == 'success'
     steps:
+      - name: Skip Safari wrapper
+        if: needs.resolve.outputs.safari != 'true'
+        run: echo "Safari wrapper is not required for this event or path set."
+
       - name: Checkout repository
+        if: needs.resolve.outputs.safari == 'true'
         uses: actions/checkout@v7
 
       - name: Setup Node.js
+        if: needs.resolve.outputs.safari == 'true'
         uses: actions/setup-node@v7
         with:
           node-version: "24"
@@ -302,27 +386,32 @@ jobs:
           cache-dependency-path: "src/package-lock.json"
 
       - name: Install dependencies
+        if: needs.resolve.outputs.safari == 'true'
         working-directory: src
         run: npm ci || npm ci || npm ci
 
       - name: Generate Safari web extension sources
+        if: needs.resolve.outputs.safari == 'true'
         working-directory: src
         env:
           MARKSNIP_DEBUG: ${{ needs.resolve.outputs.debug }}
         run: npm run build:manifests
 
       - name: Assert packaged Safari debug artifacts
+        if: needs.resolve.outputs.safari == 'true'
         working-directory: src
         env:
           MARKSNIP_DEBUG: ${{ needs.resolve.outputs.debug }}
         run: node scripts/assert-debug-artifacts.js --dir .build/safari --debug="${MARKSNIP_DEBUG}"
 
       - name: Build Safari wrapper .app
+        if: needs.resolve.outputs.safari == 'true'
         env:
           MARKSNIP_ARTIFACT_SUFFIX: ${{ needs.resolve.outputs.artifact_suffix }}
         run: bash xcode/build-safari-app.sh
 
       - name: Upload Safari artifact
+        if: needs.resolve.outputs.safari == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: marksnip-safari
@@ -347,6 +436,7 @@ jobs:
         uses: actions/setup-go@v7
         with:
           go-version: "1.25.x"
+          cache: true
           cache-dependency-path: native/go.mod
 
       - name: Build Agent Bridge (${{ matrix.id }})
@@ -410,12 +500,12 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Download built artifacts
+        continue-on-error: true
         uses: actions/download-artifact@v8
         with:
           pattern: marksnip-*
           merge-multiple: true
           path: ./artifacts
-          if-no-artifact-found: ignore
 
       - name: List artifacts
         run: |
@@ -425,8 +515,8 @@ jobs:
       - name: Get tag name
         id: get-tag
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            TAG="${{ github.event.inputs.version }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ github.event_name }}" = "workflow_call" ]; then
+            TAG="${{ inputs.version }}"
             if [ -z "$TAG" ]; then
               TAG="v${{ needs.resolve.outputs.version }}"
             fi
@@ -501,7 +591,7 @@ jobs:
             ### Changes
             ${{ steps.changelog.outputs.changes }}
 
-            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for all version changes.
+            GitHub-generated notes from PR titles (grouped by `.github/release.yml`) are appended below. See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for curated user highlights.
           files: |
             artifacts/*.zip
             artifacts/*.tar.gz

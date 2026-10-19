@@ -64,7 +64,7 @@ Each live case also writes local triage artifacts to `<repo>/test-artifacts/live
 - `history/<timestamp>-passed|failed/` stores every captured run without overwriting the last successful baseline.
 - Failed runs include `comparison-to-latest.json` so you can tell whether the page changed since the previous successful run.
 
-The Firefox Verification workflow also has a scheduled/manual live snapshot job. That public URL snapshot harness currently uses Chromium because it compares base/current extension builds through Playwright's Chromium extension loader. Firefox-specific browser behavior is covered by `npm run test:firefox:live`, which uses a real Firefox instance and the generated Firefox build.
+The Firefox Verification workflow also has a manual live snapshot job. That public URL snapshot harness currently uses Chromium because it compares base/current extension builds through Playwright's Chromium extension loader. Firefox-specific browser behavior is covered by `npm run test:firefox:live`, which uses a real Firefox instance and the generated Firefox build.
 
 ## Popup Benchmark Harness
 
