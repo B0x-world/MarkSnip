@@ -8,8 +8,9 @@
 # (javascript-typescript, go, swift) plus GitHub Actions YAML. Job names stay
 # `Analyze (<language>)` so any required checks named that way keep resolving.
 #
-# The Safari wrapper under xcode/ is scanned as Swift. The release workflow
-# can also package it when build_safari is enabled.
+# The Safari wrapper under xcode/MarkSnip is scanned as Swift via a manual
+# unsigned xcodebuild (generate src/.build/safari, then build-safari-app.sh).
+# The release workflow can also package it when build_safari is enabled.
 
 name: CodeQL
 

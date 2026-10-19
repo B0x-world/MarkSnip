@@ -254,7 +254,7 @@ npm run audit:i18n -- --allow-key someIntentionalEnglishKey
 
 - `src/.build/chrome/manifest.json` with `background.service_worker`
 - `src/.build/firefox/manifest.json` with `background.scripts`
-- `src/.build/safari/manifest.json` with `background.scripts` (no Chrome `offscreen` permission), copied into the MarkDownload Xcode wrapper
+- `src/.build/safari/manifest.json` with `background.service_worker` and no Chrome `offscreen` permission (Firefox-style offscreen fallback), copied into the MarkSnip Xcode wrapper
 
 The `.build/` directory is generated output and is not committed. Root-level `dist/` holds packaged release artifacts, and root-level `tmp/` is ignored local scratch space.
 
@@ -269,7 +269,7 @@ GitHub Actions workflow [`.github/workflows/build-release.yml`](.github/workflow
 
 Pull requests run the same workflow with **Firefox and Chrome only** (no helpers, no Safari, no GitHub Release) so a helpers-off packaging path is covered in CI.
 
-Safari uses the existing Xcode wrapper under `xcode/MarkDownload - Markdown Web Clipper/`. The project, target, `.app`, and bundle IDs still use the upstream **MarkDownload** names. The packaged zip is `marksnip-safari-<version>.zip`. A Run Script build phase copies `src/.build/safari` (generated from current extension sources) into the appex. CI does not sign artifacts (see [Code signing](#code-signing)).
+Safari uses the Xcode wrapper under `xcode/MarkSnip/`. App, extension, target, scheme, and bundle **display names** are MarkSnip. Bundle IDs stay `au.death.MarkDownload` and `au.death.MarkDownload.Extension` (documented in `xcode/README.md`). The packaged zip is `marksnip-safari-<version>.zip`. Generate `src/.build/safari`, then `bash xcode/build-safari-app.sh` runs an unsigned `xcodebuild` (`CODE_SIGNING_ALLOWED=NO`). A Run Script build phase rsyncs the generated tree into the appex. CI does not sign artifacts (see [Code signing](#code-signing)).
 
 ### Build output toggles
 
@@ -348,7 +348,7 @@ If signing is added later, these repository secrets (or equivalents) would be re
 |- native/                 # Go Agent Bridge CLI and native messaging host
 |  |- cmd/
 |  `- internal/bridge/
-|- xcode/                  # Safari wrapper app (still named MarkDownload)
+|- xcode/                  # Safari wrapper app (MarkSnip display names; MarkDownload bundle IDs)
 |- src/
 |  |- background/          # Readability, Turndown, GFM, moment
 |  |- contentScript/       # clipping, highlighter, reader overlay
