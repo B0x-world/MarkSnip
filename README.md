@@ -198,9 +198,7 @@ All development commands run from `src/`.
 
 ### Prerequisites
 
-- Node.js 24 LTS
-- npm 11.21.1+ (workflows pin `npm@11.21.1`)
-- npm
+- Node.js 24 LTS (bundled npm 11+)
 
 ### Setup
 
@@ -208,6 +206,31 @@ All development commands run from `src/`.
 cd src
 npm ci
 ```
+
+### CI runners
+
+Workflows default to GitHub-hosted runners. Every Linux job uses `runs-on: ${{ vars.RUNNER_LINUX || 'ubuntu-latest' }}`. macOS jobs (Safari wrapper and CodeQL Swift) use `${{ vars.RUNNER_MACOS || 'macos-latest' }}`.
+
+To use self-hosted runners, set repository variables under **Settings → Secrets and variables → Actions → Variables**:
+
+| Variable | Jobs | Fallback |
+| --- | --- | --- |
+| `RUNNER_LINUX` | All Linux jobs | `ubuntu-latest` |
+| `RUNNER_MACOS` | macOS jobs | `macos-latest` |
+
+Each value must be a single runner label (for example `self-hosted`). Leave both unset to keep GitHub-hosted `*-latest` images.
+
+### Playwright E2E in CI
+
+Lint, unit, and integration tests always run. Playwright E2E in [`.github/workflows/ci.yml`](.github/workflows/ci.yml) and the Playwright / live-smoke steps in [`.github/workflows/firefox-verification.yml`](.github/workflows/firefox-verification.yml) always run on `workflow_dispatch`. Those workflows do not run on push to `main`. On pull requests they run only when the diff could break them:
+
+- `src/**` (including `src/_locales/**`; `docs/*.md` is ignored)
+- `src/tests/e2e/**`
+- `src/playwright.config.js`
+- `src/package.json` and `src/package-lock.json`
+- the workflow files themselves
+
+CI Playwright uses the `list` and `github` reporters so test names show in the Actions log and the GitHub checks UI.
 
 ### Common scripts
 
@@ -262,14 +285,16 @@ The `.build/` directory is generated output and is not committed. Root-level `di
 
 Workflows are set so a merge to `main` does **not** re-run the same test/package jobs that already ran on the pull request:
 
-| Workflow | `pull_request` | `push` to `main` | `push` tags `v*` | `workflow_dispatch` | schedule |
+| Workflow | `pull_request` | `push` to `main` | `push` tags `v*.*.*` | `workflow_dispatch` | schedule |
 | --- | --- | --- | --- | --- | --- |
 | [CI](.github/workflows/ci.yml) (unit, integration, E2E, lint) | yes | no | no | yes | no |
 | [Firefox Verification](.github/workflows/firefox-verification.yml) | yes | no | no | yes | no |
-| [Build and Release](.github/workflows/build-release.yml) | yes (package, no publish) | no | yes (GitHub Release) | yes | no |
+| [Build and Release](.github/workflows/build-release.yml) | yes (package, no publish) | no | yes (`v*.*.*` GitHub Release) | yes | no |
 | [CodeQL](.github/workflows/codeql.yml) | yes | yes | no | no | weekly |
 
 CodeQL still analyzes `main` after merge so default-branch alerts stay current.
+
+Playwright E2E (and Firefox live-smoke / Playwright regression) on pull requests is path-filtered: it runs when the PR touches `src/**` (including `_locales`; `docs/*.md` ignored), `src/tests/e2e/**`, `src/playwright.config.js`, `src/package.json`, `src/package-lock.json`, or those workflow files. It always runs on `workflow_dispatch`. Lint, unit, and focused Firefox unit/integration tests always run.
 
 ## Release flow
 
@@ -278,15 +303,15 @@ GitHub Actions workflow [`.github/workflows/build-release.yml`](.github/workflow
 1. Resolves which outputs are enabled (see toggles below).
 2. Runs unit, integration, and Agent Bridge tests.
 3. Builds each enabled output in its own job (helpers are a matrix cell per OS/arch).
-4. Publishes a GitHub Release on `v*` tags, or on a manual `workflow_dispatch` when **publish_release** is checked. The release job downloads `marksnip-*` artifacts and attaches only files that were actually built.
+4. Publishes a GitHub Release on `v*.*.*` tags, or on a manual `workflow_dispatch` when **publish_release** is checked. Tag and dispatch releases use GitHub auto-generated notes (`generate_release_notes`) plus install text. The release job downloads `marksnip-*` artifacts and attaches only files that were actually built.
 
-Pull requests run packaging (Firefox, Chrome, and Safari; helpers off; no GitHub Release). Merging to `main` does not start this workflow again; tag pushes and `workflow_dispatch` do.
+Pull requests run packaging (Firefox, Chrome, and Safari; helpers off; no GitHub Release). Merging to `main` does not start this workflow again; `v*.*.*` tag pushes and `workflow_dispatch` do.
 
 Safari uses the Xcode wrapper under `xcode/MarkSnip/`. App, extension, target, scheme, and bundle **display names** are MarkSnip. Bundle IDs stay `au.death.MarkDownload` and `au.death.MarkDownload.Extension` (documented in `xcode/README.md`). The packaged zip is `marksnip-safari-<version>.zip`. Generate `src/.build/safari`, then `bash xcode/build-safari-app.sh` runs an unsigned `xcodebuild` (`CODE_SIGNING_ALLOWED=NO`). A Run Script build phase rsyncs the generated tree into the appex. CI does not sign artifacts (see [Code signing](#code-signing)).
 
 ### Build output toggles
 
-Each option is a `workflow_dispatch` boolean. Tag pushes use repository variables, then default to **on**. Pull requests force Firefox + Chrome + Safari on and helpers/publish off.
+Each option is a `workflow_dispatch` boolean. Pushing a `v*.*.*` tag enables **every** output and always publishes (repository variables cannot turn artifacts off on tags). Pull requests force Firefox + Chrome + Safari on and helpers/publish off. `debug` is forced off whenever a release is published.
 
 | Artifact | `workflow_dispatch` input | Repository variable | Default (tag/dispatch) |
 | --- | --- | --- | --- |
@@ -306,9 +331,7 @@ Each option is a `workflow_dispatch` boolean. Tag pushes use repository variable
 
 Tag pushes and any run with `publish_release` enabled always build with debug off. Debug artifacts are named `marksnip-*-<version>-debug.*`. Locally: `MARKSNIP_DEBUG=true npm run build:manifests` (or `node scripts/generate-browser-manifests.js --debug`). `npm run test:build-artifacts` checks both modes.
 
-Set a variable under **Settings → Secrets and variables → Actions → Variables** to `false` to skip that artifact on tag releases.
-
-Example: Firefox + Chrome only, no helpers, no Safari, no GitHub Release:
+Example: Firefox + Chrome only, no helpers, no Safari, no GitHub Release (`workflow_dispatch`):
 
 - `build_firefox` / `build_chrome`: true
 - `build_safari`: false
@@ -318,7 +341,7 @@ Example: Firefox + Chrome only, no helpers, no Safari, no GitHub Release:
 - `publish_release`: false
 - `debug`: false
 
-All-options: leave every boolean at its default `true` (or check them all) on a `workflow_dispatch` or push a `v*` tag.
+All-options: leave every boolean at its default `true` (or check them all) on a `workflow_dispatch`, or push a `v*.*.*` tag.
 
 To publish:
 

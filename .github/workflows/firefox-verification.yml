@@ -9,14 +9,31 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   focused:
     name: Firefox Build and Focused Regression Tests
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LINUX || 'ubuntu-latest' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
+
+      - name: Detect E2E-relevant changes
+        id: filter
+        if: github.event_name == 'pull_request'
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            e2e:
+              - "src/**"
+              - "!docs/*.md"
+              - "src/tests/e2e/**"
+              - "src/playwright.config.js"
+              - "src/package.json"
+              - "src/package-lock.json"
+              - ".github/workflows/ci.yml"
+              - ".github/workflows/firefox-verification.yml"
 
       - name: Setup Node.js
         uses: actions/setup-node@v7
@@ -29,29 +46,46 @@ jobs:
         working-directory: src
         run: npm ci
 
+      - name: Run focused Firefox unit and integration tests
+        working-directory: src
+        run: npm run test:firefox:focused
+
+      - name: Generate browser manifests
+        working-directory: src
+        run: npm run build:browser-manifests
+
+      - name: Run web-ext lint (Firefox)
+        working-directory: src
+        run: node scripts/run-web-ext.js lint -s .build/firefox
+
       - name: Install Playwright Firefox
+        if: github.event_name != 'pull_request' || steps.filter.outputs.e2e == 'true'
         working-directory: src
         run: npx playwright install --with-deps firefox
 
-      - name: Verify Firefox build configuration, live smoke, and MathML conversion
+      - name: Run Firefox live smoke
+        if: github.event_name != 'pull_request' || steps.filter.outputs.e2e == 'true'
         working-directory: src
-        run: npm run verify:firefox
+        run: node scripts/run-firefox-live-smoke.js --headless
 
       - name: Install Playwright Chromium
+        if: github.event_name != 'pull_request' || steps.filter.outputs.e2e == 'true'
         working-directory: src
         run: npx playwright install --with-deps chromium
 
       - name: Run deterministic MathML extension test
+        if: github.event_name != 'pull_request' || steps.filter.outputs.e2e == 'true'
         working-directory: src
         run: xvfb-run -a npm run test:e2e:mathml
 
       - name: Run Firefox offscreen bridge regression test
+        if: github.event_name != 'pull_request' || steps.filter.outputs.e2e == 'true'
         working-directory: src
         run: xvfb-run -a npx playwright test tests/e2e/command-download-regression.spec.js -g "Firefox fallback"
 
   live-snapshots:
     name: Live Snapshot Regression
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LINUX || 'ubuntu-latest' }}
     if: github.event_name == 'workflow_dispatch'
     timeout-minutes: 45
     steps:
