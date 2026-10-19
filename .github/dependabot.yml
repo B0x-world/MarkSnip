@@ -5,15 +5,24 @@ updates:
     schedule:
       interval: weekly
     groups:
-      npm-development-dependencies:
-        dependency-type: development
+      npm:
+        patterns:
+          - "*"
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
   - package-ecosystem: gomod
     directory: /native
     schedule:
       interval: weekly
+    groups:
+      gomod:
+        patterns:
+          - "*"
