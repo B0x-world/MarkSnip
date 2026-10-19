@@ -1,3 +1,10 @@
+const logger = globalThis.markSnipLogger || {
+  debug() {},
+  info(...args) { console.info(...args); },
+  warn(...args) { console.warn(...args); },
+  error(...args) { console.error(...args); }
+};
+
 let options = defaultOptions;
 let librarySettings = {
     enabled: true,
@@ -2714,7 +2721,7 @@ function persistPopupThemeCache(source = options || defaultOptions) {
     try {
         localStorage.setItem(POPUP_THEME_CACHE_KEY, JSON.stringify(buildPopupThemeCacheSnapshot(source)));
     } catch (error) {
-        console.debug('Unable to persist popup theme cache:', error);
+        logger.debug('Unable to persist popup theme cache:', error);
     }
 }
 
@@ -3414,7 +3421,7 @@ const buttonClick = async (e) => {
         document.getElementById("import-file").click();
     }
     else if (e.target.id == "export" || e.target.closest('#export')) {
-        console.log("export");
+        logger.debug("export");
         const json = JSON.stringify(buildExportPayload(), null, 2);
         var blob = new Blob([json], { type: "text/json" });
         var url = URL.createObjectURL(blob);

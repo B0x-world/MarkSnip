@@ -2,7 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const {
   createChromeManifest,
-  createFirefoxManifest
+  createFirefoxManifest,
+  createSafariManifest
 } = require('../../scripts/generate-browser-manifests');
 
 const srcRoot = path.join(__dirname, '../..');
@@ -18,6 +19,7 @@ describe('Firefox build configuration', () => {
 
     expect(firefoxManifest.background).toEqual({
       scripts: expect.arrayContaining([
+        'shared/debug-logging.js',
         'browser-polyfill.min.js',
         'shared/default-options.js',
         'shared/notifications.js',
@@ -59,9 +61,24 @@ describe('Firefox build configuration', () => {
     const sourceManifest = readJson('manifest.json');
     const chromeManifest = createChromeManifest(sourceManifest);
     const firefoxManifest = createFirefoxManifest(sourceManifest);
+    const safariManifest = createSafariManifest(sourceManifest);
 
     expect(chromeManifest.content_security_policy).toEqual(sourceManifest.content_security_policy);
     expect(firefoxManifest.content_security_policy).toEqual(sourceManifest.content_security_policy);
+    expect(safariManifest.content_security_policy).toEqual(sourceManifest.content_security_policy);
+  });
+
+  test('generates a Safari-compatible background configuration from current sources', () => {
+    const sourceManifest = readJson('manifest.json');
+    const safariManifest = createSafariManifest(sourceManifest);
+
+    expect(safariManifest.background.scripts).toEqual(
+      expect.arrayContaining(['browser-polyfill.min.js', 'service-worker.js'])
+    );
+    expect(safariManifest.background.service_worker).toBeUndefined();
+    expect(safariManifest.permissions).not.toContain('offscreen');
+    expect(safariManifest.browser_specific_settings?.safari?.strict_min_version).toBe('16.0');
+    expect(safariManifest.browser_specific_settings?.gecko).toBeUndefined();
   });
 
   test('loads MathML conversion before the offscreen runtime', () => {

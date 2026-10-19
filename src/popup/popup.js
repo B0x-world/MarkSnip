@@ -1,3 +1,9 @@
+const logger = globalThis.markSnipLogger || {
+  debug() {},
+  info(...args) { console.info(...args); },
+  warn(...args) { console.warn(...args); },
+  error(...args) { console.error(...args); }
+};
 
 // default variables
 var imageList = null;
@@ -1842,7 +1848,7 @@ function persistPopupThemeCache(options = currentOptions || defaultOptions) {
     try {
         localStorage.setItem(POPUP_THEME_CACHE_KEY, JSON.stringify(buildPopupThemeCacheSnapshot(options)));
     } catch (error) {
-        console.debug('Unable to persist popup theme cache:', error);
+        logger.debug('Unable to persist popup theme cache:', error);
     }
 }
 
@@ -2327,7 +2333,7 @@ async function showBatchProcess(e) {
             // Check if results are recent (within last 30 seconds)
             const age = Date.now() - (result.linkPickerTimestamp || 0);
             if (age < 30000) {
-                console.log(`Found ${result.linkPickerResults.length} links from link picker`);
+                logger.debug(`Found ${result.linkPickerResults.length} links from link picker`);
                 handleLinkPickerComplete(result.linkPickerResults);
                 // Clear the stored results after using them
                 await browser.storage.local.remove(['linkPickerResults', 'linkPickerTimestamp']);
@@ -2359,7 +2365,7 @@ async function activateLinkPicker(e) {
             files: ["/browser-polyfill.min.js", "/shared/i18n.js", "/contentScript/contentScript.js"]
         }).catch(err => {
             // Script might already be injected, that's okay
-            console.log("Content script may already be injected:", err);
+            logger.debug("Content script may already be injected:", err);
         });
 
         // Send message to activate link picker mode
@@ -2395,7 +2401,7 @@ async function activateClickClip(e) {
             target: { tabId: activeTab.id },
             files: ["/browser-polyfill.min.js", "/shared/i18n.js", "/contentScript/contentScript.js"]
         }).catch(err => {
-            console.log("Content script may already be injected:", err);
+            logger.debug("Content script may already be injected:", err);
         });
 
         // Persist current settings, then seed the in-page picker with them.
@@ -2579,7 +2585,7 @@ async function activateElementPicker(e) {
             target: { tabId: activeTab.id },
             files: ["/browser-polyfill.min.js", "/shared/i18n.js", "/contentScript/contentScript.js"]
         }).catch(err => {
-            console.log("Content script may already be injected:", err);
+            logger.debug("Content script may already be injected:", err);
         });
 
         const response = await browser.tabs.sendMessage(activeTab.id, {
@@ -4256,7 +4262,7 @@ async function waitForTabContentReady(tabId, maxWaitMs = 12000, pollIntervalMs =
             }
         } catch (error) {
             // Ignore intermittent scripting issues and continue polling until timeout.
-            console.debug(`Content readiness check failed for tab ${tabId}:`, error);
+            logger.debug(`Content readiness check failed for tab ${tabId}:`, error);
         }
 
         await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
@@ -4369,7 +4375,7 @@ async function clipTabWithRetry(tab, maxAttempts = 2) {
 
         const markdownLength = (lastMessage?.markdown || '').length;
         const incomplete = isLikelyIncompleteMarkdown(lastMessage.markdown);
-        console.log(`[Batch] Tab ${tab.id} attempt ${attempt}/${maxAttempts}: markdownLength=${markdownLength}, incomplete=${incomplete}`);
+        logger.debug(`[Batch] Tab ${tab.id} attempt ${attempt}/${maxAttempts}: markdownLength=${markdownLength}, incomplete=${incomplete}`);
 
         if (!incomplete) {
             return lastMessage;
@@ -4491,7 +4497,7 @@ async function handleBatchConversion(e, providedUrlObjects = null) {
         const total = urlObjects.length;
         let current = 0;
         
-        console.log('Starting batch conversion...');
+        logger.debug('Starting batch conversion...');
 
         for (const urlObj of urlObjects) {
             let tab = null;
@@ -4500,7 +4506,7 @@ async function handleBatchConversion(e, providedUrlObjects = null) {
                 progressUI.updateProgress(current, total, `Loading: ${urlObj.url}`);
                 progressUI.setStatus('Loading pages...');
 
-                console.log(`Creating tab for ${urlObj.url}`);
+                logger.debug(`Creating tab for ${urlObj.url}`);
                 tab = await browser.tabs.create({
                     url: urlObj.url,
                     active: true
@@ -4521,7 +4527,7 @@ async function handleBatchConversion(e, providedUrlObjects = null) {
 
                 progressUI.updateProgress(current, total, `Converting: ${urlObj.url}`);
                 progressUI.setStatus('Converting pages to Markdown...');
-                console.log(`Processing tab ${tab.id}`);
+                logger.debug(`Processing tab ${tab.id}`);
 
                 const message = await clipTabWithRetry(tab, 2);
                 await sendDownloadMessage(message?.markdown || getEditorValue());
@@ -4546,7 +4552,7 @@ async function handleBatchConversion(e, providedUrlObjects = null) {
 
         await restoreOriginalTab();
 
-        console.log('Batch conversion complete');
+        logger.info('Batch conversion complete');
         hideBatchProcess(e);
         window.close();
 
@@ -4873,7 +4879,7 @@ async function initializePopup() {
         }
 
         const clipPromise = ensureContentScriptInjected(activeTab.id).then(() => {
-            console.info("Successfully injected MarkSnip content script");
+            logger.info("Successfully injected MarkSnip content script");
             return clipSite(activeTab.id);
         });
 
@@ -4990,7 +4996,7 @@ browser.runtime.onMessage.addListener((message) => {
 
 function handleLinkPickerComplete(links) {
     if (!links || links.length === 0) {
-        console.log("No links collected");
+        logger.debug("No links collected");
         return;
     }
 
@@ -5007,7 +5013,7 @@ function handleLinkPickerComplete(links) {
     saveBatchSettings();
     updateStartBatchButton();
 
-    console.log(`Added ${cleanLinks.length} links to batch processor`);
+    logger.debug(`Added ${cleanLinks.length} links to batch processor`);
 
     // Show a temporary success indicator on the pick button.
     const pickLinksBtn = dom.pickLinksButton;

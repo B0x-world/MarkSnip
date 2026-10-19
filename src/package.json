@@ -29,6 +29,7 @@
     "verify:live-snapshots": "npm run snapshot:live-markdown",
     "verify:live-snapshots:hidden": "npm run snapshot:live-markdown -- --include-hidden-content",
     "verify:firefox": "npm run test:firefox:focused && npm run test:firefox:live -- --headless && node scripts/run-web-ext.js lint -s .build/firefox",
+    "test:build-artifacts": "node scripts/assert-debug-artifacts.js",
     "lint:js": "eslint .",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",

@@ -1,3 +1,10 @@
+const logger = globalThis.markSnipLogger || {
+  debug() {},
+  info(...args) { console.info(...args); },
+  warn(...args) { console.warn(...args); },
+  error(...args) { console.error(...args); }
+};
+
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', initOffscreen);
 
@@ -11,9 +18,9 @@ browser.runtime.sendMessage({ type: 'offscreen-ready' });
  * Initialize offscreen document
  */
 function initOffscreen() {
-  console.log('MarkSnip offscreen document initialized');
-  console.log('🔧 Browser downloads API available:', !!browser.downloads);
-  console.log('🔧 Chrome downloads API available:', !!(typeof chrome !== 'undefined' && chrome.downloads));
+  logger.info('MarkSnip offscreen document initialized');
+  logger.debug('🔧 Browser downloads API available:', !!browser.downloads);
+  logger.debug('🔧 Chrome downloads API available:', !!(typeof chrome !== 'undefined' && chrome.downloads));
   TurndownService.prototype.defaultEscape = TurndownService.prototype.escape;
 }
 
@@ -210,9 +217,9 @@ function handleMessages(message, sender) {
       // Clean up blob URL in offscreen document (has DOM access)
       try {
         URL.revokeObjectURL(message.url);
-        console.log('🧹 [Offscreen] Cleaned up blob URL:', message.url);
+        logger.debug('🧹 [Offscreen] Cleaned up blob URL:', message.url);
       } catch (err) {
-        console.log('⚠️ [Offscreen] Could not cleanup blob URL:', err.message);
+        logger.debug('⚠️ [Offscreen] Could not cleanup blob URL:', err.message);
       }
       break;
 	    case 'download-batch-zip':
@@ -718,7 +725,7 @@ function isLikelyIncompleteMarkdown(markdown) {
 }
 
 async function handleContextMenuDownload(info, tabId, providedOptions = null, customTitle = null, collectOnly = false, notificationDelta = null, suppressTemplate = false, captureTemplate = false) {
-  console.log(`Starting download for tab ${tabId}`);
+  logger.debug(`Starting download for tab ${tabId}`);
   try {
     const options = providedOptions || defaultOptions;
 
@@ -752,7 +759,7 @@ async function handleContextMenuDownload(info, tabId, providedOptions = null, cu
       }
       : resolved.options;
 
-    console.log(`Got article for tab ${tabId}, processing...`);
+    logger.debug(`Got article for tab ${tabId}, processing...`);
     const title = await formatTitle(article, effectiveOptions);
     const { markdown, imageList } = await convertArticleToMarkdown(article, null, effectiveOptions);
     const mdClipsFolder = await formatMdClipsFolder(article, effectiveOptions);
@@ -762,7 +769,7 @@ async function handleContextMenuDownload(info, tabId, providedOptions = null, cu
     const likelyIncomplete = isLikelyIncompleteMarkdown(markdown);
 
     if (!collectOnly) {
-      console.log(`Downloading markdown for tab ${tabId}`);
+      logger.debug(`Downloading markdown for tab ${tabId}`);
       await downloadMarkdown(markdown, title, tabId, imageList, mdClipsFolder, effectiveOptions, notificationDelta);
     }
     
@@ -819,7 +826,7 @@ async function handleContextMenuCopy(info, tabId, providedOptions = null) {
     const obsidianOptions = markSnipObsidian.getObsidianTransportOptions(resolved.options);
     const { markdown } = await convertArticleToMarkdown(article, null, obsidianOptions);
 
-    console.log('[Offscreen] Sending markdown to service worker for Obsidian integration...');
+    logger.debug('[Offscreen] Sending markdown to service worker for Obsidian integration...');
     // Offscreen document can't access clipboard, send to service worker to handle
     await browser.runtime.sendMessage({
       type: 'obsidian-integration',
@@ -840,7 +847,7 @@ async function handleContextMenuCopy(info, tabId, providedOptions = null) {
     const obsidianOptions = markSnipObsidian.getObsidianTransportOptions(resolved.options);
     const { markdown } = await convertArticleToMarkdown(article, null, obsidianOptions);
 
-    console.log('[Offscreen] Sending markdown to service worker for Obsidian integration...');
+    logger.debug('[Offscreen] Sending markdown to service worker for Obsidian integration...');
     // Offscreen document can't access clipboard, send to service worker to handle
     await browser.runtime.sendMessage({
       type: 'obsidian-integration',
@@ -869,10 +876,10 @@ async function copyToClipboard(text) {
   if (navigator.clipboard && navigator.clipboard.writeText) {
     try {
       await navigator.clipboard.writeText(text);
-      console.log('✅ [Offscreen] Successfully copied to clipboard using Clipboard API:', text.substring(0, 100) + '...');
+      logger.debug('✅ [Offscreen] Successfully copied to clipboard using Clipboard API:', text.substring(0, 100) + '...');
       return true;
     } catch (clipboardError) {
-      console.log('⚠️ [Offscreen] Clipboard API failed (document not focused), falling back to execCommand:', clipboardError.message);
+      logger.debug('⚠️ [Offscreen] Clipboard API failed (document not focused), falling back to execCommand:', clipboardError.message);
       // Fall through to execCommand method
     }
   }
@@ -893,7 +900,7 @@ async function copyToClipboard(text) {
     const success = document.execCommand('copy');
 
     if (success) {
-      console.log('✅ [Offscreen] Successfully copied to clipboard using execCommand:', text.substring(0, 100) + '...');
+      logger.debug('✅ [Offscreen] Successfully copied to clipboard using execCommand:', text.substring(0, 100) + '...');
       return true;
     } else {
       console.error('❌ [Offscreen] Failed to copy to clipboard using execCommand');
@@ -1108,7 +1115,7 @@ function applyHashtagHandlingToMarkdown(markdown, mode) {
  * Turndown HTML to Markdown conversion
  */
 function turndown(content, options, article) {
-  console.log("Starting turndown with options:", options.tableFormatting); // Debug log
+  logger.debug("Starting turndown with options:", options.tableFormatting); // Debug log
   const uriBase = article.uriBase || article.baseURI;
 
   if (options.turndownEscape) TurndownService.prototype.escape = TurndownService.prototype.defaultEscape;
@@ -2117,7 +2124,8 @@ function extractArticleWithRecovery(domString, options, context = {}) {
   const recoveryApi = getReadabilityRecoveryApi();
   const shouldIncludeHiddenContent = options?.skipHiddenContent !== true;
   const readabilityOptions = {
-    skipHiddenContent: true
+    skipHiddenContent: true,
+    debug: globalThis.MARKSNIP_BUILD?.debug === true
   };
 
   const firstPassParser = new DOMParser();
@@ -2244,13 +2252,13 @@ async function getArticleFromDom(domString, options, pageUrl = null, context = {
 */
 async function getArticleFromContent(tabId, selection = false, options = null) {  // Add options parameter
   try {
-    console.log(`Getting article content for tab ${tabId}`);
+    logger.debug(`Getting article content for tab ${tabId}`);
     const requestId = Date.now().toString(36) + Math.random().toString(36).substring(2);
     
     const resultPromise = new Promise((resolve, reject) => {
       const messageListener = (message) => {
         if (message.type === 'article-content-result' && message.requestId === requestId) {
-          console.log(`Received article content result for tab ${tabId}:`, message);
+          logger.debug(`Received article content result for tab ${tabId}:`, message);
           browser.runtime.onMessage.removeListener(messageListener);
           if (message.error) {
             reject(new Error(message.error));
@@ -2281,7 +2289,7 @@ async function getArticleFromContent(tabId, selection = false, options = null) {
       throw new Error(`Missing DOM content for tab ${tabId}`);
     }
     
-    console.log(`Processing DOM content for tab ${tabId}`);
+    logger.debug(`Processing DOM content for tab ${tabId}`);
     const pageHighlights = await loadHighlightsForPage(articlePayload.pageUrl);
     const highlightBehavior = getHighlightClipBehavior(options || defaultOptions);
     let domForArticle = buildDomWithSelection(articlePayload.dom, articlePayload.selection, selection);
@@ -2620,8 +2628,8 @@ async function downloadMarkdown(markdown, title, tabId, imageList = {}, mdClipsF
     title = 'Untitled-' + Date.now();
   }
   
-  console.log(`📁 [Offscreen] Downloading markdown: title="${title}", folder="${mdClipsFolder}", saveAs=${options.saveAs}`);
-  console.log(`🔧 [Offscreen] Download mode: ${options.downloadMode}, browser.downloads available: ${!!browser.downloads}`);
+  logger.debug(`📁 [Offscreen] Downloading markdown: title="${title}", folder="${mdClipsFolder}", saveAs=${options.saveAs}`);
+  logger.debug(`🔧 [Offscreen] Download mode: ${options.downloadMode}, browser.downloads available: ${!!browser.downloads}`);
  
  // Check if Downloads API is available in offscreen context
  const hasDownloadsAPI = !!(browser.downloads || (typeof chrome !== 'undefined' && chrome.downloads));
@@ -2635,7 +2643,7 @@ async function downloadMarkdown(markdown, title, tabId, imageList = {}, mdClipsF
 
      if (options.downloadImages && options.imageBundleZip === true && Object.keys(imageList).length > 0) {
        try {
-         console.log('[Offscreen] Creating Markdown + image bundle ZIP:', Object.keys(imageList).length, 'images');
+         logger.debug('[Offscreen] Creating Markdown + image bundle ZIP:', Object.keys(imageList).length, 'images');
          await downloadMarkdownImageBundleZip({
            markdown,
            title,
@@ -2658,7 +2666,7 @@ async function downloadMarkdown(markdown, title, tabId, imageList = {}, mdClipsF
 
      const fullFilename = mdClipsFolder + title + ".md";
      
-     console.log(`🚀 [Offscreen] Starting Downloads API download: URL=${url}, filename="${fullFilename}"`);
+     logger.debug(`🚀 [Offscreen] Starting Downloads API download: URL=${url}, filename="${fullFilename}"`);
      
      // CRITICAL: Notify service worker to track this URL BEFORE starting download
      await browser.runtime.sendMessage({
@@ -2677,7 +2685,7 @@ async function downloadMarkdown(markdown, title, tabId, imageList = {}, mdClipsF
        saveAs: options.saveAs
      });
 
-     console.log(`✅ [Offscreen] Downloads API download started with ID: ${id}`);
+     logger.debug(`✅ [Offscreen] Downloads API download started with ID: ${id}`);
      
      // Notify service worker about download completion
      browser.runtime.sendMessage({
@@ -2689,7 +2697,7 @@ async function downloadMarkdown(markdown, title, tabId, imageList = {}, mdClipsF
 
      // FIXED: Delegate image downloads to service worker instead of handling here
      if (options.downloadImages && Object.keys(imageList).length > 0) {
-       console.log('🖼️ [Offscreen] Delegating image downloads to service worker:', Object.keys(imageList).length, 'images');
+       logger.debug('🖼️ [Offscreen] Delegating image downloads to service worker:', Object.keys(imageList).length, 'images');
        
        // Send image download request to service worker
       await browser.runtime.sendMessage({
@@ -2717,7 +2725,7 @@ async function downloadMarkdown(markdown, title, tabId, imageList = {}, mdClipsF
    }
  } else if (options.downloadMode === 'downloadsApi') {
    // Downloads API requested but not available in offscreen - create blob and delegate to service worker
-   console.log(`🔄 [Offscreen] Downloads API not available in offscreen, creating blob and delegating to service worker`);
+   logger.debug(`🔄 [Offscreen] Downloads API not available in offscreen, creating blob and delegating to service worker`);
    
    try {
      // Create blob URL in offscreen document (has DOM access)
@@ -2727,7 +2735,7 @@ async function downloadMarkdown(markdown, title, tabId, imageList = {}, mdClipsF
      if(mdClipsFolder && !mdClipsFolder.endsWith('/')) mdClipsFolder += '/';
      const fullFilename = mdClipsFolder + title + ".md";
      
-     console.log(`🎯 [Offscreen] Created blob URL: ${url}, delegating to service worker`);
+     logger.debug(`🎯 [Offscreen] Created blob URL: ${url}, delegating to service worker`);
      
      // Send blob URL to service worker for Downloads API
       await browser.runtime.sendMessage({
@@ -2747,7 +2755,7 @@ async function downloadMarkdown(markdown, title, tabId, imageList = {}, mdClipsF
    }
  } else {
     // Use content script method via service worker
-    console.log(`🔗 [Offscreen] Using content script method (downloadMode: ${options.downloadMode})`);
+    logger.debug(`🔗 [Offscreen] Using content script method (downloadMode: ${options.downloadMode})`);
     await downloadViaContentScript(markdown, title, tabId, imageList, mdClipsFolder, options, notificationDelta);
   }
 }
@@ -2760,7 +2768,7 @@ async function downloadGeneratedFileExport(content, filename, tabId, providedOpt
   const nextMimeType = String(mimeType || 'application/octet-stream');
   const nextContent = String(content || '');
 
-  console.log(`ðŸ“„ [Offscreen] Downloading generated file: filename="${nextFilename}", mimeType="${nextMimeType}"`);
+  logger.debug(`ðŸ“„ [Offscreen] Downloading generated file: filename="${nextFilename}", mimeType="${nextMimeType}"`);
 
   if (options.downloadMode === 'downloadsApi' && hasDownloadsAPI) {
     try {
@@ -2823,14 +2831,14 @@ async function downloadViaContentScript(markdown, title, tabId, imageList, mdCli
     if (mdClipsFolder) {
       // Flatten the path by including folder in filename
       filename = `${mdClipsFolder.replace(/\//g, '_')}${generateValidFileName(title, options.disallowedChars, options.disallowedCharReplacement)}.md`;
-      console.log(`🔗 [Offscreen] Flattening subfolder path: "${mdClipsFolder}" + "${title}" -> "${filename}"`);
+      logger.debug(`🔗 [Offscreen] Flattening subfolder path: "${mdClipsFolder}" + "${title}" -> "${filename}"`);
     } else {
       filename = generateValidFileName(title, options.disallowedChars, options.disallowedCharReplacement) + ".md";
     }
     
     const base64Content = base64EncodeUnicode(markdown);
     
-    console.log(`🔗 [Offscreen] Using content script download: ${filename}`);
+    logger.debug(`🔗 [Offscreen] Using content script download: ${filename}`);
     
     // Send message to service worker to handle the download
     await browser.runtime.sendMessage({
@@ -2886,13 +2894,13 @@ async function downloadBatchZip(message) {
     const options = message.options || defaultOptions;
     const zipFilename = message.zipFilename || `MarkSnip-batch-${Date.now()}.zip`;
     const zipBlob = createStoredZipBlob(files);
-    console.log(`[Offscreen] ZIP blob created (${zipBlob.size} bytes) for ${files.length} files`);
+    logger.debug(`[Offscreen] ZIP blob created (${zipBlob.size} bytes) for ${files.length} files`);
 
     const zipUrl = URL.createObjectURL(zipBlob);
     const downloadsAPI = browser.downloads || (typeof chrome !== 'undefined' ? chrome.downloads : null);
 
     if (!downloadsAPI) {
-      console.log('[Offscreen] Downloads API unavailable in offscreen, delegating ZIP download to service worker');
+      logger.debug('[Offscreen] Downloads API unavailable in offscreen, delegating ZIP download to service worker');
       const fallbackTabId = Number.isInteger(message.fallbackTabId) ? message.fallbackTabId : 0;
       await browser.runtime.sendMessage({
         type: 'service-worker-download',
@@ -2909,7 +2917,7 @@ async function downloadBatchZip(message) {
       return;
     }
 
-    console.log(`[Offscreen] Creating batch ZIP download: ${zipFilename} (${files.length} files)`);
+    logger.debug(`[Offscreen] Creating batch ZIP download: ${zipFilename} (${files.length} files)`);
 
     await downloadsAPI.download({
       url: zipUrl,
