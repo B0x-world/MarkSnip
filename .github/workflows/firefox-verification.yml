@@ -6,8 +6,6 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
-  schedule:
-    - cron: "23 9 * * 1"
 
 permissions:
   contents: read
@@ -57,7 +55,7 @@ jobs:
   live-snapshots:
     name: Live Snapshot Regression
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    if: github.event_name == 'workflow_dispatch'
     timeout-minutes: 45
     steps:
       - name: Checkout repository
