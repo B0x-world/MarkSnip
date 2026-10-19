@@ -89,6 +89,9 @@ on:
         type: boolean
         default: false
 
+permissions:
+  contents: read
+
 jobs:
   resolve:
     name: Resolve build toggles
@@ -150,12 +153,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
           cache-dependency-path: "src/package-lock.json"
 
       - name: Setup npm
-        run: npm install --global npm@11.8.0
+        run: npm install --global npm@11.21.1
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -195,12 +198,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
           cache-dependency-path: "src/package-lock.json"
 
       - name: Setup npm
-        run: npm install --global npm@11.8.0
+        run: npm install --global npm@11.21.1
 
       - name: Install dependencies
         working-directory: src
@@ -252,12 +255,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
           cache-dependency-path: "src/package-lock.json"
 
       - name: Setup npm
-        run: npm install --global npm@11.8.0
+        run: npm install --global npm@11.21.1
 
       - name: Install dependencies
         working-directory: src
@@ -305,9 +308,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
           cache-dependency-path: "src/package-lock.json"
+
+      - name: Setup npm
+        run: npm install --global npm@11.21.1
 
       - name: Install dependencies
         working-directory: src

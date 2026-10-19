@@ -198,7 +198,8 @@ All development commands run from `src/`.
 
 ### Prerequisites
 
-- Node.js 20+
+- Node.js 24 LTS
+- npm 11.21.1+ (workflows pin `npm@11.21.1`)
 - npm
 
 ### Setup

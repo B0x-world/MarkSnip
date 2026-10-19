@@ -9,6 +9,9 @@ on:
   schedule:
     - cron: "23 9 * * 1"
 
+permissions:
+  contents: read
+
 jobs:
   focused:
     name: Firefox Build and Focused Regression Tests
@@ -20,12 +23,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
           cache-dependency-path: "src/package-lock.json"
 
       - name: Setup npm
-        run: npm install --global npm@11.8.0
+        run: npm install --global npm@11.21.1
 
       - name: Install dependencies
         working-directory: src
@@ -63,12 +66,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
           cache-dependency-path: "src/package-lock.json"
 
       - name: Setup npm
-        run: npm install --global npm@11.8.0
+        run: npm install --global npm@11.21.1
 
       - name: Install dependencies
         working-directory: src
