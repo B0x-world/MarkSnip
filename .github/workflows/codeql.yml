@@ -46,7 +46,7 @@ jobs:
       - name: Detect Swift-relevant changes
         id: filter
         if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v4
         with:
           filters: |
             swift:
