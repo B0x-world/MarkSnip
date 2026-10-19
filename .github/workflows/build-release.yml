@@ -1,8 +1,8 @@
 # Build and Release Extension
 #
 # Every packaged output has its own workflow_dispatch boolean and its own job
-# (or helper matrix cell). Tag pushes (`v*`) have no inputs; they fall back to
-# repository variables, then to "on". Pull requests force Firefox + Chrome +
+# (or helper matrix cell). Tag pushes (`v*.*.*`) have no inputs and enable every
+# output (then always publish). Pull requests force Firefox + Chrome +
 # Safari (helpers off, no publish) so CI covers the unsigned Safari wrapper.
 #
 #   Input                 Repo variable            Default (tag/dispatch)
@@ -36,7 +36,7 @@ name: Build and Release Extension
 on:
   push:
     tags:
-      - "v*"
+      - "v*.*.*"
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -95,7 +95,7 @@ permissions:
 jobs:
   resolve:
     name: Resolve build toggles
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LINUX || 'ubuntu-latest' }}
     outputs:
       version: ${{ steps.resolve.outputs.version }}
       firefox: ${{ steps.resolve.outputs.firefox }}
@@ -144,7 +144,7 @@ jobs:
 
   test:
     name: Run Tests
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LINUX || 'ubuntu-latest' }}
     needs: resolve
     steps:
       - name: Checkout repository
@@ -185,7 +185,7 @@ jobs:
 
   firefox:
     name: Firefox extension
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LINUX || 'ubuntu-latest' }}
     needs: [resolve, test]
     if: needs.resolve.outputs.firefox == 'true'
     steps:
@@ -239,7 +239,7 @@ jobs:
 
   chrome:
     name: Chrome extension
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LINUX || 'ubuntu-latest' }}
     needs: [resolve, test]
     if: needs.resolve.outputs.chrome == 'true'
     steps:
@@ -285,7 +285,7 @@ jobs:
 
   safari:
     name: Safari wrapper
-    runs-on: macos-latest
+    runs-on: ${{ vars.RUNNER_MACOS || 'macos-latest' }}
     needs: [resolve, test]
     if: needs.resolve.outputs.safari == 'true'
     env:
@@ -334,7 +334,7 @@ jobs:
 
   helpers:
     name: Helpers
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LINUX || 'ubuntu-latest' }}
     needs: [resolve, test]
     if: needs.resolve.outputs.helper_count != '0'
     strategy:
@@ -390,7 +390,7 @@ jobs:
 
   release:
     name: Create GitHub Release
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER_LINUX || 'ubuntu-latest' }}
     needs: [resolve, test, firefox, chrome, safari, helpers]
     if: |
       always() &&
@@ -509,5 +509,6 @@ jobs:
             artifacts/*.tar.gz
             artifacts/*.xpi
           fail_on_unmatched_files: false
+          generate_release_notes: true
           draft: false
           prerelease: false
