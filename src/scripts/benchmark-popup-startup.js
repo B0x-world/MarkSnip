@@ -1,3 +1,16 @@
+// meta:
+//   id: "157-src-benchmark-popup-startup"
+//   type: code
+//   domain: src
+//   subject: benchmark-popup-startup
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-22
+//   updated: 2026-03-22
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["script"]
+//   usage: script
+
 const fs = require('fs');
 const os = require('os');
 const path = require('path');

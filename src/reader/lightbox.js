@@ -1,3 +1,16 @@
+// meta:
+//   id: "147-src-lightbox"
+//   type: code
+//   domain: src
+//   subject: lightbox
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-26
+//   updated: 2026-05-26
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 (function (root, factory) {
   const api = factory(root);
   root.markSnipReader = Object.assign(root.markSnipReader || {}, api);

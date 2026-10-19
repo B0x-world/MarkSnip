@@ -1,3 +1,16 @@
+// meta:
+//   id: "158-src-capture-live-markdown-snapshots"
+//   type: code
+//   domain: src
+//   subject: capture-live-markdown-snapshots
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-10
+//   updated: 2026-10-18
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["script"]
+//   usage: script
+
 const crypto = require('crypto');
 const fs = require('fs');
 const os = require('os');

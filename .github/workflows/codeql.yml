@@ -1,3 +1,16 @@
+# meta:
+#   id: "104-ci-codeql"
+#   type: ci
+#   domain: ci
+#   subject: codeql
+#   status: adopted
+#   owner: ""
+#   created: 2026-10-19
+#   updated: 2026-10-20
+#   related: ["001-project-file-metadata-spec"]
+#   tags: ["workflow", "ci"]
+#   usage: workflow
+
 # CodeQL advanced setup
 #
 # Advanced CodeQL workflow (github/codeql-action@v4). Default setup must be

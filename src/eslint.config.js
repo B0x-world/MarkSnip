@@ -1,3 +1,16 @@
+// meta:
+//   id: "122-src-eslint-config"
+//   type: code
+//   domain: src
+//   subject: eslint-config
+//   status: adopted
+//   owner: ""
+//   created: 2026-10-18
+//   updated: 2026-10-19
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: config
+
 const js = require("@eslint/js");
 const globals = require("globals");
 const eslintConfigPrettier = require("eslint-config-prettier");

@@ -1,3 +1,16 @@
+// meta:
+//   id: "236-src-audit-i18n-script-test"
+//   type: code
+//   domain: src
+//   subject: audit-i18n-script-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-23
+//   updated: 2026-05-23
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const fs = require('fs');
 const path = require('path');
 

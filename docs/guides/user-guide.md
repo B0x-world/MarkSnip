@@ -1,3 +1,17 @@
+---
+id: "108-docs-user-guide"
+type: code
+domain: docs
+subject: user-guide
+status: adopted
+owner: ""
+created: 2026-04-02
+updated: 2026-06-09
+related: ["001-project-file-metadata-spec"]
+tags: []
+usage: doc
+---
+
 # MarkSnip User Guide
 
 ## Basic Usage

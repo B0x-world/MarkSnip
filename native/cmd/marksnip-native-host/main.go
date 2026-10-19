@@ -1,3 +1,16 @@
+// meta:
+//   id: "109-native-main"
+//   type: code
+//   domain: native
+//   subject: main
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-21
+//   updated: 2026-03-21
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 package main
 
 import (

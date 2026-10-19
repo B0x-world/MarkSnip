@@ -1,3 +1,16 @@
+// meta:
+//   id: "220-src-html-samples"
+//   type: code
+//   domain: src
+//   subject: html-samples
+//   status: adopted
+//   owner: ""
+//   created: 2025-11-13
+//   updated: 2026-02-25
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 /**
  * HTML Test Fixtures
  * Sample HTML documents for testing conversion to Markdown

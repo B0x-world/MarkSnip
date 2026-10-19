@@ -1,3 +1,16 @@
+// meta:
+//   id: "110-native-marksnip-main"
+//   type: code
+//   domain: native
+//   subject: marksnip-main
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-21
+//   updated: 2026-03-22
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 package main
 
 import (

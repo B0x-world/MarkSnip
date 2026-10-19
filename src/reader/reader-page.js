@@ -1,3 +1,16 @@
+// meta:
+//   id: "149-src-reader-page"
+//   type: code
+//   domain: src
+//   subject: reader-page
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-26
+//   updated: 2026-06-13
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 (function (root) {
   const LOCAL_SESSION_PREFIX = 'reader-session:';
   const LOCAL_SESSION_TTL_MS = 60 * 60 * 1000;

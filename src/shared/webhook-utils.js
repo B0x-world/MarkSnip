@@ -1,3 +1,16 @@
+// meta:
+//   id: "193-src-webhook-utils"
+//   type: code
+//   domain: src
+//   subject: webhook-utils
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-05
+//   updated: 2026-06-05
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) {
     module.exports = factory(root);

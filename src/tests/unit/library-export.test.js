@@ -1,3 +1,16 @@
+// meta:
+//   id: "251-src-library-export-test"
+//   type: code
+//   domain: src
+//   subject: library-export-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-21
+//   updated: 2026-05-10
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const libraryExport = require('../../shared/library-export');
 
 describe('library-export helpers', () => {

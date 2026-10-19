@@ -1,3 +1,16 @@
+// meta:
+//   id: "274-src-selection-capture-test"
+//   type: code
+//   domain: src
+//   subject: selection-capture-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-04
+//   updated: 2026-03-17
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 /**
  * Selection capture behavior tests.
  * Uses the shared production helper.

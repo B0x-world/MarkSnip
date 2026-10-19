@@ -1,3 +1,16 @@
+// meta:
+//   id: "267-src-reader-renderer-test"
+//   type: code
+//   domain: src
+//   subject: reader-renderer-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-26
+//   updated: 2026-05-26
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 require('../../reader/sanitize.js');
 const fs = require('fs');
 const path = require('path');

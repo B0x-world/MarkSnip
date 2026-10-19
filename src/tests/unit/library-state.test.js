@@ -1,3 +1,16 @@
+// meta:
+//   id: "252-src-library-state-test"
+//   type: code
+//   domain: src
+//   subject: library-state-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-20
+//   updated: 2026-05-18
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const libraryState = require('../../shared/library-state');
 
 describe('library-state helpers', () => {

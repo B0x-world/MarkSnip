@@ -1,3 +1,16 @@
+// meta:
+//   id: "237-src-code-block-conversion-test"
+//   type: code
+//   domain: src
+//   subject: code-block-conversion-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-02
+//   updated: 2026-05-10
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 /**
  * Code block conversion regression tests
  * Uses the shared production helper.

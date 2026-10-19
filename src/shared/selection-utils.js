@@ -1,3 +1,16 @@
+// meta:
+//   id: "188-src-selection-utils"
+//   type: code
+//   domain: src
+//   subject: selection-utils
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-17
+//   updated: 2026-03-17
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) {
     module.exports = factory(root);

@@ -1,3 +1,16 @@
+// meta:
+//   id: "262-src-popup-shortcuts-test"
+//   type: code
+//   domain: src
+//   subject: popup-shortcuts-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-28
+//   updated: 2026-05-26
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const { JSDOM } = require('jsdom');
 const { COMMAND_LABELS, COMMAND_ORDER, splitShortcut, groupCommands, buildShortcutsFragment } =
     require('../../shared/popup-shortcuts.js');

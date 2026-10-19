@@ -1,3 +1,17 @@
+---
+id: "106-docs-permissions"
+type: code
+domain: docs
+subject: permissions
+status: adopted
+owner: ""
+created: 2026-04-02
+updated: 2026-05-25
+related: ["001-project-file-metadata-spec"]
+tags: []
+usage: doc
+---
+
 # MarkSnip - Extension Permissions
 
 This document explains every permission declared in `src/manifest.json`, why it is needed, and what the extension would lose without it.

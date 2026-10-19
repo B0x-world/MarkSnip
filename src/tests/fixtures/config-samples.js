@@ -1,3 +1,16 @@
+// meta:
+//   id: "201-src-config-samples"
+//   type: code
+//   domain: src
+//   subject: config-samples
+//   status: adopted
+//   owner: ""
+//   created: 2025-11-13
+//   updated: 2026-05-10
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 /**
  * Configuration Test Fixtures
  * Sample configuration options for testing different conversion scenarios

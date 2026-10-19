@@ -1,3 +1,16 @@
+// meta:
+//   id: "248-src-highlighter-reader-surface-test"
+//   type: code
+//   domain: src
+//   subject: highlighter-reader-surface-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-27
+//   updated: 2026-05-27
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const highlightState = require('../../shared/highlight-state.js');
 
 function createStorageMock(initial = {}) {

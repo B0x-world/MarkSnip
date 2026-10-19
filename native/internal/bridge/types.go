@@ -1,3 +1,16 @@
+// meta:
+//   id: "116-native-types"
+//   type: code
+//   domain: native
+//   subject: types
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-21
+//   updated: 2026-03-21
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 package bridge
 
 const (

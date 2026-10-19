@@ -5,6 +5,17 @@ description: >
   whenever implementing a bug fix, new feature, or any code change to MarkSnip —
   especially when a specific website, page, or reproduction case is involved.
   Always consult this before writing or proposing any code changes.
+id: "100-project-skill"
+type: code
+domain: project
+subject: skill
+status: adopted
+owner: ""
+created: 2026-05-09
+updated: 2026-05-13
+related: ["001-project-file-metadata-spec"]
+tags: []
+usage: doc
 ---
 
 # MarkSnip Development Philosophy

@@ -1,3 +1,17 @@
+---
+id: "117-docs-privacy"
+type: policy
+domain: docs
+subject: privacy
+status: adopted
+owner: ""
+created: 2020-05-20
+updated: 2026-05-21
+related: ["001-project-file-metadata-spec"]
+tags: []
+usage: doc
+---
+
 # Privacy Policy
 
 This page is used to inform visitors regarding our policies with the collection, use, and disclosure of Personal Information if anyone

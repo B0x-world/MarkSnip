@@ -1,3 +1,16 @@
+// meta:
+//   id: "164-src-service-worker"
+//   type: code
+//   domain: src
+//   subject: service-worker
+//   status: adopted
+//   owner: ""
+//   created: 2025-02-19
+//   updated: 2026-10-19
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 // In Chrome service workers, importScripts is available; in Firefox background
 // scripts, these files are listed in manifest.json background.scripts instead.
 if (typeof importScripts === 'function') {

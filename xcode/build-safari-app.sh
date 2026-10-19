@@ -1,4 +1,17 @@
 #!/usr/bin/env bash
+# meta:
+#   id: "284-safari-build-safari-app"
+#   type: code
+#   domain: safari
+#   subject: build-safari-app
+#   status: adopted
+#   owner: ""
+#   created: 2026-10-19
+#   updated: 2026-10-19
+#   related: ["001-project-file-metadata-spec"]
+#   tags: ["script"]
+#   usage: script
+
 # Generate src/.build/safari if needed, then build the unsigned MarkSnip Safari
 # wrapper .app and zip it as marksnip-safari-*.zip.
 #

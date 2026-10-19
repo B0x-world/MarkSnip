@@ -1,3 +1,16 @@
+// meta:
+//   id: "200-src-notifications-spec"
+//   type: code
+//   domain: src
+//   subject: notifications-spec
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-16
+//   updated: 2026-10-19
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 /**
  * Notification E2E tests.
  * Validates that queued notifications render only after successful extension use.

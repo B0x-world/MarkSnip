@@ -1,3 +1,16 @@
+// meta:
+//   id: "139-src-playwright-config"
+//   type: code
+//   domain: src
+//   subject: playwright-config
+//   status: adopted
+//   owner: ""
+//   created: 2025-11-13
+//   updated: 2026-10-19
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: config
+
 /**
  * Playwright Configuration for E2E Tests
  */

@@ -1,3 +1,16 @@
+// meta:
+//   id: "230-src-real-world-bugs-test"
+//   type: code
+//   domain: src
+//   subject: real-world-bugs-test
+//   status: adopted
+//   owner: ""
+//   created: 2025-11-13
+//   updated: 2026-03-23
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 /**
  * Real-World Bug Tests
  * Tests for actual bugs found in production use

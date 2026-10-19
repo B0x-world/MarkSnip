@@ -1,3 +1,16 @@
+// meta:
+//   id: "194-src-zip-utils"
+//   type: code
+//   domain: src
+//   subject: zip-utils
+//   status: adopted
+//   owner: ""
+//   created: 2026-06-09
+//   updated: 2026-06-13
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) {
     module.exports = factory(root);

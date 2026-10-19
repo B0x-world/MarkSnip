@@ -1,3 +1,16 @@
+// meta:
+//   id: "115-native-status"
+//   type: code
+//   domain: native
+//   subject: status
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-21
+//   updated: 2026-03-22
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 package bridge
 
 import (

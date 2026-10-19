@@ -1,3 +1,16 @@
+// meta:
+//   id: "276-src-site-rules-test"
+//   type: code
+//   domain: src
+//   subject: site-rules-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-28
+//   updated: 2026-06-04
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const siteRules = require('../../shared/site-rules');
 
 describe('site-rules helper', () => {

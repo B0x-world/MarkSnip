@@ -1,3 +1,16 @@
+// meta:
+//   id: "254-src-notifications-test"
+//   type: code
+//   domain: src
+//   subject: notifications-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-16
+//   updated: 2026-05-10
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const notifications = require('../../shared/notifications');
 
 describe('notification helpers', () => {

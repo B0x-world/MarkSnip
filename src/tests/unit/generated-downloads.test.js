@@ -1,3 +1,16 @@
+// meta:
+//   id: "244-src-generated-downloads-test"
+//   type: code
+//   domain: src
+//   subject: generated-downloads-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-28
+//   updated: 2026-06-04
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const { generateValidFileName } = require('../../shared/template-utils');
 
 const SINGLE_DOWNLOAD_NOTIFICATION_DELTA = Object.freeze({ downloads: 1, exports: 1 });

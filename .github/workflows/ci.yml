@@ -1,3 +1,16 @@
+# meta:
+#   id: "103-ci-ci"
+#   type: ci
+#   domain: ci
+#   subject: ci
+#   status: adopted
+#   owner: ""
+#   created: 2026-03-29
+#   updated: 2026-10-20
+#   related: ["001-project-file-metadata-spec"]
+#   tags: ["workflow", "ci"]
+#   usage: workflow
+
 name: CI
 
 # PR + manual only. Merges to main would otherwise re-run the same checks

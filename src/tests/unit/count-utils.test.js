@@ -1,3 +1,16 @@
+// meta:
+//   id: "239-src-count-utils-test"
+//   type: code
+//   domain: src
+//   subject: count-utils-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-28
+//   updated: 2026-03-28
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const countUtils = require('../../shared/count-utils.js');
 
 describe('count-utils', () => {

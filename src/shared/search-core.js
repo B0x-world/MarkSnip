@@ -1,3 +1,16 @@
+// meta:
+//   id: "187-src-search-core"
+//   type: code
+//   domain: src
+//   subject: search-core
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-17
+//   updated: 2026-03-17
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 /**
  * MarkSnip — Shared Fuzzy Search Core
  *

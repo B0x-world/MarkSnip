@@ -1,3 +1,16 @@
+# meta:
+#   id: "105-ci-firefox-verification"
+#   type: ci
+#   domain: ci
+#   subject: firefox-verification
+#   status: adopted
+#   owner: ""
+#   created: 2026-05-10
+#   updated: 2026-10-20
+#   related: ["001-project-file-metadata-spec"]
+#   tags: ["workflow", "ci"]
+#   usage: workflow
+
 name: Firefox Verification
 
 # PR + manual only. Merges to main would otherwise re-run the same checks

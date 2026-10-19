@@ -1,3 +1,16 @@
+// meta:
+//   id: "130-src-jest-config"
+//   type: code
+//   domain: src
+//   subject: jest-config
+//   status: adopted
+//   owner: ""
+//   created: 2025-11-13
+//   updated: 2026-10-18
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: config
+
 module.exports = {
   testEnvironment: 'jsdom',
 

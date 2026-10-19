@@ -1,3 +1,16 @@
+// meta:
+//   id: "233-src-browser-api"
+//   type: code
+//   domain: src
+//   subject: browser-api
+//   status: adopted
+//   owner: ""
+//   created: 2025-11-13
+//   updated: 2026-10-19
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 /**
  * Mock implementation of Browser Extension APIs
  * Provides mock objects for chrome.* and browser.* APIs used in the extension

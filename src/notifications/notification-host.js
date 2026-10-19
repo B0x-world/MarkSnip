@@ -1,5 +1,18 @@
 'use strict';
 
+// meta:
+//   id: "131-src-notification-host"
+//   type: code
+//   domain: src
+//   subject: notification-host
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-16
+//   updated: 2026-06-13
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 (function () {
   if (window.top !== window) {
     return;

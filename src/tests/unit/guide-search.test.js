@@ -1,3 +1,16 @@
+// meta:
+//   id: "245-src-guide-search-test"
+//   type: code
+//   domain: src
+//   subject: guide-search-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-17
+//   updated: 2026-04-01
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const fs = require('fs');
 const path = require('path');
 const { JSDOM } = require('jsdom');

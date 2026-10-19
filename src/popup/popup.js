@@ -1,3 +1,16 @@
+// meta:
+//   id: "142-src-src-popup-popup"
+//   type: code
+//   domain: src
+//   subject: src-popup-popup
+//   status: adopted
+//   owner: ""
+//   created: 2021-02-18
+//   updated: 2026-10-19
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 const logger = globalThis.markSnipLogger || {
   debug() {},
   info(...args) { console.info(...args); },

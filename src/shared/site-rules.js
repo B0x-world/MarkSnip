@@ -1,3 +1,16 @@
+// meta:
+//   id: "189-src-site-rules"
+//   type: code
+//   domain: src
+//   subject: site-rules
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-28
+//   updated: 2026-06-04
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) {
     module.exports = factory(root);

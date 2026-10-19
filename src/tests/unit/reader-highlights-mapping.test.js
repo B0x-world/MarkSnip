@@ -1,3 +1,16 @@
+// meta:
+//   id: "264-src-reader-highlights-mapping-test"
+//   type: code
+//   domain: src
+//   subject: reader-highlights-mapping-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-26
+//   updated: 2026-05-27
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const { applyHighlights } = require('../../reader/highlights.js');
 
 describe('applyHighlights', () => {

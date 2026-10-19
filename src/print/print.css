@@ -1,3 +1,17 @@
+/* meta:
+   id: "144-src-print"
+   type: code
+   domain: src
+   subject: print
+   status: adopted
+   owner: ""
+   created: 2026-03-25
+   updated: 2026-03-25
+   related: ["001-project-file-metadata-spec"]
+   tags: []
+   usage: source
+*/
+
 html {
   color-scheme: light;
   -webkit-print-color-adjust: exact;

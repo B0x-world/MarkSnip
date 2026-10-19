@@ -1,3 +1,16 @@
+// meta:
+//   id: "225-src-agent-bridge-permissions-test"
+//   type: code
+//   domain: src
+//   subject: agent-bridge-permissions-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-25
+//   updated: 2026-03-25
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const fs = require('fs');
 const path = require('path');
 

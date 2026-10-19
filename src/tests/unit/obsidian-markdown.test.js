@@ -1,3 +1,16 @@
+// meta:
+//   id: "255-src-obsidian-markdown-test"
+//   type: code
+//   domain: src
+//   subject: obsidian-markdown-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-14
+//   updated: 2026-05-10
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const {
   buildObsidianFilepath,
   createObsidianAdvancedUri,

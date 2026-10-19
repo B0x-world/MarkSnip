@@ -1,3 +1,16 @@
+// meta:
+//   id: "182-src-obsidian-utils"
+//   type: code
+//   domain: src
+//   subject: obsidian-utils
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-14
+//   updated: 2026-05-10
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 (function(root) {
   function encodePathSegments(path) {
     return String(path || '')

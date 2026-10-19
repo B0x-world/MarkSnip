@@ -1,3 +1,16 @@
+// meta:
+//   id: "199-src-live-public-spec"
+//   type: code
+//   domain: src
+//   subject: live-public-spec
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-17
+//   updated: 2026-05-13
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 /**
  * Live smoke tests for public websites.
  * These tests intentionally hit public pages to restore the old live-site signal.

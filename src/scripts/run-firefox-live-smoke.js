@@ -1,3 +1,16 @@
+// meta:
+//   id: "162-src-run-firefox-live-smoke"
+//   type: code
+//   domain: src
+//   subject: run-firefox-live-smoke
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-10
+//   updated: 2026-10-19
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["script"]
+//   usage: script
+
 const fs = require('fs');
 const http = require('http');
 const net = require('net');

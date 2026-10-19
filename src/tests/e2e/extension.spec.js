@@ -1,3 +1,16 @@
+// meta:
+//   id: "198-src-extension-spec"
+//   type: code
+//   domain: src
+//   subject: extension-spec
+//   status: adopted
+//   owner: ""
+//   created: 2025-11-13
+//   updated: 2026-05-27
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 /**
  * End-to-End Tests for MarkSnip Extension
  * Tests the extension in a real browser environment using Playwright

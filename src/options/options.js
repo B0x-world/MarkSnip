@@ -1,3 +1,16 @@
+// meta:
+//   id: "138-src-src-options-options"
+//   type: code
+//   domain: src
+//   subject: src-options-options
+//   status: adopted
+//   owner: ""
+//   created: 2021-02-18
+//   updated: 2026-10-19
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 const logger = globalThis.markSnipLogger || {
   debug() {},
   info(...args) { console.info(...args); },

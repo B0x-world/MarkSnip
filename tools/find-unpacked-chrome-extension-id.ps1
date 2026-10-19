@@ -1,3 +1,16 @@
+# meta:
+#   id: "283-tools-find-unpacked-chrome-extension-id"
+#   type: code
+#   domain: tools
+#   subject: find-unpacked-chrome-extension-id
+#   status: adopted
+#   owner: ""
+#   created: 2026-04-02
+#   updated: 2026-04-02
+#   related: ["001-project-file-metadata-spec"]
+#   tags: ["script"]
+#   usage: script
+
 param(
     [string]$ExtensionPath = ".\src",
     [string]$ChromeUserDataDir = "$env:LOCALAPPDATA\Google\Chrome\User Data"

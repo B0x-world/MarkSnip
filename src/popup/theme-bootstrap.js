@@ -1,3 +1,16 @@
+// meta:
+//   id: "143-src-theme-bootstrap"
+//   type: code
+//   domain: src
+//   subject: theme-bootstrap
+//   status: adopted
+//   owner: ""
+//   created: 2026-04-04
+//   updated: 2026-04-04
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 (function () {
   const CACHE_KEY = 'marksnip-popup-theme-cache-v1';
   const root = document.documentElement;

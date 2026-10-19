@@ -1,3 +1,16 @@
+// meta:
+//   id: "181-src-notifications"
+//   type: code
+//   domain: src
+//   subject: notifications
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-16
+//   updated: 2026-10-20
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) {
     module.exports = factory(typeof globalThis !== 'undefined' ? globalThis : root);

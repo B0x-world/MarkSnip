@@ -1,3 +1,16 @@
+// meta:
+//   id: "238-src-content-script-dom-clone-test"
+//   type: code
+//   domain: src
+//   subject: content-script-dom-clone-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-03
+//   updated: 2026-05-19
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const fs = require('fs');
 const path = require('path');
 

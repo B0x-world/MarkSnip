@@ -1,3 +1,16 @@
+// meta:
+//   id: "266-src-reader-outline-test"
+//   type: code
+//   domain: src
+//   subject: reader-outline-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-05-26
+//   updated: 2026-05-26
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const { buildOutline } = require('../../reader/outline.js');
 
 describe('buildOutline', () => {

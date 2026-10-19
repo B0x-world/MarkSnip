@@ -1,3 +1,16 @@
+// meta:
+//   id: "277-src-template-processing-test"
+//   type: code
+//   domain: src
+//   subject: template-processing-test
+//   status: adopted
+//   owner: ""
+//   created: 2025-11-13
+//   updated: 2026-05-16
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 /**
  * Template Processing Tests
  * Tests template variable substitution and text replacement functionality

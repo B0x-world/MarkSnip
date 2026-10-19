@@ -1,3 +1,16 @@
+// meta:
+//   id: "228-src-popup-startup-assets-test"
+//   type: code
+//   domain: src
+//   subject: popup-startup-assets-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-22
+//   updated: 2026-05-19
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const fs = require('fs');
 const path = require('path');
 const { JSDOM } = require('jsdom');

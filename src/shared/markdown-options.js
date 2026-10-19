@@ -1,3 +1,16 @@
+// meta:
+//   id: "179-src-markdown-options"
+//   type: code
+//   domain: src
+//   subject: markdown-options
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-17
+//   updated: 2026-06-08
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 (function (root, factory) {
   const api = factory(root);
   root.markSnipMarkdownOptions = api;

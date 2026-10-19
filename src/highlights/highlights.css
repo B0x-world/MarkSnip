@@ -1,3 +1,17 @@
+/* meta:
+   id: "127-src-highlights"
+   type: code
+   domain: src
+   subject: highlights
+   status: adopted
+   owner: ""
+   created: 2026-05-25
+   updated: 2026-05-25
+   related: ["001-project-file-metadata-spec"]
+   tags: []
+   usage: source
+*/
+
 :root {
   color-scheme: light dark;
   --stone-50: #fafaf9;

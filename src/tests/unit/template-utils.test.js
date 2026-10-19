@@ -1,3 +1,16 @@
+// meta:
+//   id: "278-src-template-utils-test"
+//   type: code
+//   domain: src
+//   subject: template-utils-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-17
+//   updated: 2026-05-21
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 describe('Template utils helpers', () => {
 
   describe('generateValidFileName', () => {

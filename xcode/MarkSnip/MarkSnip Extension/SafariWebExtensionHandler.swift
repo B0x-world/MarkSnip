@@ -5,6 +5,19 @@
 //  Created by Gordon Pedersen on 17/2/21.
 //
 
+// meta:
+//   id: "285-safari-safari-web-extension-handler"
+//   type: code
+//   domain: safari
+//   subject: safari-web-extension-handler
+//   status: adopted
+//   owner: ""
+//   created: 2026-10-19
+//   updated: 2026-10-19
+//   related: ["001-project-file-metadata-spec"]
+//   tags: []
+//   usage: source
+
 import SafariServices
 import os.log
 

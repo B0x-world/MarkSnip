@@ -1,3 +1,16 @@
+// meta:
+//   id: "275-src-service-worker-image-bundle-zip-test"
+//   type: code
+//   domain: src
+//   subject: service-worker-image-bundle-zip-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-06-09
+//   updated: 2026-10-19
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');

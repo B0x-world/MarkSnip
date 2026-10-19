@@ -1,3 +1,16 @@
+// meta:
+//   id: "261-src-popup-markdown-preview-test"
+//   type: code
+//   domain: src
+//   subject: popup-markdown-preview-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-06-05
+//   updated: 2026-06-05
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');

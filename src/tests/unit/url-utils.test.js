@@ -1,3 +1,16 @@
+// meta:
+//   id: "280-src-url-utils-test"
+//   type: code
+//   domain: src
+//   subject: url-utils-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-17
+//   updated: 2026-06-13
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 const {
   safeParseUrl,
   resolveArticleUrl,

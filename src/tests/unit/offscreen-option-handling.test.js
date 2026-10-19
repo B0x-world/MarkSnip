@@ -1,3 +1,16 @@
+// meta:
+//   id: "257-src-offscreen-option-handling-test"
+//   type: code
+//   domain: src
+//   subject: offscreen-option-handling-test
+//   status: adopted
+//   owner: ""
+//   created: 2026-03-15
+//   updated: 2026-06-08
+//   related: ["001-project-file-metadata-spec"]
+//   tags: ["test"]
+//   usage: test
+
 /**
  * Tests shared offscreen markdown option normalization helper.
  */
