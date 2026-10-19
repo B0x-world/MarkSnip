@@ -260,16 +260,42 @@ The `.build/` directory is generated output and is not committed. Root-level `di
 
 GitHub Actions workflow [`.github/workflows/build-release.yml`](.github/workflows/build-release.yml):
 
-1. Runs unit and integration tests.
-2. Builds the browser manifests.
-3. Packages the artifacts:
+1. Runs unit and integration tests (and Agent Bridge `go test`).
+2. Builds only the artifacts that are enabled (see toggles below).
+3. Packages whichever of these are on:
    - `marksnip-chrome-<version>.zip`
    - `marksnip-firefox-<version>.xpi`
    - `marksnip-agent-bridge-windows-amd64.zip`
    - `marksnip-agent-bridge-macos-amd64.tar.gz`
    - `marksnip-agent-bridge-macos-arm64.tar.gz`
    - `marksnip-agent-bridge-linux-amd64.tar.gz`
-4. Publishes a GitHub Release on `v*` tags (or a manual `workflow_dispatch`).
+4. Publishes a GitHub Release on `v*` tags, or on a manual `workflow_dispatch` when **publish_release** is checked. The release attaches only artifacts that were enabled and actually uploaded, so a skipped helper does not fail the job.
+
+The Safari / Xcode wrapper under `xcode/` is not built or released by this workflow.
+
+### Build output toggles
+
+Manual runs expose boolean inputs. Tag pushes use repository variables, then default to **on**:
+
+| Artifact | `workflow_dispatch` input | Repository variable | Default |
+| --- | --- | --- | --- |
+| Firefox `.xpi` | `build_firefox` | `BUILD_FIREFOX` | `true` |
+| Chrome `.zip` | `build_chrome` | `BUILD_CHROME` | `true` |
+| Windows Agent Bridge `.zip` | `build_windows_helper` | `BUILD_WINDOWS_HELPER` | `true` |
+| Linux Agent Bridge `.tar.gz` | `build_linux_helper` | `BUILD_LINUX_HELPER` | `true` |
+| macOS Agent Bridge tarballs (amd64 + arm64) | `build_macos_helper` | `BUILD_MACOS_HELPER` | `true` |
+| Create GitHub Release | `publish_release` (dispatch only; tags always publish) | — | `true` |
+
+Set a variable under **Settings → Secrets and variables → Actions → Variables** to `false` to skip that artifact on tag releases.
+
+Example: build only the browser packages from the Actions tab, with helpers off and without publishing a release:
+
+- `build_firefox`: true
+- `build_chrome`: true
+- `build_windows_helper`: false
+- `build_linux_helper`: false
+- `build_macos_helper`: false
+- `publish_release`: false
 
 To publish:
 

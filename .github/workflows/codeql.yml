@@ -1,0 +1,60 @@
+# CodeQL advanced setup
+#
+# Replaces GitHub code scanning default setup so PR checks can diff against
+# analyses on `main`. Default setup and this workflow cannot both be active:
+# disable default setup after merge (see the PR description).
+#
+# Languages match what default setup was already scanning on this repo
+# (javascript-typescript, go, swift) plus GitHub Actions YAML. Job names stay
+# `Analyze (<language>)` so any required checks named that way keep resolving.
+#
+# The Safari wrapper under xcode/ is scanned as Swift; it is not built or
+# packaged by the release workflow.
+
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "27 4 * * 1"
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: javascript-typescript
+            build-mode: none
+          - language: go
+            build-mode: autobuild
+          - language: swift
+            build-mode: autobuild
+          - language: actions
+            build-mode: none
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
