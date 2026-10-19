@@ -156,7 +156,9 @@ function createServiceWorkerSandbox() {
   };
 
   sandbox.self = sandbox;
+  sandbox.globalThis = sandbox;
   vm.createContext(sandbox);
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '../../shared/debug-logging.js'), 'utf8'), sandbox, { filename: 'debug-logging.js' });
   vm.runInContext(zipUtilsSource, sandbox, { filename: 'zip-utils.js' });
   vm.runInContext(serviceWorkerSource, sandbox, { filename: 'service-worker.js' });
 

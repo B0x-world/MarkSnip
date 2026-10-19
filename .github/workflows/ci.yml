@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Run Tests
@@ -17,12 +20,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
           cache-dependency-path: "src/package-lock.json"
 
       - name: Setup npm
-        run: npm install --global npm@11.8.0
+        run: npm install --global npm@11.21.1
 
       - name: Show tool versions
         run: |
@@ -59,12 +62,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
           cache-dependency-path: "src/package-lock.json"
 
       - name: Setup npm
-        run: npm install --global npm@11.8.0
+        run: npm install --global npm@11.21.1
 
       - name: Show tool versions
         run: |

@@ -1,3 +1,10 @@
+const logger = globalThis.markSnipLogger || {
+  debug() {},
+  info(...args) { console.info(...args); },
+  warn(...args) { console.warn(...args); },
+  error(...args) { console.error(...args); }
+};
+
 function shouldSkipHiddenContent(captureOptions = {}) {
     return captureOptions?.skipHiddenContent === true;
 }
@@ -280,7 +287,7 @@ async function marksnipPrepareForCapture() {
         await loadPageContextScript();
         await waitForMathJaxLatexTagging();
     } catch (error) {
-        console.debug('marksnipPrepareForCapture failed:', error);
+        logger.debug('marksnipPrepareForCapture failed:', error);
     }
 }
 
@@ -506,7 +513,7 @@ var ACCENT_COLORS = {
 
 async function initLinkPickerMode() {
     if (window.linkPickerState.active) {
-        console.log("Link picker already active");
+        logger.debug("Link picker already active");
         return;
     }
 
@@ -536,7 +543,7 @@ async function initLinkPickerMode() {
     // Add event listeners
     setupLinkPickerEventListeners();
 
-    console.log("Link picker mode activated");
+    logger.debug("Link picker mode activated");
 }
 
 function injectLinkPickerStyles(colors) {
@@ -1067,7 +1074,7 @@ function extractLinksFromElement(element) {
             }
         } catch (e) {
             // Invalid URL, skip
-            console.debug('Invalid URL:', e);
+            logger.debug('Invalid URL:', e);
         }
     });
 
@@ -1120,7 +1127,7 @@ function finishLinkPicker() {
         linkPickerResults: links,
         linkPickerTimestamp: Date.now()
     }).then(() => {
-        console.log(`Saved ${links.length} links to storage`);
+        logger.debug(`Saved ${links.length} links to storage`);
 
         // Show success notification
         showSuccessNotification(links.length);
@@ -1131,7 +1138,7 @@ function finishLinkPicker() {
             links: links
         }).catch(err => {
             // Popup might be closed, that's okay - we saved to storage
-            console.log("Popup closed, links saved to storage");
+            logger.debug("Popup closed, links saved to storage");
         });
 
         // Cleanup after a short delay so user can see the notification
@@ -1197,7 +1204,7 @@ function cancelLinkPicker() {
             links: []
         }).catch(err => {
             // Popup might be closed, that's okay
-            console.log("Popup closed");
+            logger.debug("Popup closed");
         });
 
         cleanupLinkPicker();
@@ -1253,7 +1260,7 @@ function cleanupLinkPicker() {
         accentColors: null
     };
 
-    console.log("Link picker mode deactivated");
+    logger.debug("Link picker mode deactivated");
 }
 
 // ===== Element Picker Feature =====

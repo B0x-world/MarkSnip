@@ -198,7 +198,8 @@ All development commands run from `src/`.
 
 ### Prerequisites
 
-- Node.js 20+
+- Node.js 24 LTS
+- npm 11.21.1+ (workflows pin `npm@11.21.1`)
 - npm
 
 ### Setup
@@ -253,6 +254,7 @@ npm run audit:i18n -- --allow-key someIntentionalEnglishKey
 
 - `src/.build/chrome/manifest.json` with `background.service_worker`
 - `src/.build/firefox/manifest.json` with `background.scripts`
+- `src/.build/safari/manifest.json` with `background.scripts` (no Chrome `offscreen` permission), copied into the MarkDownload Xcode wrapper
 
 The `.build/` directory is generated output and is not committed. Root-level `dist/` holds packaged release artifacts, and root-level `tmp/` is ignored local scratch space.
 
@@ -260,16 +262,50 @@ The `.build/` directory is generated output and is not committed. Root-level `di
 
 GitHub Actions workflow [`.github/workflows/build-release.yml`](.github/workflows/build-release.yml):
 
-1. Runs unit and integration tests.
-2. Builds the browser manifests.
-3. Packages the artifacts:
-   - `marksnip-chrome-<version>.zip`
-   - `marksnip-firefox-<version>.xpi`
-   - `marksnip-agent-bridge-windows-amd64.zip`
-   - `marksnip-agent-bridge-macos-amd64.tar.gz`
-   - `marksnip-agent-bridge-macos-arm64.tar.gz`
-   - `marksnip-agent-bridge-linux-amd64.tar.gz`
-4. Publishes a GitHub Release on `v*` tags (or a manual `workflow_dispatch`).
+1. Resolves which outputs are enabled (see toggles below).
+2. Runs unit, integration, and Agent Bridge tests.
+3. Builds each enabled output in its own job (helpers are a matrix cell per OS/arch).
+4. Publishes a GitHub Release on `v*` tags, or on a manual `workflow_dispatch` when **publish_release** is checked. The release job downloads `marksnip-*` artifacts and attaches only files that were actually built.
+
+Pull requests run the same workflow with **Firefox and Chrome only** (no helpers, no Safari, no GitHub Release) so a helpers-off packaging path is covered in CI.
+
+Safari uses the existing Xcode wrapper under `xcode/MarkDownload - Markdown Web Clipper/`. The project, target, `.app`, and bundle IDs still use the upstream **MarkDownload** names. The packaged zip is `marksnip-safari-<version>.zip`. A Run Script build phase copies `src/.build/safari` (generated from current extension sources) into the appex. CI signs ad-hoc / leaves the app unsigned unless `MACOS_DEVELOPMENT_TEAM` (optional `MACOS_CODE_SIGN_IDENTITY`, `MACOS_CODE_SIGN_STYLE`) is set as a repository secret.
+
+### Build output toggles
+
+Each option is a `workflow_dispatch` boolean. Tag pushes use repository variables, then default to **on**. Pull requests force Firefox + Chrome on and everything else off.
+
+| Artifact | `workflow_dispatch` input | Repository variable | Default (tag/dispatch) |
+| --- | --- | --- | --- |
+| Firefox `.xpi` | `build_firefox` | `BUILD_FIREFOX` | `true` |
+| Chrome `.zip` | `build_chrome` | `BUILD_CHROME` | `true` |
+| Safari wrapper `.app` zip | `build_safari` | `BUILD_SAFARI` | `true` |
+| Windows Agent Bridge amd64 `.zip` | `build_windows_amd64` | `BUILD_WINDOWS_AMD64` | `true` |
+| Windows Agent Bridge arm64 `.zip` | `build_windows_arm64` | `BUILD_WINDOWS_ARM64` | `true` |
+| Linux Agent Bridge amd64 `.tar.gz` | `build_linux_amd64` | `BUILD_LINUX_AMD64` | `true` |
+| Linux Agent Bridge arm64 `.tar.gz` | `build_linux_arm64` | `BUILD_LINUX_ARM64` | `true` |
+| macOS Agent Bridge amd64 `.tar.gz` | `build_macos_amd64` | `BUILD_MACOS_AMD64` | `true` |
+| macOS Agent Bridge arm64 `.tar.gz` | `build_macos_arm64` | `BUILD_MACOS_ARM64` | `true` |
+| Create GitHub Release | `publish_release` (dispatch only; tags always publish) | — | `true` |
+| Debug extension build | `debug` (dispatch only; ignored when publishing) | — | `false` |
+
+`debug` is **build-time only**. There is no options-page switch. A debug package includes source maps, `shared/build-config.js` (`MARKSNIP_BUILD.debug = true`), and `logger.debug` call sites. A normal package strips those: no `.map` files, no `logger.debug(...)` calls, no debug-only config module. `logger.warn`, `logger.error`, and a small set of lifecycle `logger.info` calls stay in every build.
+
+Tag pushes and any run with `publish_release` enabled always build with debug off. Debug artifacts are named `marksnip-*-<version>-debug.*`. Locally: `MARKSNIP_DEBUG=true npm run build:manifests` (or `node scripts/generate-browser-manifests.js --debug`). `npm run test:build-artifacts` checks both modes.
+
+Set a variable under **Settings → Secrets and variables → Actions → Variables** to `false` to skip that artifact on tag releases.
+
+Example: Firefox + Chrome only, no helpers, no Safari, no GitHub Release:
+
+- `build_firefox` / `build_chrome`: true
+- `build_safari`: false
+- `build_windows_amd64` / `build_windows_arm64`: false
+- `build_linux_amd64` / `build_linux_arm64`: false
+- `build_macos_amd64` / `build_macos_arm64`: false
+- `publish_release`: false
+- `debug`: false
+
+All-options: leave every boolean at its default `true` (or check them all) on a `workflow_dispatch` or push a `v*` tag.
 
 To publish:
 
@@ -294,6 +330,7 @@ git push origin v5.2.0
 |- native/                 # Go Agent Bridge CLI and native messaging host
 |  |- cmd/
 |  `- internal/bridge/
+|- xcode/                  # Safari wrapper app (still named MarkDownload)
 |- src/
 |  |- background/          # Readability, Turndown, GFM, moment
 |  |- contentScript/       # clipping, highlighter, reader overlay

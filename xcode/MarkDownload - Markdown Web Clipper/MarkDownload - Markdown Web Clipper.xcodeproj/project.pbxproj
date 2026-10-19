@@ -186,6 +186,7 @@
 				F88D6F4D25DDEF0A001F90AF /* Sources */,
 				F88D6F4E25DDEF0A001F90AF /* Frameworks */,
 				F88D6F4F25DDEF0A001F90AF /* Resources */,
+				F879553027BCCC7700571DA8 /* Copy current Safari web extension resources */,
 			);
 			buildRules = (
 			);
@@ -258,6 +259,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		F879553027BCCC7700571DA8 /* Copy current Safari web extension resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy current Safari web extension resources";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -euo pipefail\nSAFARI_SRC=\"${SRCROOT}/../../src/.build/safari\"\nif [ ! -d \"$SAFARI_SRC\" ]; then\n  echo \"error: missing $SAFARI_SRC — run 'npm run build:manifests' from src/ first so the wrapper embeds the current MarkSnip sources\" >&2\n  exit 1\nfi\nDEST=\"${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\"\nmkdir -p \"$DEST\"\nrsync -a \"$SAFARI_SRC/\" \"$DEST/\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		F88D6F3B25DDEF07001F90AF /* Sources */ = {

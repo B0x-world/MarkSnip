@@ -1,19 +1,151 @@
+# Build and Release Extension
+#
+# Every packaged output has its own workflow_dispatch boolean and its own job
+# (or helper matrix cell). Tag pushes (`v*`) have no inputs; they fall back to
+# repository variables, then to "on". Pull requests force Firefox + Chrome only
+# so CI can prove a helpers-off run without publishing.
+#
+#   Input                 Repo variable            Default (tag/dispatch)
+#   --------------------  -----------------------  ----------------------
+#   build_firefox         BUILD_FIREFOX            true
+#   build_chrome          BUILD_CHROME             true
+#   build_safari          BUILD_SAFARI             true
+#   build_windows_amd64   BUILD_WINDOWS_AMD64      true
+#   build_windows_arm64   BUILD_WINDOWS_ARM64      true
+#   build_linux_amd64     BUILD_LINUX_AMD64        true
+#   build_linux_arm64     BUILD_LINUX_ARM64        true
+#   build_macos_amd64     BUILD_MACOS_AMD64        true
+#   build_macos_arm64     BUILD_MACOS_ARM64        true
+#   publish_release       (dispatch only)          true (tags always publish)
+#   debug                 (dispatch only)          false (forced off when publishing)
+#
+# Debug is build-time only. When false, source maps, logger.debug call sites,
+# and shared/build-config.js are stripped from packaged extensions. Warn, error,
+# and a small set of info logs remain. Tag releases and publish_release=true
+# always build with debug off.
+#
+# Safari builds the legacy Xcode wrapper at
+# xcode/MarkDownload - Markdown Web Clipper/ (bundle IDs still MarkDownload).
+# It embeds src/.build/safari. Unsigned/ad-hoc unless MACOS_DEVELOPMENT_TEAM
+# (and optional MACOS_CODE_SIGN_IDENTITY / MACOS_CODE_SIGN_STYLE) are set.
+#
+# The release job downloads whatever artifacts exist and attaches only those.
+
 name: Build and Release Extension
 
 on:
   push:
     tags:
       - "v*"
+  pull_request:
+    branches: [main]
   workflow_dispatch:
     inputs:
       version:
         description: "Version tag (e.g., v4.0.1)"
         required: false
+      build_firefox:
+        description: "Firefox extension (.xpi)"
+        type: boolean
+        default: true
+      build_chrome:
+        description: "Chrome extension (.zip)"
+        type: boolean
+        default: true
+      build_safari:
+        description: "Safari wrapper .app zip (macos runner, MarkDownload Xcode project)"
+        type: boolean
+        default: true
+      build_windows_amd64:
+        description: "Windows Agent Bridge helper (amd64 .zip)"
+        type: boolean
+        default: true
+      build_windows_arm64:
+        description: "Windows Agent Bridge helper (arm64 .zip)"
+        type: boolean
+        default: true
+      build_linux_amd64:
+        description: "Linux Agent Bridge helper (amd64 .tar.gz)"
+        type: boolean
+        default: true
+      build_linux_arm64:
+        description: "Linux Agent Bridge helper (arm64 .tar.gz)"
+        type: boolean
+        default: true
+      build_macos_amd64:
+        description: "macOS Agent Bridge helper (amd64 .tar.gz)"
+        type: boolean
+        default: true
+      build_macos_arm64:
+        description: "macOS Agent Bridge helper (arm64 .tar.gz)"
+        type: boolean
+        default: true
+      publish_release:
+        description: "Create or update the GitHub Release (tag pushes always publish)"
+        type: boolean
+        default: true
+      debug:
+        description: "Build-time debug: keep source maps and logger.debug calls (forced off when publishing)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
 
 jobs:
+  resolve:
+    name: Resolve build toggles
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+      firefox: ${{ steps.resolve.outputs.firefox }}
+      chrome: ${{ steps.resolve.outputs.chrome }}
+      safari: ${{ steps.resolve.outputs.safari }}
+      windows_amd64: ${{ steps.resolve.outputs.windows_amd64 }}
+      windows_arm64: ${{ steps.resolve.outputs.windows_arm64 }}
+      linux_amd64: ${{ steps.resolve.outputs.linux_amd64 }}
+      linux_arm64: ${{ steps.resolve.outputs.linux_arm64 }}
+      macos_amd64: ${{ steps.resolve.outputs.macos_amd64 }}
+      macos_arm64: ${{ steps.resolve.outputs.macos_arm64 }}
+      helper_matrix: ${{ steps.resolve.outputs.helper_matrix }}
+      helper_count: ${{ steps.resolve.outputs.helper_count }}
+      publish_release: ${{ steps.resolve.outputs.publish_release }}
+      debug: ${{ steps.resolve.outputs.debug }}
+      artifact_suffix: ${{ steps.resolve.outputs.artifact_suffix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Resolve enabled outputs
+        id: resolve
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_FIREFOX: ${{ github.event.inputs.build_firefox }}
+          INPUT_CHROME: ${{ github.event.inputs.build_chrome }}
+          INPUT_SAFARI: ${{ github.event.inputs.build_safari }}
+          INPUT_WINDOWS_AMD64: ${{ github.event.inputs.build_windows_amd64 }}
+          INPUT_WINDOWS_ARM64: ${{ github.event.inputs.build_windows_arm64 }}
+          INPUT_LINUX_AMD64: ${{ github.event.inputs.build_linux_amd64 }}
+          INPUT_LINUX_ARM64: ${{ github.event.inputs.build_linux_arm64 }}
+          INPUT_MACOS_AMD64: ${{ github.event.inputs.build_macos_amd64 }}
+          INPUT_MACOS_ARM64: ${{ github.event.inputs.build_macos_arm64 }}
+          INPUT_PUBLISH: ${{ github.event.inputs.publish_release }}
+          INPUT_DEBUG: ${{ github.event.inputs.debug }}
+          VAR_FIREFOX: ${{ vars.BUILD_FIREFOX }}
+          VAR_CHROME: ${{ vars.BUILD_CHROME }}
+          VAR_SAFARI: ${{ vars.BUILD_SAFARI }}
+          VAR_WINDOWS_AMD64: ${{ vars.BUILD_WINDOWS_AMD64 }}
+          VAR_WINDOWS_ARM64: ${{ vars.BUILD_WINDOWS_ARM64 }}
+          VAR_LINUX_AMD64: ${{ vars.BUILD_LINUX_AMD64 }}
+          VAR_LINUX_ARM64: ${{ vars.BUILD_LINUX_ARM64 }}
+          VAR_MACOS_AMD64: ${{ vars.BUILD_MACOS_AMD64 }}
+          VAR_MACOS_ARM64: ${{ vars.BUILD_MACOS_ARM64 }}
+        run: python3 .github/scripts/resolve-release-outputs.py
+
   test:
     name: Run Tests
     runs-on: ubuntu-latest
+    needs: resolve
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,22 +153,18 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
           cache-dependency-path: "src/package-lock.json"
 
       - name: Setup npm
-        run: npm install --global npm@11.8.0
-
-      - name: Show tool versions
-        run: |
-          node --version
-          npm --version
+        run: npm install --global npm@11.21.1
 
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: "1.22"
+          cache-dependency-path: native/go.mod
 
       - name: Install dependencies
         working-directory: src
@@ -50,13 +178,19 @@ jobs:
         working-directory: src
         run: npm run test:integration
 
-  build:
-    name: Build Extension Packages
-    runs-on: ubuntu-latest
-    needs: test
-    outputs:
-      version: ${{ steps.get-version.outputs.version }}
+      - name: Test Agent Bridge
+        working-directory: native
+        run: go test ./...
 
+      - name: Assert debug vs non-debug build artifacts
+        working-directory: src
+        run: npm run test:build-artifacts
+
+  firefox:
+    name: Firefox extension
+    runs-on: ubuntu-latest
+    needs: [resolve, test]
+    if: needs.resolve.outputs.firefox == 'true'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -64,22 +198,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
           cache-dependency-path: "src/package-lock.json"
 
       - name: Setup npm
-        run: npm install --global npm@11.8.0
-
-      - name: Show tool versions
-        run: |
-          node --version
-          npm --version
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.22"
+        run: npm install --global npm@11.21.1
 
       - name: Install dependencies
         working-directory: src
@@ -89,169 +213,289 @@ jobs:
         working-directory: src
         run: npm run lint:js
 
-      - name: Get version from manifest
-        id: get-version
-        working-directory: src
-        run: |
-          VERSION=$(node -p "require('./manifest.json').version")
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Extension version: $VERSION"
-
       - name: Generate browser-specific manifests
         working-directory: src
+        env:
+          MARKSNIP_DEBUG: ${{ needs.resolve.outputs.debug }}
         run: npm run build:manifests
+
+      - name: Assert packaged Firefox debug artifacts
+        working-directory: src
+        env:
+          MARKSNIP_DEBUG: ${{ needs.resolve.outputs.debug }}
+        run: node scripts/assert-debug-artifacts.js --dir .build/firefox --debug="${MARKSNIP_DEBUG}"
 
       - name: Run web-ext lint (Firefox)
         working-directory: src
         run: node scripts/run-web-ext.js lint -s .build/firefox
 
-      - name: Create dist directory
-        run: mkdir -p dist
-
-      - name: Build Agent Bridge companions
-        working-directory: native
-        run: |
-          mkdir -p ../dist
-
-          build_bridge() {
-            local goos="$1"
-            local goarch="$2"
-            local archive_name="$3"
-            local stage_dir="../dist/.agent-bridge-${goos}-${goarch}"
-            local cli_name="marksnip"
-            local host_name="marksnip-native-host"
-
-            rm -rf "$stage_dir"
-            mkdir -p "$stage_dir"
-
-            if [ "$goos" = "windows" ]; then
-              cli_name="${cli_name}.exe"
-              host_name="${host_name}.exe"
-            fi
-
-            GOOS="$goos" GOARCH="$goarch" go build -o "${stage_dir}/${cli_name}" ./cmd/marksnip
-            GOOS="$goos" GOARCH="$goarch" go build -o "${stage_dir}/${host_name}" ./cmd/marksnip-native-host
-            cp README.md "${stage_dir}/README.md"
-
-            if [ "$goos" = "windows" ]; then
-              (cd "$stage_dir" && zip -r "../${archive_name}" .)
-            else
-              (cd "$stage_dir" && tar -czf "../${archive_name}" .)
-            fi
-
-            rm -rf "$stage_dir"
-          }
-
-          build_bridge windows amd64 marksnip-agent-bridge-windows-amd64.zip
-          build_bridge darwin amd64 marksnip-agent-bridge-macos-amd64.tar.gz
-          build_bridge darwin arm64 marksnip-agent-bridge-macos-arm64.tar.gz
-          build_bridge linux amd64 marksnip-agent-bridge-linux-amd64.tar.gz
-
-      - name: Create Chrome package (.zip)
-        working-directory: src/.build/chrome
-        run: |
-          zip -r ../../../dist/marksnip-chrome-${{ steps.get-version.outputs.version }}.zip . \
-            -x "*.DS_Store"
-
-      - name: Create Firefox package (.xpi)
+      - name: Package Firefox
         working-directory: src/.build/firefox
         run: |
-          zip -r ../../../dist/marksnip-firefox-${{ steps.get-version.outputs.version }}.xpi . \
-            -x "*.DS_Store"
-
-      - name: Upload Chrome artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: marksnip-chrome
-          path: dist/marksnip-chrome-${{ steps.get-version.outputs.version }}.zip
-          retention-days: 30
+          mkdir -p ../../../dist
+          zip -r "../../../dist/marksnip-firefox-${{ needs.resolve.outputs.version }}${{ needs.resolve.outputs.artifact_suffix }}.xpi" . -x "*.DS_Store"
 
       - name: Upload Firefox artifact
         uses: actions/upload-artifact@v4
         with:
           name: marksnip-firefox
-          path: dist/marksnip-firefox-${{ steps.get-version.outputs.version }}.xpi
+          path: dist/marksnip-firefox-${{ needs.resolve.outputs.version }}${{ needs.resolve.outputs.artifact_suffix }}.xpi
+          if-no-files-found: error
           retention-days: 30
 
-      - name: Upload Agent Bridge artifact
+  chrome:
+    name: Chrome extension
+    runs-on: ubuntu-latest
+    needs: [resolve, test]
+    if: needs.resolve.outputs.chrome == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: "src/package-lock.json"
+
+      - name: Setup npm
+        run: npm install --global npm@11.21.1
+
+      - name: Install dependencies
+        working-directory: src
+        run: npm ci || npm ci || npm ci
+
+      - name: Generate browser-specific manifests
+        working-directory: src
+        env:
+          MARKSNIP_DEBUG: ${{ needs.resolve.outputs.debug }}
+        run: npm run build:manifests
+
+      - name: Assert packaged Chrome debug artifacts
+        working-directory: src
+        env:
+          MARKSNIP_DEBUG: ${{ needs.resolve.outputs.debug }}
+        run: node scripts/assert-debug-artifacts.js --dir .build/chrome --debug="${MARKSNIP_DEBUG}"
+
+      - name: Package Chrome
+        working-directory: src/.build/chrome
+        run: |
+          mkdir -p ../../../dist
+          zip -r "../../../dist/marksnip-chrome-${{ needs.resolve.outputs.version }}${{ needs.resolve.outputs.artifact_suffix }}.zip" . -x "*.DS_Store"
+
+      - name: Upload Chrome artifact
         uses: actions/upload-artifact@v4
         with:
-          name: marksnip-agent-bridge
-          path: |
-            dist/marksnip-agent-bridge-windows-amd64.zip
-            dist/marksnip-agent-bridge-macos-amd64.tar.gz
-            dist/marksnip-agent-bridge-macos-arm64.tar.gz
-            dist/marksnip-agent-bridge-linux-amd64.tar.gz
+          name: marksnip-chrome
+          path: dist/marksnip-chrome-${{ needs.resolve.outputs.version }}${{ needs.resolve.outputs.artifact_suffix }}.zip
+          if-no-files-found: error
+          retention-days: 30
+
+  safari:
+    name: Safari wrapper
+    runs-on: macos-latest
+    needs: [resolve, test]
+    if: needs.resolve.outputs.safari == 'true'
+    env:
+      MACOS_DEVELOPMENT_TEAM: ${{ secrets.MACOS_DEVELOPMENT_TEAM }}
+      MACOS_CODE_SIGN_IDENTITY: ${{ secrets.MACOS_CODE_SIGN_IDENTITY }}
+      MACOS_CODE_SIGN_STYLE: ${{ secrets.MACOS_CODE_SIGN_STYLE }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: "src/package-lock.json"
+
+      - name: Setup npm
+        run: npm install --global npm@11.21.1
+
+      - name: Install dependencies
+        working-directory: src
+        run: npm ci || npm ci || npm ci
+
+      - name: Generate Safari web extension sources
+        working-directory: src
+        env:
+          MARKSNIP_DEBUG: ${{ needs.resolve.outputs.debug }}
+        run: npm run build:manifests
+
+      - name: Assert packaged Safari debug artifacts
+        working-directory: src
+        env:
+          MARKSNIP_DEBUG: ${{ needs.resolve.outputs.debug }}
+        run: node scripts/assert-debug-artifacts.js --dir .build/safari --debug="${MARKSNIP_DEBUG}"
+
+      - name: Build Safari wrapper .app
+        env:
+          MARKSNIP_ARTIFACT_SUFFIX: ${{ needs.resolve.outputs.artifact_suffix }}
+        run: bash xcode/build-safari-app.sh
+
+      - name: Upload Safari artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: marksnip-safari
+          path: dist/marksnip-safari-${{ needs.resolve.outputs.version }}${{ needs.resolve.outputs.artifact_suffix }}.zip
+          if-no-files-found: error
+          retention-days: 30
+
+  helpers:
+    name: Helper (${{ matrix.id }})
+    runs-on: ubuntu-latest
+    needs: [resolve, test]
+    if: needs.resolve.outputs.helper_count != '0'
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.resolve.outputs.helper_matrix) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache-dependency-path: native/go.mod
+
+      - name: Build Agent Bridge
+        working-directory: native
+        env:
+          GOOS_VAL: ${{ matrix.goos }}
+          GOARCH_VAL: ${{ matrix.goarch }}
+          ARCHIVE: ${{ matrix.archive }}
+          FMT: ${{ matrix.format }}
+        run: |
+          set -euo pipefail
+          mkdir -p ../dist
+          stage="../dist/.agent-bridge-${GOOS_VAL}-${GOARCH_VAL}"
+          rm -rf "$stage"
+          mkdir -p "$stage"
+          cli_name="marksnip"
+          host_name="marksnip-native-host"
+          if [ "$GOOS_VAL" = "windows" ]; then
+            cli_name="${cli_name}.exe"
+            host_name="${host_name}.exe"
+          fi
+          CGO_ENABLED=0 GOOS="$GOOS_VAL" GOARCH="$GOARCH_VAL" go build -o "${stage}/${cli_name}" ./cmd/marksnip
+          CGO_ENABLED=0 GOOS="$GOOS_VAL" GOARCH="$GOARCH_VAL" go build -o "${stage}/${host_name}" ./cmd/marksnip-native-host
+          cp README.md "${stage}/README.md"
+          if [ "$FMT" = "zip" ]; then
+            (cd "$stage" && zip -r "../${ARCHIVE}" .)
+          else
+            (cd "$stage" && tar -czf "../${ARCHIVE}" .)
+          fi
+          rm -rf "$stage"
+
+      - name: Upload helper artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: marksnip-agent-bridge-${{ matrix.id }}
+          path: dist/${{ matrix.archive }}
+          if-no-files-found: error
           retention-days: 30
 
   release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: build
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
-
+    needs: [resolve, test, firefox, chrome, safari, helpers]
+    if: |
+      always() &&
+      !cancelled() &&
+      needs.resolve.result == 'success' &&
+      needs.test.result == 'success' &&
+      (needs.firefox.result == 'success' || needs.firefox.result == 'skipped') &&
+      (needs.chrome.result == 'success' || needs.chrome.result == 'skipped') &&
+      (needs.safari.result == 'success' || needs.safari.result == 'skipped') &&
+      (needs.helpers.result == 'success' || needs.helpers.result == 'skipped') &&
+      (
+        startsWith(github.ref, 'refs/tags/') ||
+        needs.resolve.outputs.publish_release == 'true'
+      )
     permissions:
       contents: write
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download Chrome artifact
+      - name: Download built artifacts
         uses: actions/download-artifact@v4
         with:
-          name: marksnip-chrome
+          pattern: marksnip-*
+          merge-multiple: true
           path: ./artifacts
-
-      - name: Download Firefox artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: marksnip-firefox
-          path: ./artifacts
-
-      - name: Download Agent Bridge artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: marksnip-agent-bridge
-          path: ./artifacts
+          if-no-artifact-found: ignore
 
       - name: List artifacts
-        run: ls -la ./artifacts/
+        run: |
+          mkdir -p ./artifacts
+          ls -la ./artifacts/ || true
 
       - name: Get tag name
         id: get-tag
         run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             TAG="${{ github.event.inputs.version }}"
             if [ -z "$TAG" ]; then
-              TAG="v${{ needs.build.outputs.version }}"
+              TAG="v${{ needs.resolve.outputs.version }}"
             fi
           else
             TAG="${GITHUB_REF#refs/tags/}"
           fi
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
-      - name: Extract changelog entry
+      - name: Extract changelog and install notes
         id: changelog
+        env:
+          VERSION_TAG: ${{ steps.get-tag.outputs.tag }}
+          EXT_VERSION: ${{ needs.resolve.outputs.version }}
         run: |
-          VERSION="${{ steps.get-tag.outputs.tag }}"
-          VERSION="${VERSION#v}"
-
+          set -euo pipefail
+          VERSION="${VERSION_TAG#v}"
           CHANGELOG_ENTRY="$(awk -v version="$VERSION" '
             $0 == "## " version { found=1; next }
             found && /^## / { exit }
             found { print }
           ' CHANGELOG.md)"
-
           if [ -n "$CHANGELOG_ENTRY" ]; then
             CHANGELOG_ENTRY="$(printf '%s\n' "$CHANGELOG_ENTRY" | sed '/./,$!d')"
           else
             CHANGELOG_ENTRY="- No changelog entry found for version $VERSION."
           fi
 
+          INSTALL_LINES=""
+          if ls ./artifacts/marksnip-chrome-*.zip >/dev/null 2>&1; then
+            INSTALL_LINES="${INSTALL_LINES}
+          **Chrome:** download \`marksnip-chrome-${EXT_VERSION}.zip\`, load unpacked from \`chrome://extensions/\`.
+          "
+          fi
+          if ls ./artifacts/marksnip-firefox-*.xpi >/dev/null 2>&1; then
+            INSTALL_LINES="${INSTALL_LINES}
+          **Firefox:** download \`marksnip-firefox-${EXT_VERSION}.xpi\` and open it in Firefox.
+          "
+          fi
+          if ls ./artifacts/marksnip-safari-*.zip >/dev/null 2>&1; then
+            INSTALL_LINES="${INSTALL_LINES}
+          **Safari:** download \`marksnip-safari-${EXT_VERSION}.zip\` and open the \`MarkDownload - Markdown Web Clipper.app\` wrapper (legacy MarkDownload naming), then enable the extension in Safari settings. Ad-hoc/unsigned builds may require Gatekeeper override.
+          "
+          fi
+          if ls ./artifacts/marksnip-agent-bridge-* >/dev/null 2>&1; then
+            INSTALL_LINES="${INSTALL_LINES}
+          **Agent Bridge:** attach the archive for your OS/arch, extract, then \`install-host\` and enable Agent Bridge in settings.
+          "
+          fi
+
           {
             echo "changes<<EOF"
             printf '%s\n' "$CHANGELOG_ENTRY"
+            echo "EOF"
+            echo "install<<EOF"
+            printf '%s\n' "$INSTALL_LINES"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
@@ -264,38 +508,18 @@ jobs:
             ## MarkSnip ${{ steps.get-tag.outputs.tag }}
 
             ### Installation
+            ${{ steps.changelog.outputs.install }}
 
-            **Chrome:**
-            1. Download `marksnip-chrome-${{ needs.build.outputs.version }}.zip`
-            2. Go to `chrome://extensions/`
-            3. Enable "Developer mode"
-            4. Click "Load unpacked" and select the extracted folder
-            5. Or drag and drop the .zip file to install
-
-            **Firefox:**
-            1. Download `marksnip-firefox-${{ needs.build.outputs.version }}.xpi`
-            2. Open Firefox and drag the .xpi file into the browser
-            3. Confirm the installation
-
-            **Agent Bridge (choose the archive for your OS):**
-            - Windows x64: `marksnip-agent-bridge-windows-amd64.zip`
-            - macOS Intel: `marksnip-agent-bridge-macos-amd64.tar.gz`
-            - macOS Apple Silicon: `marksnip-agent-bridge-macos-arm64.tar.gz`
-            - Linux x64: `marksnip-agent-bridge-linux-amd64.tar.gz`
-
-            After extracting the archive:
-            - Windows: run `.\marksnip.exe install-host`
-            - macOS/Linux: run `./marksnip install-host`
-            - Then enable **Agent Bridge** in the extension settings
+            Only artifacts that were enabled and actually built are attached.
 
             ### Changes
             ${{ steps.changelog.outputs.changes }}
 
             See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for all version changes.
-
           files: |
             artifacts/*.zip
             artifacts/*.tar.gz
             artifacts/*.xpi
+          fail_on_unmatched_files: false
           draft: false
           prerelease: false
