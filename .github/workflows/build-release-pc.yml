@@ -38,13 +38,13 @@ jobs:
     permissions:
       contents: write
     with:
-      build_firefox: true
+      build_firefox: false
       build_chrome: true
       build_safari: false
-      build_windows_amd64: true
-      build_windows_arm64: true
+      build_windows_amd64: false
+      build_windows_arm64: false
       build_linux_amd64: true
-      build_linux_arm64: true
+      build_linux_arm64: false
       build_macos_amd64: false
       build_macos_arm64: false
       publish_release: ${{ inputs.publish_release }}
