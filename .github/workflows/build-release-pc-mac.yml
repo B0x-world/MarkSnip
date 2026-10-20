@@ -19,10 +19,6 @@ name: Build and Release (PC + Mac)
 on:
   workflow_dispatch:
     inputs:
-      publish_release:
-        description: "Create or update the GitHub Release"
-        type: boolean
-        default: false
       architectures:
         description: "Native host architectures (x64, arm64, or all)"
         type: choice
@@ -32,7 +28,11 @@ on:
           - arm64
         default: all
       enable_macos:
-        description: "Opt in to Safari wrapper and macOS Agent Bridge hosts (or set ENABLE_MACOS=true)"
+        description: "Mac target: Safari wrapper plus macOS helpers (or set ENABLE_MACOS=true)"
+        type: boolean
+        default: false
+      publish_release:
+        description: "Create or update the GitHub Release"
         type: boolean
         default: false
 
@@ -53,16 +53,14 @@ jobs:
     permissions:
       contents: write
     with:
-      build_firefox: true
-      build_chrome: true
-      build_safari: ${{ inputs.enable_macos }}
-      build_windows_amd64: true
-      build_windows_arm64: true
-      build_linux_amd64: true
-      build_linux_arm64: true
-      build_macos_amd64: ${{ inputs.enable_macos }}
-      build_macos_arm64: ${{ inputs.enable_macos }}
+      architectures: ${{ inputs.architectures }}
+      helpers: true
+      extensions: true
+      mac: ${{ inputs.enable_macos }}
+      pc: true
+      chrome: true
+      edge: true
+      firefox: true
+      enable_macos: ${{ inputs.enable_macos }}
       publish_release: ${{ inputs.publish_release }}
       debug: false
-      architectures: ${{ inputs.architectures }}
-      enable_macos: ${{ inputs.enable_macos }}

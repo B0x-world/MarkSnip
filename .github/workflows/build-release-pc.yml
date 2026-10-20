@@ -19,10 +19,6 @@ name: Build and Release (PC)
 on:
   workflow_dispatch:
     inputs:
-      publish_release:
-        description: "Create or update the GitHub Release"
-        type: boolean
-        default: false
       architectures:
         description: "Native host architectures (x64, arm64, or all)"
         type: choice
@@ -31,6 +27,10 @@ on:
           - x64
           - arm64
         default: all
+      publish_release:
+        description: "Create or update the GitHub Release"
+        type: boolean
+        default: false
 
 # Caller-only group. The reusable workflow uses a distinct
 # build-release-extension-* group so github.workflow in the callee cannot
@@ -49,16 +49,14 @@ jobs:
     permissions:
       contents: write
     with:
-      build_firefox: false
-      build_chrome: true
-      build_safari: false
-      build_windows_amd64: false
-      build_windows_arm64: false
-      build_linux_amd64: true
-      build_linux_arm64: false
-      build_macos_amd64: false
-      build_macos_arm64: false
+      architectures: ${{ inputs.architectures }}
+      helpers: true
+      extensions: true
+      mac: false
+      pc: true
+      chrome: true
+      edge: true
+      firefox: false
+      enable_macos: false
       publish_release: ${{ inputs.publish_release }}
       debug: false
-      architectures: ${{ inputs.architectures }}
-      enable_macos: false

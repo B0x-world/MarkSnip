@@ -26,11 +26,42 @@ assert _SPEC.loader is not None
 _SPEC.loader.exec_module(_MOD)
 apply_architecture_filter = _MOD.apply_architecture_filter
 apply_macos_gate = _MOD.apply_macos_gate
+helper_arches = _MOD.helper_arches
 macos_enabled = _MOD.macos_enabled
 normalize_architectures = _MOD.normalize_architectures
+resolve_flags = _MOD.resolve_flags
+
+
+INPUT_KEYS = (
+    "INPUT_HELPERS",
+    "INPUT_EXTENSIONS",
+    "INPUT_MAC",
+    "INPUT_PC",
+    "INPUT_CHROME",
+    "INPUT_EDGE",
+    "INPUT_FIREFOX",
+    "INPUT_ENABLE_MACOS",
+    "VAR_ENABLE_MACOS",
+    "SAFARI_RELEVANT",
+)
 
 
 class ArchitectureFilterTests(unittest.TestCase):
+    def _set_inputs(self, values: dict[str, str]) -> None:
+        previous = {key: os.environ.get(key) for key in INPUT_KEYS}
+
+        def restore() -> None:
+            for key in INPUT_KEYS:
+                if previous[key] is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = previous[key]
+
+        self.addCleanup(restore)
+        for key in INPUT_KEYS:
+            os.environ.pop(key, None)
+        os.environ.update(values)
+
     def test_normalize(self):
         self.assertEqual(normalize_architectures("x64"), "x64")
         self.assertEqual(normalize_architectures("amd64"), "x64")
@@ -80,18 +111,72 @@ class ArchitectureFilterTests(unittest.TestCase):
         os.environ["INPUT_ENABLE_MACOS"] = "true"
         self.assertTrue(macos_enabled())
 
-    def test_arm64_maps_pc_linux_amd64_only_preset(self):
-        flags = {
-            "windows_amd64": False,
-            "windows_arm64": False,
-            "linux_amd64": True,
-            "linux_arm64": False,
-            "macos_amd64": False,
-            "macos_arm64": False,
-        }
-        apply_architecture_filter(flags, "arm64")
-        self.assertFalse(flags["linux_amd64"])
-        self.assertTrue(flags["linux_arm64"])
+    def test_helper_arches_from_pc_or_mac_target(self):
+        self.assertEqual(helper_arches(True, "x64"), (True, False))
+        self.assertEqual(helper_arches(True, "arm64"), (False, True))
+        self.assertEqual(helper_arches(True, "all"), (True, True))
+        self.assertEqual(helper_arches(False, "all"), (False, False))
+
+    def test_dispatch_pc_x64_helpers(self):
+        self._set_inputs(
+            {
+                "INPUT_HELPERS": "true",
+                "INPUT_EXTENSIONS": "true",
+                "INPUT_MAC": "false",
+                "INPUT_PC": "true",
+                "INPUT_CHROME": "true",
+                "INPUT_EDGE": "true",
+                "INPUT_FIREFOX": "false",
+            }
+        )
+        flags = resolve_flags("workflow_dispatch", tag_push=False, architectures="x64")
+        self.assertTrue(flags["chrome"])
+        self.assertTrue(flags["edge"])
+        self.assertFalse(flags["firefox"])
+        self.assertFalse(flags["safari"])
+        self.assertTrue(flags["windows_amd64"])
+        self.assertFalse(flags["windows_arm64"])
+        self.assertTrue(flags["linux_amd64"])
+        self.assertFalse(flags["linux_arm64"])
+        self.assertFalse(flags["macos_amd64"])
+
+    def test_mac_helpers_need_enable_macos(self):
+        self._set_inputs(
+            {
+                "INPUT_HELPERS": "true",
+                "INPUT_EXTENSIONS": "false",
+                "INPUT_MAC": "true",
+                "INPUT_PC": "false",
+                "INPUT_CHROME": "false",
+                "INPUT_EDGE": "false",
+                "INPUT_FIREFOX": "false",
+            }
+        )
+        flags = resolve_flags("workflow_dispatch", tag_push=False, architectures="all")
+        self.assertFalse(flags["safari"])
+        self.assertFalse(flags["macos_amd64"])
+        os.environ["INPUT_ENABLE_MACOS"] = "true"
+        flags = resolve_flags("workflow_dispatch", tag_push=False, architectures="all")
+        self.assertTrue(flags["safari"])
+        self.assertTrue(flags["macos_amd64"])
+        self.assertTrue(flags["macos_arm64"])
+
+    def test_extensions_group_gates_browser_zips(self):
+        self._set_inputs(
+            {
+                "INPUT_HELPERS": "false",
+                "INPUT_EXTENSIONS": "false",
+                "INPUT_MAC": "false",
+                "INPUT_PC": "false",
+                "INPUT_CHROME": "true",
+                "INPUT_EDGE": "true",
+                "INPUT_FIREFOX": "true",
+            }
+        )
+        flags = resolve_flags("workflow_dispatch", tag_push=False, architectures="all")
+        self.assertFalse(flags["chrome"])
+        self.assertFalse(flags["edge"])
+        self.assertFalse(flags["firefox"])
 
 
 if __name__ == "__main__":

@@ -64,7 +64,36 @@ def evaluate_group(
     return f"{caller_workflow}-{ref}"
 
 
+DISPATCH_INPUT_ORDER = (
+    "architectures",
+    "helpers",
+    "extensions",
+    "mac",
+    "pc",
+    "chrome",
+    "edge",
+    "firefox",
+    "publish_release",
+    "debug",
+)
+
+
+def dispatch_input_ids(text: str) -> list[str]:
+    block = re.search(
+        r"(?ms)^  workflow_dispatch:\n    inputs:\n(.*?)^  workflow_call:",
+        text,
+    )
+    if not block:
+        raise AssertionError("missing workflow_dispatch inputs")
+    return re.findall(r"^      ([a-z_]+):\n", block.group(1), flags=re.M)
+
+
 class WorkflowConcurrencyTests(unittest.TestCase):
+    def test_dispatch_inputs_are_ten_and_ordered(self):
+        ids = dispatch_input_ids(CALLEE.read_text(encoding="utf-8"))
+        self.assertEqual(ids, list(DISPATCH_INPUT_ORDER))
+        self.assertEqual(len(ids), 10)
+
     def test_callee_does_not_use_github_workflow(self):
         group = group_expression(CALLEE.read_text(encoding="utf-8"))
         self.assertNotIn("github.workflow", group)

@@ -109,6 +109,53 @@ def apply_architecture_filter(flags: dict[str, bool], architectures: str) -> dic
     return flags
 
 
+def helper_arches(enabled: bool, architectures: str) -> tuple[bool, bool]:
+    if not enabled:
+        return False, False
+    kind = normalize_architectures(architectures)
+    if kind == "all":
+        return True, True
+    if kind == "x64":
+        return True, False
+    return False, True
+
+
+def resolve_flags(
+    event_name: str,
+    *,
+    tag_push: bool,
+    architectures: str,
+) -> dict[str, bool]:
+    helpers = resolve(event_name, env("INPUT_HELPERS"), None, False, tag_push)
+    extensions = resolve(event_name, env("INPUT_EXTENSIONS"), None, True, tag_push)
+    mac = resolve(event_name, env("INPUT_MAC"), None, True, tag_push)
+    pc = resolve(event_name, env("INPUT_PC"), None, False, tag_push)
+    chrome = resolve(event_name, env("INPUT_CHROME"), None, True, tag_push)
+    edge = resolve(event_name, env("INPUT_EDGE"), None, True, tag_push)
+    firefox = resolve(event_name, env("INPUT_FIREFOX"), None, True, tag_push)
+
+    windows_amd64, windows_arm64 = helper_arches(helpers and pc, architectures)
+    linux_amd64, linux_arm64 = helper_arches(helpers and pc, architectures)
+    macos_amd64, macos_arm64 = helper_arches(helpers and mac, architectures)
+
+    flags = {
+        "firefox": extensions and firefox,
+        "chrome": extensions and chrome,
+        "edge": extensions and edge,
+        "safari": mac,
+        "windows_amd64": windows_amd64,
+        "windows_arm64": windows_arm64,
+        "linux_amd64": linux_amd64,
+        "linux_arm64": linux_arm64,
+        "macos_amd64": macos_amd64,
+        "macos_arm64": macos_arm64,
+    }
+    flags = apply_macos_gate(flags, macos_enabled())
+    if event_name == "pull_request":
+        flags["safari"] = flags["safari"] and to_bool(env("SAFARI_RELEVANT"), True)
+    return flags
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Resolve selectable build outputs")
     parser.add_argument(
@@ -122,37 +169,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> None:
     event_name = env("EVENT_NAME")
     tag_push = event_name == "push" and is_release_tag(env("GITHUB_REF"))
-    flags = {
-        "firefox": resolve(event_name, env("INPUT_FIREFOX"), env("VAR_FIREFOX"), True, tag_push),
-        "chrome": resolve(event_name, env("INPUT_CHROME"), env("VAR_CHROME"), True, tag_push),
-        "safari": resolve(event_name, env("INPUT_SAFARI"), env("VAR_SAFARI"), True, tag_push),
-        "windows_amd64": resolve(
-            event_name, env("INPUT_WINDOWS_AMD64"), env("VAR_WINDOWS_AMD64"), False, tag_push
-        ),
-        "windows_arm64": resolve(
-            event_name, env("INPUT_WINDOWS_ARM64"), env("VAR_WINDOWS_ARM64"), False, tag_push
-        ),
-        "linux_amd64": resolve(
-            event_name, env("INPUT_LINUX_AMD64"), env("VAR_LINUX_AMD64"), False, tag_push
-        ),
-        "linux_arm64": resolve(
-            event_name, env("INPUT_LINUX_ARM64"), env("VAR_LINUX_ARM64"), False, tag_push
-        ),
-        "macos_amd64": resolve(
-            event_name, env("INPUT_MACOS_AMD64"), env("VAR_MACOS_AMD64"), False, tag_push
-        ),
-        "macos_arm64": resolve(
-            event_name, env("INPUT_MACOS_ARM64"), env("VAR_MACOS_ARM64"), False, tag_push
-        ),
-    }
     args = parse_args(argv)
     architectures = env("INPUT_ARCHITECTURES") or args.architectures
-    if not (event_name == "push" and tag_push):
-        flags = apply_architecture_filter(flags, architectures)
-    flags = apply_macos_gate(flags, macos_enabled())
+    flags = resolve_flags(event_name, tag_push=tag_push, architectures=architectures)
 
     if event_name == "pull_request":
-        flags["safari"] = flags["safari"] and to_bool(env("SAFARI_RELEVANT"), True)
         publish = False
         debug = False
     elif event_name == "workflow_call":
@@ -196,6 +217,7 @@ def main(argv: list[str] | None = None) -> None:
         f"version={version}",
         f"firefox={str(flags['firefox']).lower()}",
         f"chrome={str(flags['chrome']).lower()}",
+        f"edge={str(flags['edge']).lower()}",
         f"safari={str(flags['safari']).lower()}",
         f"windows_amd64={str(flags['windows_amd64']).lower()}",
         f"windows_arm64={str(flags['windows_arm64']).lower()}",
