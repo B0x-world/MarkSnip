@@ -67,6 +67,22 @@ def env(name: str) -> str:
     return os.environ.get(name, "")
 
 
+def macos_enabled() -> bool:
+    """Mac/Safari/Swift jobs stay off unless ENABLE_MACOS or enable_macos is true."""
+    return env("VAR_ENABLE_MACOS").strip().lower() == "true" or to_bool(
+        env("INPUT_ENABLE_MACOS"), False
+    )
+
+
+def apply_macos_gate(flags: dict[str, bool], enabled: bool) -> dict[str, bool]:
+    if enabled:
+        return flags
+    flags["safari"] = False
+    flags["macos_amd64"] = False
+    flags["macos_arm64"] = False
+    return flags
+
+
 def normalize_architectures(raw: str | None) -> str:
     value = (raw or "all").strip().lower()
     if value in {"x64", "amd64", "x86_64"}:
@@ -133,6 +149,7 @@ def main(argv: list[str] | None = None) -> None:
     architectures = env("INPUT_ARCHITECTURES") or args.architectures
     if not (event_name == "push" and tag_push):
         flags = apply_architecture_filter(flags, architectures)
+    flags = apply_macos_gate(flags, macos_enabled())
 
     if event_name == "pull_request":
         flags["safari"] = flags["safari"] and to_bool(env("SAFARI_RELEVANT"), True)

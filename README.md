@@ -211,14 +211,15 @@ npm ci
 
 ### CI runners
 
-Workflows default to GitHub-hosted runners. Every Linux job uses `runs-on: ${{ vars.RUNNER_LINUX || 'ubuntu-latest' }}`. macOS jobs (Safari wrapper and CodeQL Swift) use `${{ vars.RUNNER_MACOS || 'macos-latest' }}`.
+Workflows default to GitHub-hosted runners. Every Linux job uses `runs-on: ${{ vars.RUNNER_LINUX || 'ubuntu-latest' }}`. macOS jobs (Safari wrapper and CodeQL Swift) stay **skipped** unless you opt in. When they run they use `${{ vars.RUNNER_MACOS || 'macos-latest' }}`.
 
 To use self-hosted runners, set repository variables under **Settings → Secrets and variables → Actions → Variables**:
 
 | Variable | Jobs | Fallback |
 | --- | --- | --- |
 | `RUNNER_LINUX` | All Linux jobs | `ubuntu-latest` |
-| `RUNNER_MACOS` | macOS jobs | `macos-latest` |
+| `RUNNER_MACOS` | Opt-in macOS jobs | `macos-latest` |
+| `ENABLE_MACOS` | Must be the string `true` to run Safari, Swift CodeQL, macOS hosts, and `macos-*` runners | unset / off |
 
 Each value must be a single runner label (for example `self-hosted`). Leave both unset to keep GitHub-hosted `*-latest` images.
 
@@ -296,7 +297,7 @@ Workflows are set so a merge to `main` does **not** re-run the same test/package
 | [Build and Release (PC + Mac)](.github/workflows/build-release-pc-mac.yml) | no | no | no | yes | no |
 | [CodeQL](.github/workflows/codeql.yml) | yes | yes | yes | yes | no |
 
-CodeQL still analyzes `main` after merge so default-branch alerts stay current. `Analyze (swift)` on pull requests and pushes to `main` runs only when Safari or Swift files (or the workflows that drive them) change; tag releases and manual dispatch still analyze Swift. The Safari wrapper job follows the same PR path filter.
+CodeQL still analyzes `main` after merge so default-branch alerts stay current. `Analyze (swift)`, the Safari wrapper, and macOS Agent Bridge archives stay off unless repository variable `ENABLE_MACOS` is the string `true` or the `enable_macos` workflow input is checked. Without that switch those jobs are skipped (they are not required checks). When the switch is on, Swift/Safari on pull requests and pushes to `main` still follow the Safari/Swift path filter.
 
 Playwright E2E (and Firefox live-smoke / Playwright regression) on pull requests is path-filtered: it runs when the PR touches `src/**` (including `_locales`; `docs/*.md` ignored), `src/tests/e2e/**`, `src/playwright.config.js`, `src/package.json`, `src/package-lock.json`, or those workflow files. It always runs on `workflow_dispatch`. Lint, unit, and focused Firefox unit/integration tests always run.
 
@@ -311,13 +312,13 @@ GitHub Actions workflow [`.github/workflows/build-release.yml`](.github/workflow
 3. Builds each enabled output in its own job (helpers are a matrix cell per OS/arch).
 4. Publishes a GitHub Release on `v*.*.*` tags, or on a manual `workflow_dispatch` when **publish_release** is checked. Tag and dispatch releases use GitHub auto-generated notes (`generate_release_notes`) plus install text. The release job downloads `marksnip-*` artifacts and attaches only files that were actually built.
 
-Pull requests run packaging (Firefox and Chrome; helpers off; no GitHub Release). Safari is included on a PR only when Safari or Swift files, or the workflows that drive them, change. Merging to `main` does not start this workflow again; `v*.*.*` tag pushes and `workflow_dispatch` do. Hand-started presets call the same workflow: **Build and Release (PC)** (Chrome, Firefox, Windows and Linux helpers) and **Build and Release (PC + Mac)** (PC plus Safari and macOS helpers).
+Pull requests run packaging (Firefox and Chrome; helpers off; no GitHub Release). Safari, macOS native hosts, and `macos-*` runners stay off unless `ENABLE_MACOS=true`. Merging to `main` does not start this workflow again; `v*.*.*` tag pushes and `workflow_dispatch` do. Hand-started presets call the same workflow: **Build and Release (PC)** (Chrome, Firefox, Windows and Linux helpers) and **Build and Release (PC + Mac)** (PC plus, when `enable_macos` is checked, Safari and macOS helpers).
 
 Safari uses the Xcode wrapper under `xcode/MarkSnip/`. App, extension, target, scheme, and bundle **display names** are MarkSnip. Bundle IDs stay `au.death.MarkDownload` and `au.death.MarkDownload.Extension` (documented in `xcode/README.md`). The packaged zip is `marksnip-safari-<version>.zip`. Generate `src/.build/safari`, then `bash xcode/build-safari-app.sh` runs an unsigned `xcodebuild` (`CODE_SIGNING_ALLOWED=NO`). A Run Script build phase rsyncs the generated tree into the appex. CI does not sign artifacts (see [Code signing](#code-signing)).
 
 ### Build output toggles
 
-Each option is a `workflow_dispatch` boolean. Pushing a `v*.*.*` tag enables **every** output and always publishes (repository variables cannot turn artifacts off on tags). Pull requests force Firefox + Chrome + Safari on and helpers/publish off. `debug` is forced off whenever a release is published.
+Each option is a `workflow_dispatch` boolean. Pushing a `v*.*.*` tag enables non-Mac outputs and always publishes (repository variables cannot turn those artifacts off on tags). Safari and macOS hosts still require `ENABLE_MACOS=true`. Pull requests force Firefox + Chrome on and helpers/publish off. `debug` is forced off whenever a release is published.
 
 | Artifact | `workflow_dispatch` input | Repository variable | Default (tag/dispatch) |
 | --- | --- | --- | --- |
@@ -333,6 +334,7 @@ Each option is a `workflow_dispatch` boolean. Pushing a `v*.*.*` tag enables **e
 | Create GitHub Release | `publish_release` (dispatch only; tags always publish) | — | `true` |
 | Debug extension build | `debug` (dispatch only; ignored when publishing) | — | `false` |
 | Native host architectures | `architectures` (`x64`, `arm64`, or `all`) | — | `all` |
+| macOS / Safari / Swift jobs | `enable_macos` | `ENABLE_MACOS` (must be `true`) | `false` |
 
 `debug` is **build-time only**. There is no options-page switch. A debug package includes source maps, `shared/build-config.js` (`MARKSNIP_BUILD.debug = true`), and `logger.debug` call sites. A normal package strips those: no `.map` files, no `logger.debug(...)` calls, no debug-only config module. `logger.warn`, `logger.error`, and a small set of lifecycle `logger.info` calls stay in every build.
 
@@ -349,9 +351,9 @@ Example: Firefox + Chrome only, no helpers, no Safari, no GitHub Release (`workf
 - `debug`: false
 - `architectures`: `all` (use `x64` to build only amd64 hosts for the enabled OSes)
 
-To build x64 native hosts only, run **Build and Release (PC + Mac)** or **Build and Release Extension** with input `architectures` = `x64`. The PC preset covers Linux; `x64` keeps linux-amd64.
+To build x64 native hosts only, run **Build and Release (PC)** or **Build and Release Extension** with input `architectures` = `x64`. The PC preset covers Linux; `x64` keeps linux-amd64. To include Safari and macOS hosts, set `ENABLE_MACOS=true` and/or check `enable_macos`.
 
-All-options: leave every boolean at its default `true` (or check them all) on a `workflow_dispatch`, or push a `v*.*.*` tag.
+All non-Mac options: leave those booleans at their default `true` on a `workflow_dispatch`, or push a `v*.*.*` tag. Mac jobs stay off until the opt-in switch is on.
 
 To publish:
 
