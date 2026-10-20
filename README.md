@@ -163,6 +163,8 @@ The Agent Bridge lets local tools ask MarkSnip for the current tab without downl
    - Windows: `.\marksnip.exe clip`
    - macOS/Linux: `./marksnip clip`
 
+`install-host` registers Chrome, Chromium, Brave, Edge, and Firefox (Chromium-family manifests reuse `--chrome-extension-id`). `clip --browser` accepts `chrome|chromium|brave|edge|firefox`. See `native/README.md` for manifest paths. `marksnip help clip` lists flags and defaults.
+
 For local unpacked Chrome testing on Windows, look up the unpacked extension ID first:
 
 ```powershell
@@ -330,6 +332,7 @@ Each option is a `workflow_dispatch` boolean. Pushing a `v*.*.*` tag enables **e
 | macOS Agent Bridge arm64 `.tar.gz` | `build_macos_arm64` | `BUILD_MACOS_ARM64` | `true` |
 | Create GitHub Release | `publish_release` (dispatch only; tags always publish) | — | `true` |
 | Debug extension build | `debug` (dispatch only; ignored when publishing) | — | `false` |
+| Native host architectures | `architectures` (`x64`, `arm64`, or `all`) | — | `all` |
 
 `debug` is **build-time only**. There is no options-page switch. A debug package includes source maps, `shared/build-config.js` (`MARKSNIP_BUILD.debug = true`), and `logger.debug` call sites. A normal package strips those: no `.map` files, no `logger.debug(...)` calls, no debug-only config module. `logger.warn`, `logger.error`, and a small set of lifecycle `logger.info` calls stay in every build.
 
@@ -344,6 +347,9 @@ Example: Firefox + Chrome only, no helpers, no Safari, no GitHub Release (`workf
 - `build_macos_amd64` / `build_macos_arm64`: false
 - `publish_release`: false
 - `debug`: false
+- `architectures`: `all` (use `x64` to build only amd64 hosts for the enabled OSes)
+
+To build x64 native hosts only, run **Build and Release (PC + Mac)** or **Build and Release Extension** with input `architectures` = `x64`. The PC preset covers Linux; `x64` keeps linux-amd64.
 
 All-options: leave every boolean at its default `true` (or check them all) on a `workflow_dispatch`, or push a `v*.*.*` tag.
 

@@ -220,6 +220,10 @@
     "message": "리더 보기 전환",
     "description": "Command description"
   },
+  "pageCannotBeClipped": {
+      "message": "이 페이지는 클립할 수 없습니다.",
+      "description": "제한된 브라우저 페이지를 클립할 수 없을 때 표시하는 안내"
+  },
   "popupReaderRestricted": {
     "message": "이 페이지는 리더 보기로 표시할 수 없습니다.",
     "description": "Toast shown when Reader View is invoked on a restricted page"

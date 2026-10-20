@@ -220,6 +220,10 @@
     "message": "リーダー表示を切り替え",
     "description": "Command description"
   },
+  "pageCannotBeClipped": {
+      "message": "このページはクリップできません。",
+      "description": "制限されたブラウザページをクリップできないときに表示する通知"
+  },
   "popupReaderRestricted": {
     "message": "このページはリーダー表示で読み込めません。",
     "description": "Toast shown when Reader View is invoked on a restricted page"

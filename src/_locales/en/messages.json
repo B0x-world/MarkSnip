@@ -43,6 +43,10 @@
     "message": "Toggle Reader View",
     "description": "Command description"
   },
+  "pageCannotBeClipped": {
+      "message": "This page can't be clipped.",
+      "description": "Notice shown when clipping is blocked on a restricted browser page"
+  },
   "popupReaderRestricted": {
     "message": "This page can't be read in Reader View.",
     "description": "Toast shown when Reader View is invoked on a restricted page"

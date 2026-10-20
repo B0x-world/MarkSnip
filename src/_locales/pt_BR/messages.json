@@ -220,6 +220,10 @@
     "message": "Ativar/desativar modo de leitura",
     "description": "Command description"
   },
+  "pageCannotBeClipped": {
+      "message": "Esta página não pode ser recortada.",
+      "description": "Aviso quando uma página interna do navegador não pode ser recortada"
+  },
   "popupReaderRestricted": {
     "message": "Esta página não pode ser exibida no modo de leitura.",
     "description": "Toast shown when Reader View is invoked on a restricted page"

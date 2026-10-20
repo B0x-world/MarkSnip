@@ -220,6 +220,10 @@
     "message": "Leseansicht ein-/ausschalten",
     "description": "Command description"
   },
+  "pageCannotBeClipped": {
+      "message": "Diese Seite kann nicht als Markdown gespeichert werden.",
+      "description": "Hinweis, wenn eine eingeschränkte Browserseite nicht gespeichert werden kann"
+  },
   "popupReaderRestricted": {
     "message": "Diese Seite kann nicht in der Leseansicht angezeigt werden.",
     "description": "Toast shown when Reader View is invoked on a restricted page"

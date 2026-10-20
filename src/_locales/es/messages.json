@@ -220,6 +220,10 @@
     "message": "Activar/desactivar vista de lectura",
     "description": "Command description"
   },
+  "pageCannotBeClipped": {
+      "message": "Esta página no se puede recortar.",
+      "description": "Aviso cuando no se puede recortar una página restringida"
+  },
   "popupReaderRestricted": {
     "message": "Esta página no se puede mostrar en la vista de lectura.",
     "description": "Toast shown when Reader View is invoked on a restricted page"

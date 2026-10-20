@@ -6,7 +6,7 @@
 //   status: adopted
 //   owner: ""
 //   created: 2026-03-21
-//   updated: 2026-03-22
+//   updated: 2026-10-20
 //   related: ["001-project-file-metadata-spec"]
 //   tags: ["test"]
 //   usage: test
@@ -108,5 +108,50 @@ describe('agent-bridge-state helpers', () => {
     expect(settings).toEqual({ enabled: true });
     expect(latestClip.title).toBe('Saved');
     expect(latestClip.normalizedPageUrl).toBe('https://example.com/path');
+  });
+
+  test('detects firefox, brave, edge, chromium, and chrome labels', () => {
+    const chromeExt = {
+      getURL: () => 'chrome-extension://abc/'
+    };
+
+    expect(agentBridgeState.detectBrowserLabel({
+      browser: { runtime: { getURL: () => 'moz-extension://abc/' } },
+      navigator: {}
+    })).toBe('firefox');
+
+    expect(agentBridgeState.detectBrowserLabel({
+      browser: { runtime: chromeExt },
+      navigator: { brave: { isBrave: () => true }, userAgent: 'Mozilla/5.0 Chrome/120.0.0.0' }
+    })).toBe('brave');
+
+    expect(agentBridgeState.detectBrowserLabel({
+      browser: { runtime: chromeExt },
+      navigator: { brave: { isBrave: () => Promise.resolve(true) }, userAgent: 'Mozilla/5.0 Chrome/120.0.0.0' }
+    })).toBe('brave');
+
+    expect(agentBridgeState.detectBrowserLabel({
+      browser: { runtime: chromeExt },
+      navigator: {
+        userAgent: 'Mozilla/5.0 Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0',
+        userAgentData: { brands: [{ brand: 'Microsoft Edge', version: '120' }, { brand: 'Chromium', version: '120' }] }
+      }
+    })).toBe('edge');
+
+    expect(agentBridgeState.detectBrowserLabel({
+      browser: { runtime: chromeExt },
+      navigator: {
+        userAgent: 'Mozilla/5.0 Chromium/120.0.0.0 Safari/537.36',
+        userAgentData: { brands: [{ brand: 'Chromium', version: '120' }, { brand: 'Not.A/Brand', version: '8' }] }
+      }
+    })).toBe('chromium');
+
+    expect(agentBridgeState.detectBrowserLabel({
+      browser: { runtime: chromeExt },
+      navigator: {
+        userAgent: 'Mozilla/5.0 Chrome/120.0.0.0 Safari/537.36',
+        userAgentData: { brands: [{ brand: 'Google Chrome', version: '120' }, { brand: 'Chromium', version: '120' }] }
+      }
+    })).toBe('chrome');
   });
 });

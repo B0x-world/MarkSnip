@@ -15,6 +15,7 @@
 """Resolve selectable build outputs for build-release.yml."""
 from __future__ import annotations
 
+import argparse
 import json
 import os
 from pathlib import Path
@@ -66,7 +67,43 @@ def env(name: str) -> str:
     return os.environ.get(name, "")
 
 
-def main() -> None:
+def normalize_architectures(raw: str | None) -> str:
+    value = (raw or "all").strip().lower()
+    if value in {"x64", "amd64", "x86_64"}:
+        return "x64"
+    if value in {"arm64", "aarch64"}:
+        return "arm64"
+    if value in {"all", ""}:
+        return "all"
+    raise SystemExit(f"Unknown architectures value: {raw!r} (use x64, arm64, or all)")
+
+
+def apply_architecture_filter(flags: dict[str, bool], architectures: str) -> dict[str, bool]:
+    kind = normalize_architectures(architectures)
+    if kind == "all":
+        return flags
+    for os_name in ("windows", "linux", "macos"):
+        covered = flags[f"{os_name}_amd64"] or flags[f"{os_name}_arm64"]
+        if kind == "x64":
+            flags[f"{os_name}_amd64"] = covered
+            flags[f"{os_name}_arm64"] = False
+        else:
+            flags[f"{os_name}_amd64"] = False
+            flags[f"{os_name}_arm64"] = covered
+    return flags
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Resolve selectable build outputs")
+    parser.add_argument(
+        "--architectures",
+        default=os.environ.get("INPUT_ARCHITECTURES", "all"),
+        help="Native host architectures to keep: x64, arm64, or all (default: all)",
+    )
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> None:
     event_name = env("EVENT_NAME")
     tag_push = event_name == "push" and is_release_tag(env("GITHUB_REF"))
     flags = {
@@ -92,6 +129,10 @@ def main() -> None:
             event_name, env("INPUT_MACOS_ARM64"), env("VAR_MACOS_ARM64"), False, tag_push
         ),
     }
+    args = parse_args(argv)
+    architectures = env("INPUT_ARCHITECTURES") or args.architectures
+    if not (event_name == "push" and tag_push):
+        flags = apply_architecture_filter(flags, architectures)
 
     if event_name == "pull_request":
         flags["safari"] = flags["safari"] and to_bool(env("SAFARI_RELEVANT"), True)

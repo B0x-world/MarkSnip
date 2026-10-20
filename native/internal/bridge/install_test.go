@@ -6,10 +6,10 @@
 //   status: adopted
 //   owner: ""
 //   created: 2026-03-21
-//   updated: 2026-03-22
+//   updated: 2026-10-20
 //   related: ["001-project-file-metadata-spec"]
 //   tags: []
-//   usage: source
+//   usage: test
 
 package bridge
 
@@ -48,6 +48,12 @@ func TestManifestPathByPlatform(t *testing.T) {
 			want:    filepath.Join(configDir, "MarkSnip", "NativeMessagingHosts", "chrome", HostName+".json"),
 		},
 		{
+			name:    "windows brave",
+			goos:    "windows",
+			browser: BrowserBrave,
+			want:    filepath.Join(configDir, "MarkSnip", "NativeMessagingHosts", "brave", HostName+".json"),
+		},
+		{
 			name:    "windows firefox",
 			goos:    "windows",
 			browser: BrowserFirefox,
@@ -60,6 +66,24 @@ func TestManifestPathByPlatform(t *testing.T) {
 			want:    filepath.Join(configDir, "Google", "Chrome", "NativeMessagingHosts", HostName+".json"),
 		},
 		{
+			name:    "darwin brave",
+			goos:    "darwin",
+			browser: BrowserBrave,
+			want:    filepath.Join(configDir, "BraveSoftware", "Brave-Browser", "NativeMessagingHosts", HostName+".json"),
+		},
+		{
+			name:    "darwin chromium",
+			goos:    "darwin",
+			browser: BrowserChromium,
+			want:    filepath.Join(configDir, "Chromium", "NativeMessagingHosts", HostName+".json"),
+		},
+		{
+			name:    "darwin edge",
+			goos:    "darwin",
+			browser: BrowserEdge,
+			want:    filepath.Join(configDir, "Microsoft Edge", "NativeMessagingHosts", HostName+".json"),
+		},
+		{
 			name:    "darwin firefox",
 			goos:    "darwin",
 			browser: BrowserFirefox,
@@ -70,6 +94,24 @@ func TestManifestPathByPlatform(t *testing.T) {
 			goos:    "linux",
 			browser: BrowserChrome,
 			want:    filepath.Join(configDir, "google-chrome", "NativeMessagingHosts", HostName+".json"),
+		},
+		{
+			name:    "linux brave",
+			goos:    "linux",
+			browser: BrowserBrave,
+			want:    filepath.Join(configDir, "BraveSoftware", "Brave-Browser", "NativeMessagingHosts", HostName+".json"),
+		},
+		{
+			name:    "linux chromium",
+			goos:    "linux",
+			browser: BrowserChromium,
+			want:    filepath.Join(configDir, "chromium", "NativeMessagingHosts", HostName+".json"),
+		},
+		{
+			name:    "linux edge",
+			goos:    "linux",
+			browser: BrowserEdge,
+			want:    filepath.Join(configDir, "microsoft-edge", "NativeMessagingHosts", HostName+".json"),
 		},
 		{
 			name:    "linux firefox",
@@ -170,12 +212,18 @@ func TestInstallAndUninstallHostAcrossPlatforms(t *testing.T) {
 			cliName:  "marksnip.exe",
 			hostName: "marksnip-native-host.exe",
 			expectedRegAdds: []string{
-				`HKCU\Software\Google\Chrome\NativeMessagingHosts\` + HostName,
-				`HKCU\Software\Mozilla\NativeMessagingHosts\` + HostName,
+				WindowsNativeMessagingKey(BrowserChrome),
+				WindowsNativeMessagingKey(BrowserChromium),
+				WindowsNativeMessagingKey(BrowserBrave),
+				WindowsNativeMessagingKey(BrowserEdge),
+				WindowsNativeMessagingKey(BrowserFirefox),
 			},
 			expectedRegDelete: []string{
-				`HKCU\Software\Google\Chrome\NativeMessagingHosts\` + HostName,
-				`HKCU\Software\Mozilla\NativeMessagingHosts\` + HostName,
+				WindowsNativeMessagingKey(BrowserChrome),
+				WindowsNativeMessagingKey(BrowserChromium),
+				WindowsNativeMessagingKey(BrowserBrave),
+				WindowsNativeMessagingKey(BrowserEdge),
+				WindowsNativeMessagingKey(BrowserFirefox),
 			},
 		},
 		{
@@ -238,21 +286,27 @@ func TestInstallAndUninstallHostAcrossPlatforms(t *testing.T) {
 			}
 
 			if result.ChromeManifestPath == "" || result.FirefoxManifestPath == "" {
-				t.Fatalf("installHost returned empty manifest paths: %#v", result)
+				t.Fatalf("installHost returned empty chrome/firefox paths: %#v", result)
+			}
+			if len(result.Manifests) != len(InstalledBrowsers()) {
+				t.Fatalf("installed %d manifests, want %d", len(result.Manifests), len(InstalledBrowsers()))
 			}
 
-			assertManifestContainsPath(t, result.ChromeManifestPath, hostPath)
-			assertManifestContainsPath(t, result.FirefoxManifestPath, hostPath)
+			for _, manifest := range result.Manifests {
+				assertManifestContainsPath(t, manifest.Path, hostPath)
+				if manifest.Browser != BrowserFirefox {
+					assertChromeFamilyManifest(t, manifest.Path, "dev-extension-id")
+				}
+			}
 
 			if err := uninstallHost(env); err != nil {
 				t.Fatalf("uninstallHost returned error: %v", err)
 			}
 
-			if _, err := os.Stat(result.ChromeManifestPath); !os.IsNotExist(err) {
-				t.Fatalf("chrome manifest still exists or stat failed: %v", err)
-			}
-			if _, err := os.Stat(result.FirefoxManifestPath); !os.IsNotExist(err) {
-				t.Fatalf("firefox manifest still exists or stat failed: %v", err)
+			for _, manifest := range result.Manifests {
+				if _, err := os.Stat(manifest.Path); !os.IsNotExist(err) {
+					t.Fatalf("%s manifest still exists or stat failed: %v", manifest.Browser, err)
+				}
 			}
 
 			if tc.expectedRegAdds != nil {
@@ -270,13 +324,56 @@ func TestInstallAndUninstallHostAcrossPlatforms(t *testing.T) {
 func TestSelectSessionRequiresBrowserWhenMultipleSessionsExist(t *testing.T) {
 	status := StatusFile{
 		Sessions: map[string]SessionStatus{
-			string(BrowserChrome):  {Browser: string(BrowserChrome), Port: 1},
-			string(BrowserFirefox): {Browser: string(BrowserFirefox), Port: 2},
+			string(BrowserChrome): {Browser: string(BrowserChrome), Port: 1},
+			string(BrowserBrave):  {Browser: string(BrowserBrave), Port: 2},
 		},
 	}
 
 	if _, err := SelectSession(status, ""); err == nil {
 		t.Fatal("expected SelectSession to fail when multiple browsers are connected without an explicit selector")
+	}
+}
+
+func TestSelectSessionChromeMatchesChromiumFamily(t *testing.T) {
+	braveOnly := StatusFile{
+		Sessions: map[string]SessionStatus{
+			string(BrowserBrave): {Browser: string(BrowserBrave), Port: 9, Token: "b"},
+		},
+	}
+	session, err := SelectSession(braveOnly, BrowserChrome)
+	if err != nil {
+		t.Fatalf("chrome should match a lone brave session: %v", err)
+	}
+	if session.Browser != string(BrowserBrave) {
+		t.Fatalf("got %#v, want brave", session)
+	}
+
+	exactChrome := StatusFile{
+		Sessions: map[string]SessionStatus{
+			string(BrowserChrome): {Browser: string(BrowserChrome), Port: 1},
+			string(BrowserBrave):  {Browser: string(BrowserBrave), Port: 2},
+		},
+	}
+	session, err = SelectSession(exactChrome, BrowserChrome)
+	if err != nil {
+		t.Fatalf("exact chrome match should win: %v", err)
+	}
+	if session.Browser != string(BrowserChrome) {
+		t.Fatalf("got %#v, want chrome", session)
+	}
+
+	twoFamily := StatusFile{
+		Sessions: map[string]SessionStatus{
+			string(BrowserBrave): {Browser: string(BrowserBrave), Port: 2},
+			string(BrowserEdge):  {Browser: string(BrowserEdge), Port: 3},
+		},
+	}
+	if _, err := SelectSession(twoFamily, BrowserChrome); err == nil {
+		t.Fatal("expected chrome fallback to fail when multiple Chromium-family sessions exist")
+	}
+
+	if _, err := SelectSession(braveOnly, BrowserFirefox); err == nil {
+		t.Fatal("firefox should not match a brave session")
 	}
 }
 
@@ -295,6 +392,26 @@ func assertManifestContainsPath(t *testing.T, manifestPath, hostPath string) {
 
 	if got := manifest["path"]; got != hostPath {
 		t.Fatalf("manifest path = %#v, want %q", got, hostPath)
+	}
+}
+
+func assertChromeFamilyManifest(t *testing.T, manifestPath, extensionID string) {
+	t.Helper()
+
+	data, err := os.ReadFile(manifestPath)
+	if err != nil {
+		t.Fatalf("ReadFile(%q): %v", manifestPath, err)
+	}
+
+	var manifest map[string]any
+	if err := json.Unmarshal(data, &manifest); err != nil {
+		t.Fatalf("json.Unmarshal(%q): %v", manifestPath, err)
+	}
+
+	origins, _ := manifest["allowed_origins"].([]any)
+	want := "chrome-extension://" + extensionID + "/"
+	if len(origins) != 1 || origins[0] != want {
+		t.Fatalf("allowed_origins = %#v, want [%s]", origins, want)
 	}
 }
 

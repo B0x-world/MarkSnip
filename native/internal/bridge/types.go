@@ -6,7 +6,7 @@
 //   status: adopted
 //   owner: ""
 //   created: 2026-03-21
-//   updated: 2026-03-21
+//   updated: 2026-10-20
 //   related: ["001-project-file-metadata-spec"]
 //   tags: []
 //   usage: source
@@ -23,9 +23,36 @@ const (
 type Browser string
 
 const (
-	BrowserChrome  Browser = "chrome"
-	BrowserFirefox Browser = "firefox"
+	BrowserChrome   Browser = "chrome"
+	BrowserChromium Browser = "chromium"
+	BrowserBrave    Browser = "brave"
+	BrowserEdge     Browser = "edge"
+	BrowserFirefox  Browser = "firefox"
 )
+
+// InstalledBrowsers is the default set that install-host / uninstall-host cover.
+func InstalledBrowsers() []Browser {
+	return []Browser{
+		BrowserChrome,
+		BrowserChromium,
+		BrowserBrave,
+		BrowserEdge,
+		BrowserFirefox,
+	}
+}
+
+func BrowserDisplayOrder() []Browser {
+	return InstalledBrowsers()
+}
+
+func IsChromiumFamily(browser Browser) bool {
+	switch browser {
+	case BrowserChrome, BrowserChromium, BrowserBrave, BrowserEdge:
+		return true
+	default:
+		return false
+	}
+}
 
 type ClipResult struct {
 	Markdown   string `json:"markdown"`
@@ -47,6 +74,8 @@ type NativeMessage struct {
 	HostVersion      string      `json:"hostVersion,omitempty"`
 	Result           *ClipResult `json:"result,omitempty"`
 	Error            string      `json:"error,omitempty"`
+	Code             string      `json:"code,omitempty"`
+	URL              string      `json:"url,omitempty"`
 }
 
 type SessionStatus struct {
@@ -60,4 +89,15 @@ type SessionStatus struct {
 
 type StatusFile struct {
 	Sessions map[string]SessionStatus `json:"sessions"`
+}
+
+type InstalledManifest struct {
+	Browser Browser
+	Path    string
+}
+
+type InstallResult struct {
+	ChromeManifestPath  string
+	FirefoxManifestPath string
+	Manifests           []InstalledManifest
 }

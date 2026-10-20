@@ -6,7 +6,7 @@
 //   status: adopted
 //   owner: ""
 //   created: 2026-06-05
-//   updated: 2026-06-05
+//   updated: 2026-10-20
 //   related: ["001-project-file-metadata-spec"]
 //   tags: ["test"]
 //   usage: test
@@ -30,15 +30,9 @@ describe('Security surface hardening', () => {
     expect(csp).toContain('connect-src');
   });
 
-  test('service worker treats file URLs as restricted tab URLs', () => {
-    const source = fs.readFileSync(
-      path.join(__dirname, '../../service-worker.js'),
-      'utf8'
-    );
-    const start = source.indexOf('function isRestrictedTabUrl');
-    const end = source.indexOf('async function getAgentBridgeActiveTab');
-    const restrictedUrlSource = source.slice(start, end);
-
-    expect(restrictedUrlSource).toContain("url.startsWith('file:')");
+  test('shared URL utils treat file URLs as restricted tab URLs', () => {
+    const { isRestrictedTabUrl } = require('../../shared/url-utils');
+    expect(isRestrictedTabUrl('file:///tmp/doc.html')).toBe(true);
+    expect(isRestrictedTabUrl('brave://settings')).toBe(true);
   });
 });

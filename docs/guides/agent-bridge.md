@@ -6,7 +6,7 @@ subject: agent-bridge
 status: adopted
 owner: ""
 created: 2026-04-02
-updated: 2026-04-02
+updated: 2026-10-20
 related: ["001-project-file-metadata-spec"]
 tags: []
 usage: doc
@@ -32,7 +32,7 @@ Typical examples:
 
 You need:
 
-- MarkSnip installed in Chrome or Firefox
+- MarkSnip installed in Chrome, Chromium, Brave, Edge, or Firefox
 - the Agent Bridge companion for your OS downloaded from the MarkSnip releases page
 - the browser open while you use the CLI
 
@@ -113,8 +113,12 @@ What each command does:
 
 - `status` shows whether the browser-side bridge is connected
 - `clip` prints Markdown to stdout
-- `clip --json` returns Markdown plus metadata like title, URL, source, and timestamp
-- `clip --fresh` ignores any cached popup edit and captures the page again
+- `clip --json` returns Markdown plus metadata like title, URL, source, and timestamp (`false` by default)
+- `clip --fresh` ignores any cached popup edit and captures the page again (`false` by default)
+- `clip --browser chrome|chromium|brave|edge|firefox` selects a session when more than one is live (`chrome` matches a single Chromium-family session if there is no exact chrome row)
+- `install-host --chrome-extension-id` sets the Chromium-family origin (Chrome Web Store ID by default)
+
+Run `marksnip help clip` (or `install-host --help`) for flag defaults. Manifest paths are listed in `native/README.md`.
 
 ## How MarkSnip Chooses What To Return
 

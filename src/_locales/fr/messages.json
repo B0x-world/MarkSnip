@@ -220,6 +220,10 @@
     "message": "Activer/désactiver le mode lecture",
     "description": "Command description"
   },
+  "pageCannotBeClipped": {
+      "message": "Cette page ne peut pas être extraite.",
+      "description": "Message affiché lorsqu'une page interne du navigateur ne peut pas être extraite"
+  },
   "popupReaderRestricted": {
     "message": "Cette page ne peut pas être affichée en mode lecture.",
     "description": "Toast shown when Reader View is invoked on a restricted page"
