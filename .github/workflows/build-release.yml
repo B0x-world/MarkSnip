@@ -17,21 +17,22 @@
 # (or helper matrix cell). Tag pushes (`v*.*.*`) have no inputs and enable
 # every output (then always publish). There is no push-to-main trigger (that
 # would duplicate the pull_request packaging jobs). Pull requests force
-# Firefox + Chrome (helpers off, no publish). Safari runs on PRs only when
-# Safari/Swift sources or the workflows that drive them change; tag,
-# dispatch, and the PC + Mac preset still build it.
+# Firefox + Chrome (helpers off, no publish). Safari, macOS native hosts,
+# and macos-* runners stay off unless ENABLE_MACOS is the string true or
+# the enable_macos dispatch/call input is true.
 #
 #   Input                 Repo variable            Default (tag/dispatch)
 #   --------------------  -----------------------  ----------------------
 #   build_firefox         BUILD_FIREFOX            true
 #   build_chrome          BUILD_CHROME             true
-#   build_safari          BUILD_SAFARI             true
+#   build_safari          BUILD_SAFARI             true (also needs ENABLE_MACOS)
 #   build_windows_amd64   BUILD_WINDOWS_AMD64      true
 #   build_windows_arm64   BUILD_WINDOWS_ARM64      true
 #   build_linux_amd64     BUILD_LINUX_AMD64        true
 #   build_linux_arm64     BUILD_LINUX_ARM64        true
-#   build_macos_amd64     BUILD_MACOS_AMD64        true
-#   build_macos_arm64     BUILD_MACOS_ARM64        true
+#   build_macos_amd64     BUILD_MACOS_AMD64        true (also needs ENABLE_MACOS)
+#   build_macos_arm64     BUILD_MACOS_ARM64        true (also needs ENABLE_MACOS)
+#   enable_macos          ENABLE_MACOS             false (opt-in for all Mac jobs)
 #   publish_release       (dispatch only)          true (tags always publish)
 #   debug                 (dispatch only)          false (forced off when publishing)
 #   architectures         (dispatch/call)          all (x64 | arm64 | all; filters helper arches)
@@ -114,6 +115,10 @@ on:
           - x64
           - arm64
         default: all
+      enable_macos:
+        description: "Opt in to Safari, Swift CodeQL, macOS hosts, and macos-* runners (or set ENABLE_MACOS=true)"
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       version:
@@ -169,6 +174,10 @@ on:
         description: "Native host architectures (x64, arm64, or all)"
         type: string
         default: all
+      enable_macos:
+        description: "Opt in to Safari, macOS hosts, and macos-* runners (or set ENABLE_MACOS=true)"
+        type: boolean
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -232,7 +241,9 @@ jobs:
           INPUT_PUBLISH: ${{ inputs.publish_release }}
           INPUT_DEBUG: ${{ inputs.debug }}
           INPUT_ARCHITECTURES: ${{ inputs.architectures }}
+          INPUT_ENABLE_MACOS: ${{ inputs.enable_macos }}
           SAFARI_RELEVANT: ${{ steps.safari_paths.outputs.safari }}
+          VAR_ENABLE_MACOS: ${{ vars.ENABLE_MACOS }}
           VAR_FIREFOX: ${{ vars.BUILD_FIREFOX }}
           VAR_CHROME: ${{ vars.BUILD_CHROME }}
           VAR_SAFARI: ${{ vars.BUILD_SAFARI }}
@@ -395,20 +406,19 @@ jobs:
 
   safari:
     name: Safari wrapper
-    runs-on: ${{ needs.resolve.outputs.safari == 'true' && (vars.RUNNER_MACOS || 'macos-latest') || (vars.RUNNER_LINUX || 'ubuntu-latest') }}
+    runs-on: ${{ vars.RUNNER_MACOS || 'macos-latest' }}
     needs: [resolve, test]
-    if: always() && !cancelled() && needs.resolve.result == 'success' && needs.test.result == 'success'
+    if: |
+      always() &&
+      !cancelled() &&
+      needs.resolve.result == 'success' &&
+      needs.test.result == 'success' &&
+      needs.resolve.outputs.safari == 'true'
     steps:
-      - name: Skip Safari wrapper
-        if: needs.resolve.outputs.safari != 'true'
-        run: echo "Safari wrapper is not required for this event or path set."
-
       - name: Checkout repository
-        if: needs.resolve.outputs.safari == 'true'
         uses: actions/checkout@v7
 
       - name: Setup Node.js
-        if: needs.resolve.outputs.safari == 'true'
         uses: actions/setup-node@v7
         with:
           node-version: "24"
@@ -416,32 +426,27 @@ jobs:
           cache-dependency-path: "src/package-lock.json"
 
       - name: Install dependencies
-        if: needs.resolve.outputs.safari == 'true'
         working-directory: src
         run: npm ci || npm ci || npm ci
 
       - name: Generate Safari web extension sources
-        if: needs.resolve.outputs.safari == 'true'
         working-directory: src
         env:
           MARKSNIP_DEBUG: ${{ needs.resolve.outputs.debug }}
         run: npm run build:manifests
 
       - name: Assert packaged Safari debug artifacts
-        if: needs.resolve.outputs.safari == 'true'
         working-directory: src
         env:
           MARKSNIP_DEBUG: ${{ needs.resolve.outputs.debug }}
         run: node scripts/assert-debug-artifacts.js --dir .build/safari --debug="${MARKSNIP_DEBUG}"
 
       - name: Build Safari wrapper .app
-        if: needs.resolve.outputs.safari == 'true'
         env:
           MARKSNIP_ARTIFACT_SUFFIX: ${{ needs.resolve.outputs.artifact_suffix }}
         run: bash xcode/build-safari-app.sh
 
       - name: Upload Safari artifact
-        if: needs.resolve.outputs.safari == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: marksnip-safari

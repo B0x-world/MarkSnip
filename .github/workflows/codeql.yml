@@ -17,15 +17,11 @@
 # disabled in the repository settings UI; this file does not work around that.
 # After default setup is off, PR checks can diff against analyses on `main`.
 #
-# Languages match what default setup was already scanning on this repo
-# (javascript-typescript, go, swift) plus GitHub Actions YAML. Job names stay
-# `Analyze (<language>)` so any required checks named that way keep resolving.
-#
-# The Safari wrapper under xcode/MarkSnip is scanned as Swift via a manual
-# unsigned xcodebuild (generate src/.build/safari, then build-safari-app.sh).
-# Analyze (swift) runs on tag releases, manual dispatch, and when the Mac
-# preset's workflow files or Safari/Swift sources change. On pull requests and
-# pushes to main it is path-filtered; the job still reports when skipped.
+# Default languages are javascript-typescript, go, and GitHub Actions YAML.
+# Swift stays out of the matrix unless ENABLE_MACOS is the string true or the
+# enable_macos dispatch input is true. Then Analyze (swift) runs on macos-*
+# using a manual unsigned xcodebuild (generate src/.build/safari, then
+# build-safari-app.sh). Without that switch the Swift job is skipped.
 
 name: CodeQL
 
@@ -37,6 +33,11 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      enable_macos:
+        description: "Opt in to Analyze (swift) on a macos runner (or set ENABLE_MACOS=true)"
+        type: boolean
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -53,12 +54,16 @@ jobs:
       swift: ${{ steps.set.outputs.swift }}
     steps:
       - name: Checkout repository
-        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+        if: |
+          (vars.ENABLE_MACOS == 'true' || inputs.enable_macos == true) &&
+          (github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main'))
         uses: actions/checkout@v7
 
       - name: Detect Swift-relevant changes
         id: filter
-        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+        if: |
+          (vars.ENABLE_MACOS == 'true' || inputs.enable_macos == true) &&
+          (github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main'))
         uses: dorny/paths-filter@v4
         with:
           filters: |
@@ -73,10 +78,24 @@ jobs:
 
       - name: Set Swift analysis toggle
         id: set
+        env:
+          ENABLE_MACOS_VAR: ${{ vars.ENABLE_MACOS }}
+          ENABLE_MACOS_INPUT: ${{ inputs.enable_macos }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          SWIFT_PATHS: ${{ steps.filter.outputs.swift }}
         run: |
           set -euo pipefail
-          if [ "${{ github.event_name }}" = "pull_request" ] || { [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; }; then
-            echo "swift=${{ steps.filter.outputs.swift }}" >> "$GITHUB_OUTPUT"
+          macos=false
+          if [ "${ENABLE_MACOS_VAR}" = "true" ] || [ "${ENABLE_MACOS_INPUT}" = "true" ]; then
+            macos=true
+          fi
+          if [ "$macos" != "true" ]; then
+            echo "swift=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "$EVENT_NAME" = "pull_request" ] || { [ "$EVENT_NAME" = "push" ] && [ "$REF" = "refs/heads/main" ]; }; then
+            echo "swift=${SWIFT_PATHS:-false}" >> "$GITHUB_OUTPUT"
           else
             echo "swift=true" >> "$GITHUB_OUTPUT"
           fi
@@ -120,30 +139,24 @@ jobs:
   analyze-swift:
     name: Analyze (swift)
     needs: changes
-    runs-on: ${{ needs.changes.outputs.swift == 'true' && (vars.RUNNER_MACOS || 'macos-latest') || (vars.RUNNER_LINUX || 'ubuntu-latest') }}
+    if: needs.changes.outputs.swift == 'true'
+    runs-on: ${{ vars.RUNNER_MACOS || 'macos-latest' }}
     permissions:
       security-events: write
       packages: read
       actions: read
       contents: read
     steps:
-      - name: Skip Swift analysis
-        if: needs.changes.outputs.swift != 'true'
-        run: echo "No Safari or Swift changes; Analyze (swift) is not required."
-
       - name: Checkout repository
-        if: needs.changes.outputs.swift == 'true'
         uses: actions/checkout@v7
 
       - name: Initialize CodeQL
-        if: needs.changes.outputs.swift == 'true'
         uses: github/codeql-action/init@v4
         with:
           languages: swift
           build-mode: manual
 
       - name: Setup Node.js
-        if: needs.changes.outputs.swift == 'true'
         uses: actions/setup-node@v7
         with:
           node-version: "24"
@@ -151,7 +164,6 @@ jobs:
           cache-dependency-path: "src/package-lock.json"
 
       - name: Build Safari wrapper (unsigned)
-        if: needs.changes.outputs.swift == 'true'
         env:
           CONFIGURATION: Debug
         run: |
@@ -160,7 +172,6 @@ jobs:
           bash xcode/build-safari-app.sh
 
       - name: Perform CodeQL Analysis
-        if: needs.changes.outputs.swift == 'true'
         uses: github/codeql-action/analyze@v4
         with:
           category: "/language:swift"

@@ -13,6 +13,7 @@
 #   usage: test
 
 import importlib.util
+import os
 import unittest
 from pathlib import Path
 
@@ -24,6 +25,8 @@ _MOD = importlib.util.module_from_spec(_SPEC)
 assert _SPEC.loader is not None
 _SPEC.loader.exec_module(_MOD)
 apply_architecture_filter = _MOD.apply_architecture_filter
+apply_macos_gate = _MOD.apply_macos_gate
+macos_enabled = _MOD.macos_enabled
 normalize_architectures = _MOD.normalize_architectures
 
 
@@ -50,6 +53,32 @@ class ArchitectureFilterTests(unittest.TestCase):
         self.assertFalse(flags["linux_arm64"])
         self.assertTrue(flags["macos_amd64"])
         self.assertFalse(flags["macos_arm64"])
+
+    def test_macos_gate_clears_safari_and_macos_helpers(self):
+        flags = {
+            "safari": True,
+            "macos_amd64": True,
+            "macos_arm64": True,
+            "linux_amd64": True,
+        }
+        apply_macos_gate(flags, False)
+        self.assertFalse(flags["safari"])
+        self.assertFalse(flags["macos_amd64"])
+        self.assertFalse(flags["macos_arm64"])
+        self.assertTrue(flags["linux_amd64"])
+
+    def test_macos_enabled_requires_true_variable_or_input(self):
+        self.addCleanup(os.environ.pop, "VAR_ENABLE_MACOS", None)
+        self.addCleanup(os.environ.pop, "INPUT_ENABLE_MACOS", None)
+        os.environ.pop("VAR_ENABLE_MACOS", None)
+        os.environ.pop("INPUT_ENABLE_MACOS", None)
+        self.assertFalse(macos_enabled())
+        os.environ["VAR_ENABLE_MACOS"] = "true"
+        self.assertTrue(macos_enabled())
+        os.environ["VAR_ENABLE_MACOS"] = "yes"
+        self.assertFalse(macos_enabled())
+        os.environ["INPUT_ENABLE_MACOS"] = "true"
+        self.assertTrue(macos_enabled())
 
     def test_arm64_maps_pc_linux_amd64_only_preset(self):
         flags = {

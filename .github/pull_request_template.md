@@ -23,4 +23,4 @@ Apply a label when you can (`enhancement`, `bug`, `github_actions`, `documentati
 ## Safari / Swift
 
 - [ ] N/A
-- [ ] `xcode/**`, `*.swift`, Safari scripts, or the workflows that drive them changed, and the macOS jobs are expected to run
+- [ ] `xcode/**`, `*.swift`, Safari scripts, or the workflows that drive them changed, **and** `ENABLE_MACOS=true` / `enable_macos` is on so the macOS jobs are expected to run

@@ -58,3 +58,4 @@ jobs:
       publish_release: ${{ inputs.publish_release }}
       debug: false
       architectures: ${{ inputs.architectures }}
+      enable_macos: false
