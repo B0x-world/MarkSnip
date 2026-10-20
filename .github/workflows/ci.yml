@@ -133,6 +133,9 @@ jobs:
       - name: Test release output resolver
         run: python3 .github/scripts/test_resolve_release_outputs.py
 
+      - name: Test packaging workflow concurrency groups
+        run: python3 .github/scripts/test_workflow_concurrency.py
+
       - name: Run ESLint
         working-directory: src
         run: npm run lint:js

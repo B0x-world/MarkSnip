@@ -13,29 +13,13 @@
 
 # Build and Release Extension
 #
-# Every packaged output has its own workflow_dispatch boolean and its own job
-# (or helper matrix cell). Tag pushes (`v*.*.*`) have no inputs and enable
-# every output (then always publish). There is no push-to-main trigger (that
-# would duplicate the pull_request packaging jobs). Pull requests force
-# Firefox + Chrome (helpers off, no publish). Safari, macOS native hosts,
-# and macos-* runners stay off unless ENABLE_MACOS is the string true or
-# the enable_macos dispatch/call input is true.
-#
-#   Input                 Repo variable            Default (tag/dispatch)
-#   --------------------  -----------------------  ----------------------
-#   build_firefox         BUILD_FIREFOX            true
-#   build_chrome          BUILD_CHROME             true
-#   build_safari          BUILD_SAFARI             true (also needs ENABLE_MACOS)
-#   build_windows_amd64   BUILD_WINDOWS_AMD64      true
-#   build_windows_arm64   BUILD_WINDOWS_ARM64      true
-#   build_linux_amd64     BUILD_LINUX_AMD64        true
-#   build_linux_arm64     BUILD_LINUX_ARM64        true
-#   build_macos_amd64     BUILD_MACOS_AMD64        true (also needs ENABLE_MACOS)
-#   build_macos_arm64     BUILD_MACOS_ARM64        true (also needs ENABLE_MACOS)
-#   enable_macos          ENABLE_MACOS             false (opt-in for all Mac jobs)
-#   publish_release       (dispatch only)          true (tags always publish)
-#   debug                 (dispatch only)          false (forced off when publishing)
-#   architectures         (dispatch/call)          all (x64 | arm64 | all; filters helper arches)
+# workflow_dispatch has 10 inputs (GitHub's limit), in form order:
+#   architectures, helpers, extensions, mac, pc, chrome, edge, firefox,
+#   publish_release, debug.
+# Helper OS/arch cells come from `helpers` + `pc`/`mac` + `architectures`.
+# Safari and macOS helpers also need ENABLE_MACOS=true or enable_macos (the
+# Mac checkbox on dispatch). Tag pushes enable non-Mac outputs and publish.
+# Pull requests force Firefox + Chrome + Edge (helpers off, no publish).
 #
 # Debug is build-time only. When false, source maps, logger.debug call sites,
 # and shared/build-config.js are stripped from packaged extensions. Warn, error,
@@ -59,44 +43,40 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
-      version:
-        description: "Version tag (e.g., v4.0.1)"
-        required: false
-        type: string
-      build_firefox:
-        description: "Firefox extension (.xpi)"
+      architectures:
+        description: "Native host architectures (x64, arm64, or all)"
+        type: choice
+        options:
+          - all
+          - x64
+          - arm64
+        default: all
+      helpers:
+        description: "Native host helpers (Agent Bridge)"
         type: boolean
         default: true
-      build_chrome:
+      extensions:
+        description: "Extensions"
+        type: boolean
+        default: true
+      mac:
+        description: "Mac target: Safari wrapper plus macOS helpers (also needs ENABLE_MACOS=true)"
+        type: boolean
+        default: false
+      pc:
+        description: "PC target: Windows and Linux helpers"
+        type: boolean
+        default: true
+      chrome:
         description: "Chrome extension (.zip)"
         type: boolean
         default: true
-      build_safari:
-        description: "Safari wrapper .app zip (macos runner, MarkSnip Xcode project)"
+      edge:
+        description: "Edge extension (.zip; same Chromium package as Chrome, separately named)"
         type: boolean
         default: true
-      build_windows_amd64:
-        description: "Windows Agent Bridge helper (amd64 .zip)"
-        type: boolean
-        default: true
-      build_windows_arm64:
-        description: "Windows Agent Bridge helper (arm64 .zip)"
-        type: boolean
-        default: true
-      build_linux_amd64:
-        description: "Linux Agent Bridge helper (amd64 .tar.gz)"
-        type: boolean
-        default: true
-      build_linux_arm64:
-        description: "Linux Agent Bridge helper (arm64 .tar.gz)"
-        type: boolean
-        default: true
-      build_macos_amd64:
-        description: "macOS Agent Bridge helper (amd64 .tar.gz)"
-        type: boolean
-        default: true
-      build_macos_arm64:
-        description: "macOS Agent Bridge helper (arm64 .tar.gz)"
+      firefox:
+        description: "Firefox extension (.xpi)"
         type: boolean
         default: true
       publish_release:
@@ -107,18 +87,6 @@ on:
         description: "Build-time debug: keep source maps and logger.debug calls (forced off when publishing)"
         type: boolean
         default: false
-      architectures:
-        description: "Native host architectures (x64, arm64, or all)"
-        type: choice
-        options:
-          - all
-          - x64
-          - arm64
-        default: all
-      enable_macos:
-        description: "Opt in to Safari, Swift CodeQL, macOS hosts, and macos-* runners (or set ENABLE_MACOS=true)"
-        type: boolean
-        default: false
   workflow_call:
     inputs:
       version:
@@ -126,42 +94,42 @@ on:
         required: false
         type: string
         default: ""
-      build_firefox:
-        description: "Firefox extension (.xpi)"
+      architectures:
+        description: "Native host architectures (x64, arm64, or all)"
+        type: string
+        default: all
+      helpers:
+        description: "Native host helpers (Agent Bridge)"
         type: boolean
         default: true
-      build_chrome:
+      extensions:
+        description: "Extensions"
+        type: boolean
+        default: true
+      mac:
+        description: "Mac target: Safari wrapper plus macOS helpers"
+        type: boolean
+        default: false
+      pc:
+        description: "PC target: Windows and Linux helpers"
+        type: boolean
+        default: true
+      chrome:
         description: "Chrome extension (.zip)"
         type: boolean
         default: true
-      build_safari:
-        description: "Safari wrapper .app zip (macos runner, MarkSnip Xcode project)"
+      edge:
+        description: "Edge extension (.zip; same Chromium package as Chrome, separately named)"
         type: boolean
         default: true
-      build_windows_amd64:
-        description: "Windows Agent Bridge helper (amd64 .zip)"
+      firefox:
+        description: "Firefox extension (.xpi)"
         type: boolean
         default: true
-      build_windows_arm64:
-        description: "Windows Agent Bridge helper (arm64 .zip)"
+      enable_macos:
+        description: "Allow Safari/macOS runners (or set ENABLE_MACOS=true)"
         type: boolean
-        default: true
-      build_linux_amd64:
-        description: "Linux Agent Bridge helper (amd64 .tar.gz)"
-        type: boolean
-        default: true
-      build_linux_arm64:
-        description: "Linux Agent Bridge helper (arm64 .tar.gz)"
-        type: boolean
-        default: true
-      build_macos_amd64:
-        description: "macOS Agent Bridge helper (amd64 .tar.gz)"
-        type: boolean
-        default: true
-      build_macos_arm64:
-        description: "macOS Agent Bridge helper (arm64 .tar.gz)"
-        type: boolean
-        default: true
+        default: false
       publish_release:
         description: "Create or update the GitHub Release"
         type: boolean
@@ -170,17 +138,15 @@ on:
         description: "Build-time debug: keep source maps and logger.debug calls (forced off when publishing)"
         type: boolean
         default: false
-      architectures:
-        description: "Native host architectures (x64, arm64, or all)"
-        type: string
-        default: all
-      enable_macos:
-        description: "Opt in to Safari, macOS hosts, and macos-* runners (or set ENABLE_MACOS=true)"
-        type: boolean
-        default: false
 
+# Do not use github.workflow in this group. In a reusable workflow that
+# context is the *caller* name, so it would match the preset's group
+# (e.g. "Build and Release (PC)-refs/heads/main") and GitHub would cancel
+# both as a deadlock. A fixed prefix plus PR number or run_id keeps
+# presets, tag pushes, and dispatch runs on distinct groups. PRs still
+# share a group so a new push cancels the previous packaging run.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: build-release-extension-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
@@ -194,6 +160,7 @@ jobs:
       version: ${{ steps.resolve.outputs.version }}
       firefox: ${{ steps.resolve.outputs.firefox }}
       chrome: ${{ steps.resolve.outputs.chrome }}
+      edge: ${{ steps.resolve.outputs.edge }}
       safari: ${{ steps.resolve.outputs.safari }}
       windows_amd64: ${{ steps.resolve.outputs.windows_amd64 }}
       windows_arm64: ${{ steps.resolve.outputs.windows_arm64 }}
@@ -229,30 +196,19 @@ jobs:
         id: resolve
         env:
           EVENT_NAME: ${{ github.event_name }}
-          INPUT_FIREFOX: ${{ inputs.build_firefox }}
-          INPUT_CHROME: ${{ inputs.build_chrome }}
-          INPUT_SAFARI: ${{ inputs.build_safari }}
-          INPUT_WINDOWS_AMD64: ${{ inputs.build_windows_amd64 }}
-          INPUT_WINDOWS_ARM64: ${{ inputs.build_windows_arm64 }}
-          INPUT_LINUX_AMD64: ${{ inputs.build_linux_amd64 }}
-          INPUT_LINUX_ARM64: ${{ inputs.build_linux_arm64 }}
-          INPUT_MACOS_AMD64: ${{ inputs.build_macos_amd64 }}
-          INPUT_MACOS_ARM64: ${{ inputs.build_macos_arm64 }}
+          INPUT_HELPERS: ${{ inputs.helpers }}
+          INPUT_EXTENSIONS: ${{ inputs.extensions }}
+          INPUT_MAC: ${{ inputs.mac }}
+          INPUT_PC: ${{ inputs.pc }}
+          INPUT_CHROME: ${{ inputs.chrome }}
+          INPUT_EDGE: ${{ inputs.edge }}
+          INPUT_FIREFOX: ${{ inputs.firefox }}
           INPUT_PUBLISH: ${{ inputs.publish_release }}
           INPUT_DEBUG: ${{ inputs.debug }}
           INPUT_ARCHITECTURES: ${{ inputs.architectures }}
-          INPUT_ENABLE_MACOS: ${{ inputs.enable_macos }}
+          INPUT_ENABLE_MACOS: ${{ github.event_name == 'workflow_dispatch' && inputs.mac || inputs.enable_macos }}
           SAFARI_RELEVANT: ${{ steps.safari_paths.outputs.safari }}
           VAR_ENABLE_MACOS: ${{ vars.ENABLE_MACOS }}
-          VAR_FIREFOX: ${{ vars.BUILD_FIREFOX }}
-          VAR_CHROME: ${{ vars.BUILD_CHROME }}
-          VAR_SAFARI: ${{ vars.BUILD_SAFARI }}
-          VAR_WINDOWS_AMD64: ${{ vars.BUILD_WINDOWS_AMD64 }}
-          VAR_WINDOWS_ARM64: ${{ vars.BUILD_WINDOWS_ARM64 }}
-          VAR_LINUX_AMD64: ${{ vars.BUILD_LINUX_AMD64 }}
-          VAR_LINUX_ARM64: ${{ vars.BUILD_LINUX_ARM64 }}
-          VAR_MACOS_AMD64: ${{ vars.BUILD_MACOS_AMD64 }}
-          VAR_MACOS_ARM64: ${{ vars.BUILD_MACOS_ARM64 }}
         run: python3 .github/scripts/resolve-release-outputs.py --architectures "${INPUT_ARCHITECTURES:-all}"
 
   test:
@@ -299,6 +255,9 @@ jobs:
 
       - name: Test release output resolver
         run: python3 .github/scripts/test_resolve_release_outputs.py
+
+      - name: Test packaging workflow concurrency groups
+        run: python3 .github/scripts/test_workflow_concurrency.py
 
       - name: Assert debug vs non-debug build artifacts
         working-directory: src
@@ -359,10 +318,10 @@ jobs:
           retention-days: 30
 
   chrome:
-    name: Chrome extension
+    name: Chrome / Edge extensions
     runs-on: ${{ vars.RUNNER_LINUX || 'ubuntu-latest' }}
     needs: [resolve, test]
-    if: needs.resolve.outputs.chrome == 'true'
+    if: needs.resolve.outputs.chrome == 'true' || needs.resolve.outputs.edge == 'true'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -390,17 +349,41 @@ jobs:
           MARKSNIP_DEBUG: ${{ needs.resolve.outputs.debug }}
         run: node scripts/assert-debug-artifacts.js --dir .build/chrome --debug="${MARKSNIP_DEBUG}"
 
-      - name: Package Chrome
+      - name: Package Chrome and Edge zips
         working-directory: src/.build/chrome
+        env:
+          EXT_VERSION: ${{ needs.resolve.outputs.version }}
+          ARTIFACT_SUFFIX: ${{ needs.resolve.outputs.artifact_suffix }}
+          BUILD_CHROME: ${{ needs.resolve.outputs.chrome }}
+          BUILD_EDGE: ${{ needs.resolve.outputs.edge }}
         run: |
+          set -euo pipefail
           mkdir -p ../../../dist
-          zip -r "../../../dist/marksnip-chrome-${{ needs.resolve.outputs.version }}${{ needs.resolve.outputs.artifact_suffix }}.zip" . -x "*.DS_Store"
+          payload="../../../dist/.marksnip-chromium-${EXT_VERSION}${ARTIFACT_SUFFIX}.zip"
+          zip -r "$payload" . -x "*.DS_Store"
+          if [ "$BUILD_CHROME" = "true" ]; then
+            cp "$payload" "../../../dist/marksnip-chrome-${EXT_VERSION}${ARTIFACT_SUFFIX}.zip"
+          fi
+          if [ "$BUILD_EDGE" = "true" ]; then
+            cp "$payload" "../../../dist/marksnip-edge-${EXT_VERSION}${ARTIFACT_SUFFIX}.zip"
+          fi
+          rm -f "$payload"
 
       - name: Upload Chrome artifact
+        if: needs.resolve.outputs.chrome == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: marksnip-chrome
           path: dist/marksnip-chrome-${{ needs.resolve.outputs.version }}${{ needs.resolve.outputs.artifact_suffix }}.zip
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload Edge artifact
+        if: needs.resolve.outputs.edge == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: marksnip-edge
+          path: dist/marksnip-edge-${{ needs.resolve.outputs.version }}${{ needs.resolve.outputs.artifact_suffix }}.zip
           if-no-files-found: error
           retention-days: 30
 
@@ -583,6 +566,11 @@ jobs:
           if ls ./artifacts/marksnip-chrome-*.zip >/dev/null 2>&1; then
             INSTALL_LINES="${INSTALL_LINES}
           **Chrome:** download \`marksnip-chrome-${EXT_VERSION}.zip\`, load unpacked from \`chrome://extensions/\`.
+          "
+          fi
+          if ls ./artifacts/marksnip-edge-*.zip >/dev/null 2>&1; then
+            INSTALL_LINES="${INSTALL_LINES}
+          **Edge:** download \`marksnip-edge-${EXT_VERSION}.zip\` (same Chromium package as Chrome), load unpacked from \`edge://extensions/\`.
           "
           fi
           if ls ./artifacts/marksnip-firefox-*.xpi >/dev/null 2>&1; then

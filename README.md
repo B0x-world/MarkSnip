@@ -301,7 +301,7 @@ CodeQL still analyzes `main` after merge so default-branch alerts stay current. 
 
 Playwright E2E (and Firefox live-smoke / Playwright regression) on pull requests is path-filtered: it runs when the PR touches `src/**` (including `_locales`; `docs/*.md` ignored), `src/tests/e2e/**`, `src/playwright.config.js`, `src/package.json`, `src/package-lock.json`, or those workflow files. It always runs on `workflow_dispatch`. Lint, unit, and focused Firefox unit/integration tests always run.
 
-A new push to a PR cancels older in-progress runs of the same workflow. Runs on `main` and tag/release runs are not cancelled.
+A new push to a PR cancels older in-progress runs of the same workflow. Runs on `main` and tag/release runs are not cancelled. Reusable packaging (`build-release.yml`) uses a fixed concurrency prefix (`build-release-extension-*`) instead of `github.workflow`, because that context is the caller name and would deadlock the PC / PC + Mac presets.
 
 ## Release flow
 
@@ -312,48 +312,45 @@ GitHub Actions workflow [`.github/workflows/build-release.yml`](.github/workflow
 3. Builds each enabled output in its own job (helpers are a matrix cell per OS/arch).
 4. Publishes a GitHub Release on `v*.*.*` tags, or on a manual `workflow_dispatch` when **publish_release** is checked. Tag and dispatch releases use GitHub auto-generated notes (`generate_release_notes`) plus install text. The release job downloads `marksnip-*` artifacts and attaches only files that were actually built.
 
-Pull requests run packaging (Firefox and Chrome; helpers off; no GitHub Release). Safari, macOS native hosts, and `macos-*` runners stay off unless `ENABLE_MACOS=true`. Merging to `main` does not start this workflow again; `v*.*.*` tag pushes and `workflow_dispatch` do. Hand-started presets call the same workflow: **Build and Release (PC)** (Chrome, Firefox, Windows and Linux helpers) and **Build and Release (PC + Mac)** (PC plus, when `enable_macos` is checked, Safari and macOS helpers).
+Pull requests run packaging (Firefox, Chrome, and Edge; helpers off; no GitHub Release). Safari, macOS native hosts, and `macos-*` runners stay off unless `ENABLE_MACOS=true` and the Mac target is on. Merging to `main` does not start this workflow again; `v*.*.*` tag pushes and `workflow_dispatch` do. Hand-started presets call the same workflow: **Build and Release (PC)** (Chrome + Edge, Windows and Linux helpers) and **Build and Release (PC + Mac)** (PC plus, when Mac is opted in, Safari and macOS helpers).
 
 Safari uses the Xcode wrapper under `xcode/MarkSnip/`. App, extension, target, scheme, and bundle **display names** are MarkSnip. Bundle IDs stay `au.death.MarkDownload` and `au.death.MarkDownload.Extension` (documented in `xcode/README.md`). The packaged zip is `marksnip-safari-<version>.zip`. Generate `src/.build/safari`, then `bash xcode/build-safari-app.sh` runs an unsigned `xcodebuild` (`CODE_SIGNING_ALLOWED=NO`). A Run Script build phase rsyncs the generated tree into the appex. CI does not sign artifacts (see [Code signing](#code-signing)).
 
 ### Build output toggles
 
-Each option is a `workflow_dispatch` boolean. Pushing a `v*.*.*` tag enables non-Mac outputs and always publishes (repository variables cannot turn those artifacts off on tags). Safari and macOS hosts still require `ENABLE_MACOS=true`. Pull requests force Firefox + Chrome on and helpers/publish off. `debug` is forced off whenever a release is published.
+`workflow_dispatch` has these 10 inputs, in form order. Pushing a `v*.*.*` tag enables non-Mac outputs and always publishes. Safari and macOS hosts still need the Mac target plus `ENABLE_MACOS=true`. Pull requests force Firefox + Chrome + Edge on and helpers/publish off. `debug` is forced off whenever a release is published.
 
-| Artifact | `workflow_dispatch` input | Repository variable | Default (tag/dispatch) |
+| Order | Input | What it controls | Default (tag/dispatch) |
 | --- | --- | --- | --- |
-| Firefox `.xpi` | `build_firefox` | `BUILD_FIREFOX` | `true` |
-| Chrome `.zip` | `build_chrome` | `BUILD_CHROME` | `true` |
-| Safari wrapper `.app` zip | `build_safari` | `BUILD_SAFARI` | `true` |
-| Windows Agent Bridge amd64 `.zip` | `build_windows_amd64` | `BUILD_WINDOWS_AMD64` | `true` |
-| Windows Agent Bridge arm64 `.zip` | `build_windows_arm64` | `BUILD_WINDOWS_ARM64` | `true` |
-| Linux Agent Bridge amd64 `.tar.gz` | `build_linux_amd64` | `BUILD_LINUX_AMD64` | `true` |
-| Linux Agent Bridge arm64 `.tar.gz` | `build_linux_arm64` | `BUILD_LINUX_ARM64` | `true` |
-| macOS Agent Bridge amd64 `.tar.gz` | `build_macos_amd64` | `BUILD_MACOS_AMD64` | `true` |
-| macOS Agent Bridge arm64 `.tar.gz` | `build_macos_arm64` | `BUILD_MACOS_ARM64` | `true` |
-| Create GitHub Release | `publish_release` (dispatch only; tags always publish) | — | `true` |
-| Debug extension build | `debug` (dispatch only; ignored when publishing) | — | `false` |
-| Native host architectures | `architectures` (`x64`, `arm64`, or `all`) | — | `all` |
-| macOS / Safari / Swift jobs | `enable_macos` | `ENABLE_MACOS` (must be `true`) | `false` |
+| 1 | `architectures` (`x64`, `arm64`, or `all`) | Which helper CPU arches to build | `all` |
+| 2 | `helpers` | Native host helpers (Agent Bridge) | `true` |
+| 3 | `extensions` | Extension packages | `true` |
+| 4 | `mac` | Safari wrapper + macOS helpers (still needs `ENABLE_MACOS`) | `false` |
+| 5 | `pc` | Windows and Linux helpers | `true` |
+| 6 | `chrome` | Chrome `.zip` from `src/.build/chrome` | `true` |
+| 7 | `edge` | Edge `.zip` (same Chromium tree as Chrome, named `marksnip-edge-*.zip`) | `true` |
+| 8 | `firefox` | Firefox `.xpi` | `true` |
+| 9 | `publish_release` | Create or update the GitHub Release (tags always publish) | `true` |
+| 10 | `debug` | Build-time debug artifacts (forced off when publishing) | `false` |
 
 `debug` is **build-time only**. There is no options-page switch. A debug package includes source maps, `shared/build-config.js` (`MARKSNIP_BUILD.debug = true`), and `logger.debug` call sites. A normal package strips those: no `.map` files, no `logger.debug(...)` calls, no debug-only config module. `logger.warn`, `logger.error`, and a small set of lifecycle `logger.info` calls stay in every build.
 
 Tag pushes and any run with `publish_release` enabled always build with debug off. Debug artifacts are named `marksnip-*-<version>-debug.*`. Locally: `MARKSNIP_DEBUG=true npm run build:manifests` (or `node scripts/generate-browser-manifests.js --debug`). `npm run test:build-artifacts` checks both modes.
 
-Example: Firefox + Chrome only, no helpers, no Safari, no GitHub Release (`workflow_dispatch`):
+Example: Firefox + Chrome + Edge only, no helpers, no Safari, no GitHub Release (`workflow_dispatch`):
 
-- `build_firefox` / `build_chrome`: true
-- `build_safari`: false
-- `build_windows_amd64` / `build_windows_arm64`: false
-- `build_linux_amd64` / `build_linux_arm64`: false
-- `build_macos_amd64` / `build_macos_arm64`: false
+- `architectures`: `all`
+- `helpers`: false
+- `extensions`: true
+- `mac`: false
+- `pc`: false
+- `chrome` / `edge` / `firefox`: true
 - `publish_release`: false
 - `debug`: false
-- `architectures`: `all` (use `x64` to build only amd64 hosts for the enabled OSes)
 
-To build x64 native hosts only, run **Build and Release (PC)** or **Build and Release Extension** with input `architectures` = `x64`. The PC preset covers Linux; `x64` keeps linux-amd64. To include Safari and macOS hosts, set `ENABLE_MACOS=true` and/or check `enable_macos`.
+To build x64 native hosts only, set `architectures` = `x64` and keep `helpers` + `pc` on. The PC preset enables Windows and Linux helpers for that arch, plus Chrome and Edge zips. To include Safari and macOS hosts, check `mac` (or the PC + Mac preset’s `enable_macos`) and set `ENABLE_MACOS=true`.
 
-All non-Mac options: leave those booleans at their default `true` on a `workflow_dispatch`, or push a `v*.*.*` tag. Mac jobs stay off until the opt-in switch is on.
+Tag pushes enable every non-Mac output. Mac jobs stay off until the Mac target and `ENABLE_MACOS` are on.
 
 To publish:
 
@@ -372,7 +369,7 @@ All CI and release artifacts are built **unsigned**. Store or OS signing is a la
 
 | Artifact | Unsigned today | How it gets signed later |
 | --- | --- | --- |
-| Chrome `.zip` | Load unpacked / sideload only | Chrome Web Store signs the package on upload. A developer account is a one-time **$5** fee. |
+| Chrome / Edge `.zip` | Load unpacked / sideload only | Chrome Web Store / Edge Add-ons sign the package on upload. The Edge zip is the same Chromium build as Chrome with a distinct filename. |
 | Firefox `.xpi` | Temporary / unsigned sideload only | AMO must sign the add-on even for self-distribution. You can sign with `web-ext sign` plus a free AMO API key and secret. |
 | Safari `.app` zip | Local testing only | Apple Developer Program (**$99/yr**), a Developer ID certificate, and notarization. An unsigned `.app` runs locally only after **Safari → Develop → Allow Unsigned Extensions** (that setting resets every Safari restart). |
 | Agent Bridge helpers | Local / marked-untrusted binaries | Unsigned macOS binaries trip Gatekeeper. Unsigned Windows binaries trip SmartScreen. macOS helpers would use the same Apple Developer ID cert as Safari. Windows needs a code-signing certificate or Azure Trusted Signing. |
