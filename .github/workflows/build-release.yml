@@ -179,8 +179,14 @@ on:
         type: boolean
         default: false
 
+# Do not use github.workflow in this group. In a reusable workflow that
+# context is the *caller* name, so it would match the preset's group
+# (e.g. "Build and Release (PC)-refs/heads/main") and GitHub would cancel
+# both as a deadlock. A fixed prefix plus PR number or run_id keeps
+# presets, tag pushes, and dispatch runs on distinct groups. PRs still
+# share a group so a new push cancels the previous packaging run.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: build-release-extension-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
@@ -299,6 +305,9 @@ jobs:
 
       - name: Test release output resolver
         run: python3 .github/scripts/test_resolve_release_outputs.py
+
+      - name: Test packaging workflow concurrency groups
+        run: python3 .github/scripts/test_workflow_concurrency.py
 
       - name: Assert debug vs non-debug build artifacts
         working-directory: src

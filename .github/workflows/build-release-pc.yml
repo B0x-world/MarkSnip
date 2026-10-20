@@ -32,6 +32,9 @@ on:
           - arm64
         default: all
 
+# Caller-only group. The reusable workflow uses a distinct
+# build-release-extension-* group so github.workflow in the callee cannot
+# collide with this one.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false

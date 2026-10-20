@@ -301,7 +301,7 @@ CodeQL still analyzes `main` after merge so default-branch alerts stay current. 
 
 Playwright E2E (and Firefox live-smoke / Playwright regression) on pull requests is path-filtered: it runs when the PR touches `src/**` (including `_locales`; `docs/*.md` ignored), `src/tests/e2e/**`, `src/playwright.config.js`, `src/package.json`, `src/package-lock.json`, or those workflow files. It always runs on `workflow_dispatch`. Lint, unit, and focused Firefox unit/integration tests always run.
 
-A new push to a PR cancels older in-progress runs of the same workflow. Runs on `main` and tag/release runs are not cancelled.
+A new push to a PR cancels older in-progress runs of the same workflow. Runs on `main` and tag/release runs are not cancelled. Reusable packaging (`build-release.yml`) uses a fixed concurrency prefix (`build-release-extension-*`) instead of `github.workflow`, because that context is the caller name and would deadlock the PC / PC + Mac presets.
 
 ## Release flow
 
