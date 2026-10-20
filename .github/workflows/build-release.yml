@@ -34,6 +34,7 @@
 #   build_macos_arm64     BUILD_MACOS_ARM64        true
 #   publish_release       (dispatch only)          true (tags always publish)
 #   debug                 (dispatch only)          false (forced off when publishing)
+#   architectures         (dispatch/call)          all (x64 | arm64 | all; filters helper arches)
 #
 # Debug is build-time only. When false, source maps, logger.debug call sites,
 # and shared/build-config.js are stripped from packaged extensions. Warn, error,
@@ -105,6 +106,14 @@ on:
         description: "Build-time debug: keep source maps and logger.debug calls (forced off when publishing)"
         type: boolean
         default: false
+      architectures:
+        description: "Native host architectures (x64, arm64, or all)"
+        type: choice
+        options:
+          - all
+          - x64
+          - arm64
+        default: all
   workflow_call:
     inputs:
       version:
@@ -156,6 +165,10 @@ on:
         description: "Build-time debug: keep source maps and logger.debug calls (forced off when publishing)"
         type: boolean
         default: false
+      architectures:
+        description: "Native host architectures (x64, arm64, or all)"
+        type: string
+        default: all
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -218,6 +231,7 @@ jobs:
           INPUT_MACOS_ARM64: ${{ inputs.build_macos_arm64 }}
           INPUT_PUBLISH: ${{ inputs.publish_release }}
           INPUT_DEBUG: ${{ inputs.debug }}
+          INPUT_ARCHITECTURES: ${{ inputs.architectures }}
           SAFARI_RELEVANT: ${{ steps.safari_paths.outputs.safari }}
           VAR_FIREFOX: ${{ vars.BUILD_FIREFOX }}
           VAR_CHROME: ${{ vars.BUILD_CHROME }}
@@ -228,7 +242,7 @@ jobs:
           VAR_LINUX_ARM64: ${{ vars.BUILD_LINUX_ARM64 }}
           VAR_MACOS_AMD64: ${{ vars.BUILD_MACOS_AMD64 }}
           VAR_MACOS_ARM64: ${{ vars.BUILD_MACOS_ARM64 }}
-        run: python3 .github/scripts/resolve-release-outputs.py
+        run: python3 .github/scripts/resolve-release-outputs.py --architectures "${INPUT_ARCHITECTURES:-all}"
 
   test:
     name: Build gate tests
@@ -271,6 +285,9 @@ jobs:
       - name: Test Agent Bridge
         working-directory: native
         run: go test ./...
+
+      - name: Test release output resolver
+        run: python3 .github/scripts/test_resolve_release_outputs.py
 
       - name: Assert debug vs non-debug build artifacts
         working-directory: src

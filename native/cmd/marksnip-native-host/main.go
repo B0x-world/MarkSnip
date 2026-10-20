@@ -6,7 +6,7 @@
 //   status: adopted
 //   owner: ""
 //   created: 2026-03-21
-//   updated: 2026-03-21
+//   updated: 2026-10-20
 //   related: ["001-project-file-metadata-spec"]
 //   tags: []
 //   usage: source
@@ -23,8 +23,11 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"runtime"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/DhruvParikh1/markdownload-extension-updated/native/internal/bridge"
@@ -37,11 +40,15 @@ type clipRequest struct {
 type clipReply struct {
 	Result *bridge.ClipResult `json:"result,omitempty"`
 	Error  string             `json:"error,omitempty"`
+	Code   string             `json:"code,omitempty"`
+	URL    string             `json:"url,omitempty"`
 }
 
 type pendingResult struct {
 	result *bridge.ClipResult
 	err    string
+	code   string
+	url    string
 }
 
 type hostServer struct {
@@ -53,7 +60,13 @@ type hostServer struct {
 }
 
 func main() {
+	if wantsNativeHostHelp(os.Args[1:]) {
+		fmt.Fprint(os.Stdout, nativeHostHelp(filepath.Base(os.Args[0])))
+		return
+	}
+
 	log.SetOutput(io.Discard)
+	ignoreBrokenPipe()
 	debugf := buildDebugLogger()
 
 	browser := bridge.DetectBrowserFromArgs(os.Args[1:])
@@ -68,7 +81,6 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	defer listener.Close()
 
 	session := bridge.SessionStatus{
 		Browser:     string(browser),
@@ -79,12 +91,10 @@ func main() {
 		ConnectedAt: time.Now().UTC().Format(time.RFC3339),
 	}
 	if err := bridge.WriteSession(session); err != nil {
+		_ = listener.Close()
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	defer func() {
-		_ = bridge.RemoveSession(browser, os.Getpid())
-	}()
 
 	server := &hostServer{
 		browser: browser,
@@ -98,17 +108,43 @@ func main() {
 		Handler: server.routes(),
 	}
 
+	var cleaned bool
+	var cleanedMu sync.Mutex
+	cleanup := func() {
+		cleanedMu.Lock()
+		defer cleanedMu.Unlock()
+		if cleaned {
+			return
+		}
+		cleaned = true
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+		_ = httpServer.Shutdown(ctx)
+		_ = listener.Close()
+		_ = bridge.RemoveSession(server.browser, os.Getpid())
+		debugf("host cleanup browser=%s pid=%d", server.browser, os.Getpid())
+	}
+	defer cleanup()
+
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-sigCh
+		cleanup()
+		os.Exit(0)
+	}()
+
 	go func() {
 		_ = httpServer.Serve(listener)
 	}()
 
 	_ = server.writer.Send(bridge.NativeMessage{
 		Type:        "bridge.ready",
-		Browser:     string(browser),
+		Browser:     string(server.browser),
 		HostVersion: bridge.HostVersion,
 		ConnectedAt: session.ConnectedAt,
 	})
-	debugf("sent bridge.ready browser=%s", browser)
+	debugf("sent bridge.ready browser=%s", server.browser)
 
 	for {
 		message, err := bridge.ReadNativeMessage(os.Stdin)
@@ -123,13 +159,16 @@ func main() {
 
 		switch message.Type {
 		case "bridge.hello":
+			if next := applyHelloBrowser(server, session, message.Browser); next.Browser != "" {
+				session = next
+			}
 			_ = server.writer.Send(bridge.NativeMessage{
 				Type:        "bridge.ready",
-				Browser:     string(browser),
+				Browser:     string(server.browser),
 				HostVersion: bridge.HostVersion,
 				ConnectedAt: session.ConnectedAt,
 			})
-			debugf("sent bridge.ready in response to hello")
+			debugf("sent bridge.ready in response to hello browser=%s", server.browser)
 		case "bridge.clip.result":
 			if value, ok := server.pending.LoadAndDelete(message.RequestID); ok {
 				reply := value.(chan pendingResult)
@@ -139,15 +178,27 @@ func main() {
 		case "bridge.error":
 			if value, ok := server.pending.LoadAndDelete(message.RequestID); ok {
 				reply := value.(chan pendingResult)
-				reply <- pendingResult{err: message.Error}
-				debugf("resolved clip error requestId=%s error=%s", message.RequestID, message.Error)
+				reply <- pendingResult{err: message.Error, code: message.Code, url: message.URL}
+				debugf("resolved clip error requestId=%s error=%s code=%s", message.RequestID, message.Error, message.Code)
 			}
 		}
 	}
+}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
-	_ = httpServer.Shutdown(ctx)
+func applyHelloBrowser(server *hostServer, session bridge.SessionStatus, reported string) bridge.SessionStatus {
+	parsed, err := bridge.ParseBrowser(reported)
+	if err != nil || parsed == "" {
+		return session
+	}
+	next := bridge.PreferSpecificBrowser(server.browser, parsed)
+	if next == server.browser {
+		return session
+	}
+	_ = bridge.RelabelSession(server.browser, next, os.Getpid())
+	server.browser = next
+	session.Browser = string(next)
+	_ = bridge.WriteSession(session)
+	return session
 }
 
 func (s *hostServer) routes() http.Handler {
@@ -218,7 +269,11 @@ func (s *hostServer) handleClip(w http.ResponseWriter, r *http.Request) {
 	case reply := <-replyCh:
 		if reply.err != "" {
 			s.debugf("http clip reply error requestId=%s err=%s", requestID, reply.err)
-			writeJSON(w, http.StatusBadGateway, clipReply{Error: reply.err})
+			status := http.StatusBadGateway
+			if reply.code == "restricted_page" {
+				status = http.StatusUnprocessableEntity
+			}
+			writeJSON(w, status, clipReply{Error: reply.err, Code: reply.code, URL: reply.url})
 			return
 		}
 		s.debugf("http clip reply success requestId=%s", requestID)
@@ -235,6 +290,13 @@ func writeJSON(w http.ResponseWriter, statusCode int, payload any) {
 	_ = json.NewEncoder(w).Encode(payload)
 }
 
+func ignoreBrokenPipe() {
+	if runtime.GOOS == "windows" {
+		return
+	}
+	signal.Ignore(syscall.SIGPIPE)
+}
+
 func buildDebugLogger() func(string, ...any) {
 	if os.Getenv("MARKSNIP_BRIDGE_DEBUG") != "1" {
 		return func(string, ...any) {}
@@ -246,12 +308,12 @@ func buildDebugLogger() func(string, ...any) {
 	}
 
 	logDir := filepath.Join(configDir, "MarkSnip", "agent-bridge")
-	if err := os.MkdirAll(logDir, 0o755); err != nil {
+	if err := os.MkdirAll(logDir, 0o700); err != nil {
 		return func(string, ...any) {}
 	}
 
 	logPath := filepath.Join(logDir, "host-debug.log")
-	file, err := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	file, err := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
 	if err != nil {
 		return func(string, ...any) {}
 	}

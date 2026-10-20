@@ -6,10 +6,57 @@
 //   status: adopted
 //   owner: ""
 //   created: 2025-02-19
-//   updated: 2026-10-19
+//   updated: 2026-10-20
 //   related: ["001-project-file-metadata-spec"]
 //   tags: []
 //   usage: source
+
+const AGENT_BRIDGE_HOST_NAME = 'com.marksnip.bridge';
+let agentBridgeNativePort = null;
+
+function disconnectAgentBridgeNativePort() {
+  if (!agentBridgeNativePort) {
+    return;
+  }
+  const port = agentBridgeNativePort;
+  agentBridgeNativePort = null;
+  try {
+    port.disconnect();
+  } catch (error) {}
+}
+
+function connectAgentBridgeNativePort(hello) {
+  disconnectAgentBridgeNativePort();
+  const connectNative = browser.runtime?.connectNative ||
+    (typeof chrome !== 'undefined' ? chrome.runtime?.connectNative : null);
+  if (!connectNative) {
+    throw new Error('Native messaging is unavailable in this browser context');
+  }
+
+  const port = connectNative(AGENT_BRIDGE_HOST_NAME);
+  agentBridgeNativePort = port;
+  port.onMessage.addListener((nativeMessage) => {
+    browser.runtime.sendMessage({
+      type: 'agent-bridge-native-message',
+      message: nativeMessage
+    }).catch((error) => {
+      logger.warn('[Agent Bridge] Failed to forward native message:', error);
+    });
+  });
+  port.onDisconnect.addListener(() => {
+    agentBridgeNativePort = null;
+    const lastError = browser.runtime?.lastError?.message ||
+      (typeof chrome !== 'undefined' ? chrome.runtime?.lastError?.message : '') ||
+      '';
+    browser.runtime.sendMessage({
+      type: 'agent-bridge-native-disconnect',
+      lastError
+    }).catch(() => {});
+  });
+  if (hello) {
+    port.postMessage(hello);
+  }
+}
 
 const logger = globalThis.markSnipLogger || {
   debug() {},
@@ -184,6 +231,17 @@ function handleMessages(message, _sender) {
 
 	  return (async () => {
 	    switch (message.type) {
+        case 'agent-bridge-native-connect':
+          connectAgentBridgeNativePort(message.hello);
+          return { ok: true };
+        case 'agent-bridge-native-post':
+          if (agentBridgeNativePort && message.message) {
+            agentBridgeNativePort.postMessage(message.message);
+          }
+          return { ok: Boolean(agentBridgeNativePort) };
+        case 'agent-bridge-native-disconnect':
+          disconnectAgentBridgeNativePort();
+          return { ok: true };
 		    case 'process-content':
 		      await processContent(message);
 		      break;

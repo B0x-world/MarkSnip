@@ -6,7 +6,7 @@
 //   status: adopted
 //   owner: ""
 //   created: 2026-03-21
-//   updated: 2026-03-22
+//   updated: 2026-10-20
 //   related: ["001-project-file-metadata-spec"]
 //   tags: []
 //   usage: source
@@ -25,11 +25,6 @@ import (
 
 type InstallOptions struct {
 	ChromeExtensionID string
-}
-
-type InstallResult struct {
-	ChromeManifestPath  string
-	FirefoxManifestPath string
 }
 
 type installEnvironment struct {
@@ -116,6 +111,23 @@ func hostExecutableForCLI(cliExecutable, goos string) (string, error) {
 	return hostPath, nil
 }
 
+func WindowsNativeMessagingKey(browser Browser) string {
+	switch browser {
+	case BrowserChrome:
+		return `HKCU\Software\Google\Chrome\NativeMessagingHosts\` + HostName
+	case BrowserChromium:
+		return `HKCU\Software\Chromium\NativeMessagingHosts\` + HostName
+	case BrowserBrave:
+		return `HKCU\Software\BraveSoftware\Brave-Browser\NativeMessagingHosts\` + HostName
+	case BrowserEdge:
+		return `HKCU\Software\Microsoft\Edge\NativeMessagingHosts\` + HostName
+	case BrowserFirefox:
+		return `HKCU\Software\Mozilla\NativeMessagingHosts\` + HostName
+	default:
+		return ""
+	}
+}
+
 func ManifestPath(browser Browser) (string, error) {
 	return manifestPath(defaultInstallEnvironment(), browser)
 }
@@ -124,59 +136,91 @@ func manifestPath(env installEnvironment, browser Browser) (string, error) {
 	env = normalizeInstallEnvironment(env)
 
 	switch browser {
-	case BrowserChrome, BrowserFirefox:
+	case BrowserChrome, BrowserChromium, BrowserBrave, BrowserEdge, BrowserFirefox:
 	default:
 		return "", fmt.Errorf("unsupported browser: %s", browser)
 	}
 
 	switch env.goos {
 	case "windows":
-		configDir, err := env.userConfigDir()
+		configDir, err := requireDir(env.userConfigDir, "user config directory")
 		if err != nil {
 			return "", err
-		}
-		if configDir == "" {
-			return "", errors.New("user config directory is empty")
 		}
 		return filepath.Join(configDir, "MarkSnip", "NativeMessagingHosts", string(browser), HostName+".json"), nil
 	case "darwin":
-		configDir, err := env.userConfigDir()
+		configDir, err := requireDir(env.userConfigDir, "user config directory")
 		if err != nil {
 			return "", err
 		}
-		if configDir == "" {
-			return "", errors.New("user config directory is empty")
+		rel, err := darwinManifestDir(browser)
+		if err != nil {
+			return "", err
 		}
-		switch browser {
-		case BrowserChrome:
-			return filepath.Join(configDir, "Google", "Chrome", "NativeMessagingHosts", HostName+".json"), nil
-		case BrowserFirefox:
-			return filepath.Join(configDir, "Mozilla", "NativeMessagingHosts", HostName+".json"), nil
-		}
+		return filepath.Join(append([]string{configDir}, rel...)...), nil
 	case "linux":
-		switch browser {
-		case BrowserChrome:
-			configDir, err := env.userConfigDir()
+		if browser == BrowserFirefox {
+			homeDir, err := requireDir(env.userHomeDir, "user home directory")
 			if err != nil {
 				return "", err
-			}
-			if configDir == "" {
-				return "", errors.New("user config directory is empty")
-			}
-			return filepath.Join(configDir, "google-chrome", "NativeMessagingHosts", HostName+".json"), nil
-		case BrowserFirefox:
-			homeDir, err := env.userHomeDir()
-			if err != nil {
-				return "", err
-			}
-			if homeDir == "" {
-				return "", errors.New("user home directory is empty")
 			}
 			return filepath.Join(homeDir, ".mozilla", "native-messaging-hosts", HostName+".json"), nil
 		}
+		configDir, err := requireDir(env.userConfigDir, "user config directory")
+		if err != nil {
+			return "", err
+		}
+		rel, err := linuxManifestDir(browser)
+		if err != nil {
+			return "", err
+		}
+		return filepath.Join(append([]string{configDir}, rel...)...), nil
 	}
 
 	return "", fmt.Errorf("MarkSnip native host install is not supported on %s", env.goos)
+}
+
+func darwinManifestDir(browser Browser) ([]string, error) {
+	switch browser {
+	case BrowserChrome:
+		return []string{"Google", "Chrome", "NativeMessagingHosts", HostName + ".json"}, nil
+	case BrowserChromium:
+		return []string{"Chromium", "NativeMessagingHosts", HostName + ".json"}, nil
+	case BrowserBrave:
+		return []string{"BraveSoftware", "Brave-Browser", "NativeMessagingHosts", HostName + ".json"}, nil
+	case BrowserEdge:
+		return []string{"Microsoft Edge", "NativeMessagingHosts", HostName + ".json"}, nil
+	case BrowserFirefox:
+		return []string{"Mozilla", "NativeMessagingHosts", HostName + ".json"}, nil
+	default:
+		return nil, fmt.Errorf("unsupported browser: %s", browser)
+	}
+}
+
+func linuxManifestDir(browser Browser) ([]string, error) {
+	switch browser {
+	case BrowserChrome:
+		return []string{"google-chrome", "NativeMessagingHosts", HostName + ".json"}, nil
+	case BrowserChromium:
+		return []string{"chromium", "NativeMessagingHosts", HostName + ".json"}, nil
+	case BrowserBrave:
+		return []string{"BraveSoftware", "Brave-Browser", "NativeMessagingHosts", HostName + ".json"}, nil
+	case BrowserEdge:
+		return []string{"microsoft-edge", "NativeMessagingHosts", HostName + ".json"}, nil
+	default:
+		return nil, fmt.Errorf("unsupported browser: %s", browser)
+	}
+}
+
+func requireDir(getter func() (string, error), label string) (string, error) {
+	dir, err := getter()
+	if err != nil {
+		return "", err
+	}
+	if dir == "" {
+		return "", fmt.Errorf("%s is empty", label)
+	}
+	return dir, nil
 }
 
 func writeManifest(browser Browser, payload map[string]any, env installEnvironment) (string, error) {
@@ -216,29 +260,39 @@ func installHost(cliExecutable string, options InstallOptions, env installEnviro
 		return InstallResult{}, err
 	}
 
-	chromeManifestPath, err := writeManifest(BrowserChrome, BuildChromeManifest(hostPath, chromeID), env)
-	if err != nil {
-		return InstallResult{}, err
-	}
+	result := InstallResult{Manifests: make([]InstalledManifest, 0, len(InstalledBrowsers()))}
+	for _, browser := range InstalledBrowsers() {
+		var payload map[string]any
+		if browser == BrowserFirefox {
+			payload = BuildFirefoxManifest(hostPath)
+		} else {
+			payload = BuildChromeManifest(hostPath, chromeID)
+		}
 
-	firefoxManifestPath, err := writeManifest(BrowserFirefox, BuildFirefoxManifest(hostPath), env)
-	if err != nil {
-		return InstallResult{}, err
-	}
-
-	if env.goos == "windows" {
-		if err := env.setRegistryValue(`HKCU\Software\Google\Chrome\NativeMessagingHosts\`+HostName, chromeManifestPath); err != nil {
+		manifestFile, err := writeManifest(browser, payload, env)
+		if err != nil {
 			return InstallResult{}, err
 		}
-		if err := env.setRegistryValue(`HKCU\Software\Mozilla\NativeMessagingHosts\`+HostName, firefoxManifestPath); err != nil {
-			return InstallResult{}, err
+		result.Manifests = append(result.Manifests, InstalledManifest{Browser: browser, Path: manifestFile})
+		switch browser {
+		case BrowserChrome:
+			result.ChromeManifestPath = manifestFile
+		case BrowserFirefox:
+			result.FirefoxManifestPath = manifestFile
+		}
+
+		if env.goos == "windows" {
+			key := WindowsNativeMessagingKey(browser)
+			if key == "" {
+				continue
+			}
+			if err := env.setRegistryValue(key, manifestFile); err != nil {
+				return InstallResult{}, err
+			}
 		}
 	}
 
-	return InstallResult{
-		ChromeManifestPath:  chromeManifestPath,
-		FirefoxManifestPath: firefoxManifestPath,
-	}, nil
+	return result, nil
 }
 
 func UninstallHost() error {
@@ -249,24 +303,23 @@ func uninstallHost(env installEnvironment) error {
 	env = normalizeInstallEnvironment(env)
 
 	if env.goos == "windows" {
-		_ = env.deleteRegistryKey(`HKCU\Software\Google\Chrome\NativeMessagingHosts\` + HostName)
-		_ = env.deleteRegistryKey(`HKCU\Software\Mozilla\NativeMessagingHosts\` + HostName)
+		for _, browser := range InstalledBrowsers() {
+			key := WindowsNativeMessagingKey(browser)
+			if key == "" {
+				continue
+			}
+			_ = env.deleteRegistryKey(key)
+		}
 	}
 
-	chromeManifestPath, err := manifestPath(env, BrowserChrome)
-	if err != nil {
-		return err
-	}
-	firefoxManifestPath, err := manifestPath(env, BrowserFirefox)
-	if err != nil {
-		return err
-	}
-
-	if err := removeManifestFile(chromeManifestPath); err != nil {
-		return err
-	}
-	if err := removeManifestFile(firefoxManifestPath); err != nil {
-		return err
+	for _, browser := range InstalledBrowsers() {
+		path, err := manifestPath(env, browser)
+		if err != nil {
+			return err
+		}
+		if err := removeManifestFile(path); err != nil {
+			return err
+		}
 	}
 	return nil
 }

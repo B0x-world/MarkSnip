@@ -12,6 +12,8 @@
 
 ### Technical Notes
 
+- **Agent Bridge browsers**: `install-host` / `uninstall-host` register Chrome, Chromium, Brave, and Edge alongside Firefox. `status` and `clip` probe live sessions, prune stale `status.json` rows, and accept `--browser chrome|chromium|brave|edge|firefox`. The extension labels Brave (`navigator.brave.isBrave()`), Edge, Chromium, and Chrome. Restricted pages return a structured clip error instead of an uncaught `chrome://` rejection.
+- **Native host architectures**: Build-and-release workflows accept `architectures` (`x64`, `arm64`, or `all`; default `all`). `x64` builds only amd64 hosts for the OSes that preset already covers.
 - **Reader View**: Added popup, context-menu, and command entry points for a focused reader surface, with both in-page overlay and standalone reader-tab modes. Reader sessions are stored separately and route copy, download, and Obsidian export actions through the existing Markdown pipeline.
 - **Reader Rendering and Controls**: Added reader sanitization, outline generation, footnote handling, image lightbox support, toolbar controls, live typography settings, light/dark/auto appearance, font selection, and scoped custom CSS.
 - **Reader Semantics**: Added pre-Readability cleanup that strips leading page metadata blocks and normalizes callouts, code blocks, lazy and noscript images, pictures, figures, footnotes, drop caps, custom elements, layout tables, trailing headings, and permalink anchors.

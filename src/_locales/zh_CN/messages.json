@@ -220,6 +220,10 @@
     "message": "切换阅读视图",
     "description": "Command description"
   },
+  "pageCannotBeClipped": {
+      "message": "无法剪辑此页面。",
+      "description": "在受限浏览器页面上无法剪辑时显示的提示"
+  },
   "popupReaderRestricted": {
     "message": "此页面无法在阅读视图中显示。",
     "description": "Toast shown when Reader View is invoked on a restricted page"

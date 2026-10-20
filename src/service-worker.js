@@ -6,7 +6,7 @@
 //   status: adopted
 //   owner: ""
 //   created: 2025-02-19
-//   updated: 2026-10-19
+//   updated: 2026-10-20
 //   related: ["001-project-file-metadata-spec"]
 //   tags: []
 //   usage: source
@@ -119,11 +119,14 @@ let notificationStateTaskChain = Promise.resolve();
 const pendingNotificationDisplayLocks = new Map();
 const AGENT_BRIDGE_HOST_NAME = 'com.marksnip.bridge';
 const AGENT_BRIDGE_RECONNECT_DELAY_MS = 3000;
+const AGENT_BRIDGE_OFFSCREEN_PORT = Object.freeze({ via: 'offscreen' });
+const RESTRICTED_CLIP_NOTICE_KEY = 'restrictedClipNotice';
 let agentBridgePort = null;
 let agentBridgeConnectPromise = null;
 let agentBridgeReconnectTimer = null;
 let agentBridgeSuccessfulConnect = false;
 let agentBridgeOffscreenReady = false;
+let agentBridgeOffscreenNative = false;
 
 function i18nMessage(key, substitutions, fallback) {
   return globalThis.markSnipI18n?.t(key, substitutions, fallback) || fallback || key;
@@ -373,9 +376,80 @@ async function ensureAgentBridgeOffscreenReady(force = false) {
   agentBridgeOffscreenReady = true;
 }
 
+function getUrlUtilsApi() {
+  return globalThis.markSnipUrlUtils || null;
+}
+
+function isRestrictedTabUrl(url) {
+  return Boolean(getUrlUtilsApi()?.isRestrictedTabUrl?.(url));
+}
+
+function isScriptingAccessError(error) {
+  return Boolean(getUrlUtilsApi()?.isScriptingAccessError?.(error));
+}
+
+function getRestrictedPageMessage(url) {
+  return getUrlUtilsApi()?.getRestrictedPageMessage?.(url) || "This page can't be clipped.";
+}
+
+function createRestrictedPageError(url) {
+  return getUrlUtilsApi()?.createRestrictedPageError?.(url) || new Error(getRestrictedPageMessage(url));
+}
+
+function toRestrictedPageError(error, url) {
+  return getUrlUtilsApi()?.toRestrictedPageError?.(error, url) || error;
+}
+
+function isRestrictedPageError(error) {
+  return error?.code === 'restricted_page' || isRestrictedTabUrl(error?.url) || isScriptingAccessError(error);
+}
+
 function getCurrentBrowserLabel() {
-  const runtimeUrl = browser.runtime.getURL('/');
-  return runtimeUrl.startsWith('moz-extension://') ? 'firefox' : 'chrome';
+  return getAgentBridgeApi()?.detectBrowserLabel?.() || 'chrome';
+}
+
+async function rememberRestrictedClipNotice(url) {
+  const notice = {
+    message: getRestrictedPageMessage(url),
+    url: url || '',
+    at: new Date().toISOString()
+  };
+  const payload = { [RESTRICTED_CLIP_NOTICE_KEY]: notice };
+  if (browser.storage?.session?.set) {
+    try {
+      await browser.storage.session.set(payload);
+      return;
+    } catch (error) {}
+  }
+  if (browser.storage?.local?.set) {
+    await browser.storage.local.set(payload);
+  }
+}
+
+async function notifyPageCannotBeClipped(url) {
+  const message = getRestrictedPageMessage(url);
+  logger.warn('[MarkSnip]', message);
+  await rememberRestrictedClipNotice(url);
+  try {
+    await browser.action?.setBadgeText?.({ text: '!' });
+    await browser.action?.setBadgeBackgroundColor?.({ color: '#B07070' });
+    await browser.action?.setTitle?.({ title: message });
+  } catch (error) {}
+  try {
+    if (browser.action?.openPopup) {
+      await browser.action.openPopup();
+    }
+  } catch (error) {}
+}
+
+async function handleUserFacingClipFailure(error, tab) {
+  const restrictedError = toRestrictedPageError(error, tab?.url || '');
+  if (isRestrictedPageError(restrictedError) || isRestrictedTabUrl(tab?.url || '')) {
+    await notifyPageCannotBeClipped(tab?.url || restrictedError?.url || '');
+    return restrictedError;
+  }
+  console.error('[MarkSnip] Clip failed:', error);
+  return error;
 }
 
 async function saveAgentBridgeStatus(patch = {}) {
@@ -424,7 +498,14 @@ async function disconnectAgentBridge(options = {}) {
   clearAgentBridgeReconnectTimer();
   agentBridgeOffscreenReady = false;
 
-  if (agentBridgePort) {
+  if (agentBridgeOffscreenNative) {
+    agentBridgeOffscreenNative = false;
+    agentBridgePort = null;
+    browser.runtime.sendMessage({
+      target: 'offscreen',
+      type: 'agent-bridge-native-disconnect'
+    }).catch(() => {});
+  } else if (agentBridgePort) {
     const port = agentBridgePort;
     agentBridgePort = null;
 
@@ -464,8 +545,8 @@ function scheduleAgentBridgeReconnect() {
   }, AGENT_BRIDGE_RECONNECT_DELAY_MS);
 }
 
-async function handleAgentBridgeDisconnect() {
-  const disconnectMessage = getAgentBridgeErrorMessage(browser.runtime?.lastError) || 'Agent bridge disconnected';
+async function handleAgentBridgeDisconnect(disconnectOverride) {
+  const disconnectMessage = disconnectOverride || getAgentBridgeErrorMessage(browser.runtime?.lastError) || 'Agent bridge disconnected';
   const hostMissing = /native messaging host|Specified native messaging host not found|not found/i.test(disconnectMessage);
   agentBridgePort = null;
 
@@ -484,6 +565,17 @@ async function handleAgentBridgeDisconnect() {
 }
 
 function postAgentBridgeMessage(message) {
+  if (agentBridgeOffscreenNative) {
+    browser.runtime.sendMessage({
+      target: 'offscreen',
+      type: 'agent-bridge-native-post',
+      message
+    }).catch((error) => {
+      console.error('[Agent Bridge] Failed to send native message via offscreen:', error);
+    });
+    return true;
+  }
+
   if (!agentBridgePort) {
     return false;
   }
@@ -1132,6 +1224,14 @@ async function handleMessages(message, sender, _sendResponse) {
       break;
     case "offscreen-ready":
       markFirefoxOffscreenPageReady(sender);
+      break;
+    case "agent-bridge-native-message":
+      handleAgentBridgeNativeMessage(message.message || {});
+      break;
+    case "agent-bridge-native-disconnect":
+      agentBridgeOffscreenNative = false;
+      agentBridgePort = null;
+      await handleAgentBridgeDisconnect(message.lastError || '');
       break;
     case "markdown-result":
       await handleMarkdownResult(message);
@@ -2330,13 +2430,26 @@ async function ensureOffscreenDocumentExists(options = {}) {
       contextTypes: ['OFFSCREEN_DOCUMENT'],
       documentUrls: [offscreenUrl]
     });
-    
-    if (existingContexts.length > 0) return;
-    
+
+    const reasons = ['DOM_PARSER', 'CLIPBOARD', 'BLOBS'];
+    if (options.nativeMessaging) {
+      reasons.push('NATIVE_MESSAGING');
+    }
+
+    if (existingContexts.length > 0) {
+      const existingReasons = existingContexts[0]?.reasons || [];
+      if (!options.nativeMessaging || existingReasons.includes('NATIVE_MESSAGING')) {
+        return;
+      }
+      await chrome.offscreen.closeDocument();
+    }
+
     await chrome.offscreen.createDocument({
       url: 'offscreen/offscreen.html',
-      reasons: ['DOM_PARSER', 'CLIPBOARD', 'BLOBS'],
-      justification: 'HTML to Markdown conversion'
+      reasons,
+      justification: options.nativeMessaging
+        ? 'HTML to Markdown conversion and Agent Bridge native messaging'
+        : 'HTML to Markdown conversion'
     });
   } else {
     if (!allowFirefoxTab) {
@@ -2972,51 +3085,67 @@ async function handleDownloadChange(delta) {
  * Handle context menu clicks
  */
 async function handleContextMenuClick(info, tab) {
-  // One of the copy to clipboard commands
-  if (info.menuItemId.startsWith("copy-markdown")) {
-    await copyMarkdownFromContext(info, tab);
-  }
-  else if (info.menuItemId === "download-markdown-alltabs" || info.menuItemId === "tab-download-markdown-alltabs") {
-    await downloadMarkdownForAllTabs(info);
-  }
-  // One of the download commands
-  else if (info.menuItemId.startsWith("download-markdown")) {
-    await downloadMarkdownFromContext(info, tab);
-  }
-  // Activate manual element picker
-  else if (info.menuItemId === "pick-element-markdown") {
-    await activateElementPickerFromContext(info, tab);
-  }
-  else if (info.menuItemId === "toggle-highlighter") {
-    await toggleHighlighterFromContext(info, tab);
-  }
-  else if (info.menuItemId === "highlight-selection") {
-    await highlightSelectionFromContext(info, tab);
-  }
-  else if (info.menuItemId === "open-highlights") {
-    await openHighlightsPage({ pageUrl: tab?.url || '' });
-  }
-  else if (info.menuItemId === "open-reader-overlay") {
-    await toggleReaderViewForTab(tab);
-  }
-  else if (info.menuItemId === "open-reader-tab") {
-    await openReaderTabForTab(tab);
-  }
-  // Copy all tabs as markdown links
-  else if (info.menuItemId === "copy-tab-as-markdown-link-all" || info.menuItemId === "copy-tab-as-markdown-link-all-tab") {
-    await copyTabAsMarkdownLinkAll(tab);
-  }
-  // Copy only selected tabs as markdown links
-  else if (info.menuItemId === "copy-tab-as-markdown-link-selected" || info.menuItemId === "copy-tab-as-markdown-link-selected-tab") {
-    await copySelectedTabAsMarkdownLink(tab);
-  }
-  // Copy single tab as markdown link
-  else if (info.menuItemId === "copy-tab-as-markdown-link" || info.menuItemId === "copy-tab-as-markdown-link-tab") {
-    await copyTabAsMarkdownLink(tab);
-  }
-  // A settings toggle command
-  else if (info.menuItemId.startsWith("toggle-") || info.menuItemId.startsWith("tabtoggle-")) {
-    await toggleSetting(info.menuItemId.split('-')[1]);
+  try {
+    const clipLike = info.menuItemId.startsWith("copy-markdown") ||
+      info.menuItemId.startsWith("download-markdown") ||
+      info.menuItemId === "pick-element-markdown" ||
+      info.menuItemId === "toggle-highlighter" ||
+      info.menuItemId === "highlight-selection" ||
+      info.menuItemId === "open-reader-overlay" ||
+      info.menuItemId === "open-reader-tab";
+    if (clipLike && isRestrictedTabUrl(tab?.url || '')) {
+      await notifyPageCannotBeClipped(tab?.url || '');
+      return;
+    }
+
+    // One of the copy to clipboard commands
+    if (info.menuItemId.startsWith("copy-markdown")) {
+      await copyMarkdownFromContext(info, tab);
+    }
+    else if (info.menuItemId === "download-markdown-alltabs" || info.menuItemId === "tab-download-markdown-alltabs") {
+      await downloadMarkdownForAllTabs(info);
+    }
+    // One of the download commands
+    else if (info.menuItemId.startsWith("download-markdown")) {
+      await downloadMarkdownFromContext(info, tab);
+    }
+    // Activate manual element picker
+    else if (info.menuItemId === "pick-element-markdown") {
+      await activateElementPickerFromContext(info, tab);
+    }
+    else if (info.menuItemId === "toggle-highlighter") {
+      await toggleHighlighterFromContext(info, tab);
+    }
+    else if (info.menuItemId === "highlight-selection") {
+      await highlightSelectionFromContext(info, tab);
+    }
+    else if (info.menuItemId === "open-highlights") {
+      await openHighlightsPage({ pageUrl: tab?.url || '' });
+    }
+    else if (info.menuItemId === "open-reader-overlay") {
+      await toggleReaderViewForTab(tab);
+    }
+    else if (info.menuItemId === "open-reader-tab") {
+      await openReaderTabForTab(tab);
+    }
+    // Copy all tabs as markdown links
+    else if (info.menuItemId === "copy-tab-as-markdown-link-all" || info.menuItemId === "copy-tab-as-markdown-link-all-tab") {
+      await copyTabAsMarkdownLinkAll(tab);
+    }
+    // Copy only selected tabs as markdown links
+    else if (info.menuItemId === "copy-tab-as-markdown-link-selected" || info.menuItemId === "copy-tab-as-markdown-link-selected-tab") {
+      await copySelectedTabAsMarkdownLink(tab);
+    }
+    // Copy single tab as markdown link
+    else if (info.menuItemId === "copy-tab-as-markdown-link" || info.menuItemId === "copy-tab-as-markdown-link-tab") {
+      await copyTabAsMarkdownLink(tab);
+    }
+    // A settings toggle command
+    else if (info.menuItemId.startsWith("toggle-") || info.menuItemId.startsWith("tabtoggle-")) {
+      await toggleSetting(info.menuItemId.split('-')[1]);
+    }
+  } catch (error) {
+    await handleUserFacingClipFailure(error, tab);
   }
 }
 
@@ -3734,20 +3863,6 @@ async function getCommandTargetTab() {
   return null;
 }
 
-function isRestrictedTabUrl(url) {
-  if (!url) return false;
-  return (
-    url.startsWith('chrome://') ||
-    url.startsWith('edge://') ||
-    url.startsWith('about:') ||
-    url.startsWith('file:') ||
-    url.startsWith('moz-extension://') ||
-    url.startsWith('chrome-extension://') ||
-    url.startsWith('view-source:') ||
-    /\.pdf(?:$|[?#])/i.test(url)
-  );
-}
-
 async function getAgentBridgeActiveTab() {
   const tabs = await browser.tabs.query({
     active: true,
@@ -3760,7 +3875,7 @@ async function getAgentBridgeActiveTab() {
   }
 
   if (isRestrictedTabUrl(tab.url || '')) {
-    throw new Error(`MarkSnip cannot clip this page: ${tab.url}`);
+    throw createRestrictedPageError(tab.url || '');
   }
 
   return tab;
@@ -3853,10 +3968,13 @@ async function handleAgentBridgeClipRequest(message = {}) {
       result
     });
   } catch (error) {
+    const restrictedError = toRestrictedPageError(error, error?.url || '');
     postAgentBridgeMessage({
       type: 'bridge.error',
       requestId,
-      error: getAgentBridgeErrorMessage(error) || 'MarkSnip bridge clip failed'
+      error: getAgentBridgeErrorMessage(restrictedError) || 'MarkSnip bridge clip failed',
+      code: restrictedError?.code || '',
+      url: restrictedError?.url || ''
     });
   }
 }
@@ -3879,10 +3997,13 @@ function handleAgentBridgeNativeMessage(message = {}) {
     case 'bridge.clip':
       setTimeout(() => {
         handleAgentBridgeClipRequest(message).catch((error) => {
+          const restrictedError = toRestrictedPageError(error, error?.url || '');
           postAgentBridgeMessage({
             type: 'bridge.error',
             requestId: String(message?.requestId || '').trim(),
-            error: getAgentBridgeErrorMessage(error) || 'MarkSnip bridge clip failed'
+            error: getAgentBridgeErrorMessage(restrictedError) || 'MarkSnip bridge clip failed',
+            code: restrictedError?.code || '',
+            url: restrictedError?.url || ''
           });
         });
       }, 0);
@@ -3943,25 +4064,41 @@ async function initializeAgentBridge(forceReconnect = false) {
     }
 
     try {
-      const port = browser.runtime.connectNative
-        ? browser.runtime.connectNative(AGENT_BRIDGE_HOST_NAME)
-        : (typeof chrome !== 'undefined' && chrome.runtime?.connectNative
-          ? chrome.runtime.connectNative(AGENT_BRIDGE_HOST_NAME)
-          : null);
-      if (!port) {
-        throw new Error('Native messaging is unavailable in this browser context');
-      }
-      agentBridgePort = port;
-      port.onMessage.addListener(handleAgentBridgeNativeMessage);
-      port.onDisconnect.addListener(handleAgentBridgeDisconnect);
-
-      postAgentBridgeMessage({
+      const hello = {
         type: 'bridge.hello',
         browser: getCurrentBrowserLabel(),
         extensionId: browser.runtime.id,
         extensionVersion: browser.runtime.getManifest().version,
         connectedAt: new Date().toISOString()
-      });
+      };
+
+      if (self.hasNativeOffscreenDocumentSupport?.()) {
+        await ensureOffscreenDocumentExists({ nativeMessaging: true });
+        agentBridgeOffscreenNative = true;
+        agentBridgePort = AGENT_BRIDGE_OFFSCREEN_PORT;
+        await browser.runtime.sendMessage({
+          target: 'offscreen',
+          type: 'agent-bridge-native-connect',
+          hello
+        });
+      } else {
+        const port = browser.runtime.connectNative
+          ? browser.runtime.connectNative(AGENT_BRIDGE_HOST_NAME)
+          : (typeof chrome !== 'undefined' && chrome.runtime?.connectNative
+            ? chrome.runtime.connectNative(AGENT_BRIDGE_HOST_NAME)
+            : null);
+        if (!port) {
+          throw new Error('Native messaging is unavailable in this browser context');
+        }
+        agentBridgePort = port;
+        port.onMessage.addListener(handleAgentBridgeNativeMessage);
+        port.onDisconnect.addListener(() => {
+          handleAgentBridgeDisconnect().catch((error) => {
+            console.error('[Agent Bridge] Disconnect handling failed:', error);
+          });
+        });
+        postAgentBridgeMessage(hello);
+      }
 
       await saveAgentBridgeStatus({
         connecting: true,
@@ -3974,8 +4111,9 @@ async function initializeAgentBridge(forceReconnect = false) {
         agentBridgeOffscreenReady = false;
         console.warn('[Agent Bridge] Failed to pre-warm offscreen document:', error);
       });
-      return port;
+      return agentBridgePort;
     } catch (error) {
+      agentBridgeOffscreenNative = false;
       agentBridgePort = null;
       const message = getAgentBridgeErrorMessage(error) || 'Failed to connect to MarkSnip native host';
       const hostMissing = /native messaging host|Specified native messaging host not found|not found/i.test(message);
@@ -4009,7 +4147,7 @@ async function handleCommands(command) {
     }
 
     if (isRestrictedTabUrl(tab.url || '')) {
-      console.warn(`[Commands] Ignoring command "${command}" on restricted URL: ${tab.url}`);
+      await notifyPageCannotBeClipped(tab.url || '');
       return;
     }
 
@@ -4043,7 +4181,7 @@ async function handleCommands(command) {
       await toggleReaderViewForTab(tab);
     }
   } catch (error) {
-    console.error(`[Commands] Failed to execute "${command}":`, error);
+    await handleUserFacingClipFailure(error, tab);
   }
 }
 
@@ -4283,8 +4421,11 @@ async function ensureScripts(tabId) {
       }
 
   } catch (error) {
-      console.error("Failed to ensure scripts:", error);
-      throw error; // Re-throw to handle in calling function
+      if (isScriptingAccessError(error)) {
+        throw createRestrictedPageError();
+      }
+      logger.warn("Failed to ensure scripts:", error);
+      throw error;
   }
 }
 

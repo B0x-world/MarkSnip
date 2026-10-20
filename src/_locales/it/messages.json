@@ -220,6 +220,10 @@
     "message": "Attiva/disattiva modalità lettura",
     "description": "Command description"
   },
+  "pageCannotBeClipped": {
+      "message": "Questa pagina non può essere convertita.",
+      "description": "Avviso quando una pagina interna del browser non può essere convertita"
+  },
   "popupReaderRestricted": {
     "message": "Questa pagina non può essere visualizzata in modalità lettura.",
     "description": "Toast shown when Reader View is invoked on a restricted page"

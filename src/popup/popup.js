@@ -6,7 +6,7 @@
 //   status: adopted
 //   owner: ""
 //   created: 2021-02-18
-//   updated: 2026-10-19
+//   updated: 2026-10-20
 //   related: ["001-project-file-metadata-spec"]
 //   tags: []
 //   usage: source
@@ -1793,25 +1793,58 @@ async function getPopupPageActionTargetTab() {
     return candidates.find((tab) => tab?.id && !tab.url) || candidates[0] || null;
 }
 
-function isRestrictedTabUrl(url) {
-    if (!url) {
-        return false;
-    }
+function getUrlUtilsApi() {
+    return globalThis.markSnipUrlUtils || null;
+}
 
-    return url.startsWith('chrome://') ||
-        url.startsWith('edge://') ||
-        url.startsWith('about:') ||
-        url.startsWith('moz-extension://') ||
-        url.startsWith('chrome-extension://') ||
-        url.startsWith('view-source:');
+function isRestrictedTabUrl(url) {
+    return Boolean(getUrlUtilsApi()?.isRestrictedTabUrl?.(url));
+}
+
+function isScriptingAccessError(error) {
+    return Boolean(getUrlUtilsApi()?.isScriptingAccessError?.(error));
 }
 
 function getRestrictedPageMessage(url) {
-    if (!url) {
-        return 'MarkSnip cannot clip this page.';
-    }
+    return getUrlUtilsApi()?.getRestrictedPageMessage?.(url)
+        || popupMessage('pageCannotBeClipped', null, "This page can't be clipped.");
+}
 
-    return `MarkSnip cannot clip this page: ${url}`;
+function toRestrictedPageError(error, url) {
+    return getUrlUtilsApi()?.toRestrictedPageError?.(error, url) || error;
+}
+
+const RESTRICTED_CLIP_NOTICE_KEY = 'restrictedClipNotice';
+
+async function consumeRestrictedClipNotice() {
+    const readFrom = async (storage) => {
+        if (!storage?.get) {
+            return null;
+        }
+        const stored = await storage.get(RESTRICTED_CLIP_NOTICE_KEY).catch(() => ({}));
+        const notice = stored?.[RESTRICTED_CLIP_NOTICE_KEY];
+        if (notice) {
+            await storage.remove?.(RESTRICTED_CLIP_NOTICE_KEY).catch(() => {});
+        }
+        return notice || null;
+    };
+
+    return await readFrom(browser.storage?.session) || await readFrom(browser.storage?.local);
+}
+
+async function clearRestrictedClipBadge() {
+    try {
+        await browser.action?.setBadgeText?.({ text: '' });
+        await browser.action?.setTitle?.({ title: popupMessage('actionTitle', null, 'MarkSnip') });
+    } catch (error) {}
+}
+
+function showRestrictedPageNotice(url, error) {
+    const restrictedError = toRestrictedPageError(error, url);
+    const message = restrictedError?.message || getRestrictedPageMessage(url);
+    showOrHideClipOption(false);
+    showError(message);
+    clearRestrictedClipBadge();
 }
 
 async function resolveClipTargetTab(id) {
@@ -2405,7 +2438,7 @@ async function activateClickClip(e) {
         }
 
         if (isRestrictedTabUrl(activeTab.url || '')) {
-            showError(getRestrictedPageMessage(activeTab.url || ''));
+            showRestrictedPageNotice(activeTab.url || '');
             return;
         }
 
@@ -2504,7 +2537,7 @@ async function toggleReaderView(e) {
             throw new Error(popupMessage('popupNoActiveTabError', null, 'No active tab found'));
         }
         if (isRestrictedTabUrl(activeTab.url || '')) {
-            showError(getRestrictedPageMessage(activeTab.url || ''));
+            showRestrictedPageNotice(activeTab.url || '');
             return;
         }
 
@@ -2550,7 +2583,7 @@ async function toggleHighlighter(e) {
         }
 
         if (isRestrictedTabUrl(activeTab.url || '')) {
-            showError(getRestrictedPageMessage(activeTab.url || ''));
+            showRestrictedPageNotice(activeTab.url || '');
             return;
         }
 
@@ -2588,7 +2621,7 @@ async function activateElementPicker(e) {
         }
 
         if (isRestrictedTabUrl(activeTab.url || '')) {
-            showError(getRestrictedPageMessage(activeTab.url || ''));
+            showRestrictedPageNotice(activeTab.url || '');
             return;
         }
 
@@ -4714,8 +4747,7 @@ const clipSite = id => {
         }
 
         if (isRestrictedTabUrl(tab.url || '')) {
-            showOrHideClipOption(false);
-            showError(getRestrictedPageMessage(tab.url || ''));
+            showRestrictedPageNotice(tab.url || '');
             return null;
         }
 
@@ -4773,6 +4805,10 @@ const clipSite = id => {
             }
         });
     }).catch(err => {
+        if (isScriptingAccessError(err) || isRestrictedTabUrl(err?.url || '')) {
+            showRestrictedPageNotice(err?.url || '', err);
+            return null;
+        }
         console.error(err);
         showError(err)
     });
@@ -4878,9 +4914,17 @@ async function initializePopup() {
             return;
         }
 
-        if (isRestrictedTabUrl(activeTab.url || '')) {
+        const pendingNotice = await consumeRestrictedClipNotice();
+        if (pendingNotice?.message) {
             showOrHideClipOption(false);
-            showError(getRestrictedPageMessage(activeTab.url || ''));
+            showError(pendingNotice.message);
+            await clearRestrictedClipBadge();
+            await editorPromise;
+            return;
+        }
+
+        if (isRestrictedTabUrl(activeTab.url || '')) {
+            showRestrictedPageNotice(activeTab.url || '');
             await editorPromise;
             return;
         }
@@ -4894,10 +4938,21 @@ async function initializePopup() {
         const clipPromise = ensureContentScriptInjected(activeTab.id).then(() => {
             logger.info("Successfully injected MarkSnip content script");
             return clipSite(activeTab.id);
+        }).catch((error) => {
+            if (isScriptingAccessError(error)) {
+                showRestrictedPageNotice(activeTab.url || '', error);
+                return null;
+            }
+            throw error;
         });
 
         await Promise.all([editorPromise, clipPromise]);
     } catch (error) {
+        if (isScriptingAccessError(error) || isRestrictedTabUrl(error?.url || activeTab?.url || '')) {
+            showRestrictedPageNotice(error?.url || activeTab?.url || '', error);
+            scheduleDeferredStartupTasks();
+            return;
+        }
         console.error(error);
         showError(error);
         scheduleDeferredStartupTasks();

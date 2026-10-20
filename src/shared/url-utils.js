@@ -6,7 +6,7 @@
 //   status: adopted
 //   owner: ""
 //   created: 2026-03-17
-//   updated: 2026-06-13
+//   updated: 2026-10-20
 //   related: ["001-project-file-metadata-spec"]
 //   tags: []
 //   usage: source
@@ -210,8 +210,103 @@
     return buildImageDownloadFilename(resolved.markdownPath, getResolvedOptionTitle(options || {}), '');
   }
 
+  const RESTRICTED_PAGE_CODE = 'restricted_page';
+  const RESTRICTED_PAGE_MESSAGE = "This page can't be clipped.";
+
+  function hostnameOf(urlString) {
+    const parsed = safeParseUrl(urlString);
+    return parsed ? parsed.hostname.toLowerCase() : '';
+  }
+
+  function pathnameOf(urlString) {
+    const parsed = safeParseUrl(urlString);
+    return parsed ? parsed.pathname : '';
+  }
+
+  function isRestrictedTabUrl(url) {
+    if (!url || typeof url !== 'string') {
+      return false;
+    }
+
+    const trimmed = url.trim();
+    if (!trimmed) {
+      return false;
+    }
+
+    const lower = trimmed.toLowerCase();
+    if (
+      lower.startsWith('chrome://') ||
+      lower.startsWith('brave://') ||
+      lower.startsWith('edge://') ||
+      lower.startsWith('about:') ||
+      lower.startsWith('view-source:') ||
+      lower.startsWith('file:') ||
+      lower.startsWith('devtools:') ||
+      lower.startsWith('chrome-untrusted://') ||
+      lower.startsWith('chrome-extension://') ||
+      lower.startsWith('moz-extension://') ||
+      lower.startsWith('safari-web-extension://') ||
+      /\.pdf(?:$|[?#])/i.test(trimmed)
+    ) {
+      return true;
+    }
+
+    const host = hostnameOf(trimmed);
+    const pathname = pathnameOf(trimmed);
+    if (host === 'chromewebstore.google.com') {
+      return true;
+    }
+    if (host === 'chrome.google.com' && pathname.toLowerCase().startsWith('/webstore')) {
+      return true;
+    }
+    if (host === 'addons.mozilla.org' || host.endsWith('.addons.mozilla.org')) {
+      return true;
+    }
+    return false;
+  }
+
+  function isScriptingAccessError(error) {
+    const message = String(error?.message || error || '');
+    return /cannot access a (chrome|brave|edge):\/\//i.test(message) ||
+      /cannot access an? about:/i.test(message) ||
+      /cannot access contents of the page/i.test(message) ||
+      /cannot access a chrome-extension/i.test(message) ||
+      /the extensions gallery cannot be scripted/i.test(message) ||
+      /missing host permission/i.test(message) ||
+      /restricted_page/i.test(error?.code || '');
+  }
+
+  function getRestrictedPageMessage(url) {
+    const fallback = RESTRICTED_PAGE_MESSAGE;
+    const i18n = root?.markSnipI18n;
+    const translated = i18n?.t?.('pageCannotBeClipped', null, fallback) || fallback;
+    if (url && typeof url === 'string' && url.trim()) {
+      return `${translated} (${url.trim()})`;
+    }
+    return translated;
+  }
+
+  function createRestrictedPageError(url) {
+    const error = new Error(getRestrictedPageMessage(url));
+    error.code = RESTRICTED_PAGE_CODE;
+    error.url = typeof url === 'string' ? url : '';
+    return error;
+  }
+
+  function toRestrictedPageError(error, url) {
+    if (error?.code === RESTRICTED_PAGE_CODE) {
+      return error;
+    }
+    if (isRestrictedTabUrl(url) || isScriptingAccessError(error)) {
+      return createRestrictedPageError(url);
+    }
+    return error;
+  }
+
   return {
     IMAGE_PLACEMENT_MODES,
+    RESTRICTED_PAGE_CODE,
+    RESTRICTED_PAGE_MESSAGE,
     safeParseUrl,
     resolveArticleUrl,
     validateUri,
@@ -222,6 +317,11 @@
     resolveImagePath,
     buildImageDownloadFilename,
     resolveImageDownloadPath,
-    getImageFilename
+    getImageFilename,
+    isRestrictedTabUrl,
+    isScriptingAccessError,
+    getRestrictedPageMessage,
+    createRestrictedPageError,
+    toRestrictedPageError
   };
 });

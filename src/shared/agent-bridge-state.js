@@ -6,7 +6,7 @@
 //   status: adopted
 //   owner: ""
 //   created: 2026-03-21
-//   updated: 2026-03-22
+//   updated: 2026-10-20
 //   related: ["001-project-file-metadata-spec"]
 //   tags: []
 //   usage: source
@@ -42,6 +42,63 @@
     updatedAt: '',
     source: 'popup'
   });
+
+  function clientHintBrands(navigatorObj) {
+    const brands = navigatorObj?.userAgentData?.brands;
+    if (!Array.isArray(brands)) {
+      return [];
+    }
+    return brands.map((item) => String(item?.brand || '').toLowerCase());
+  }
+
+  function isBraveNavigator(navigatorObj) {
+    try {
+      if (typeof navigatorObj?.brave?.isBrave === 'function') {
+        const result = navigatorObj.brave.isBrave();
+        return Boolean(result);
+      }
+    } catch {
+      return false;
+    }
+    return false;
+  }
+
+  function detectBrowserLabel(env = root) {
+    const runtime = env?.browser?.runtime || env?.chrome?.runtime;
+    let runtimeUrl = '';
+    try {
+      runtimeUrl = runtime?.getURL?.('/') || '';
+    } catch {
+      runtimeUrl = '';
+    }
+    if (String(runtimeUrl).startsWith('moz-extension://')) {
+      return 'firefox';
+    }
+
+    const navigatorObj = env?.navigator || {};
+    const ua = String(navigatorObj.userAgent || '');
+    const brands = clientHintBrands(navigatorObj);
+
+    if (isBraveNavigator(navigatorObj) || brands.some((name) => name.includes('brave'))) {
+      return 'brave';
+    }
+    if (
+      brands.some((name) => name.includes('microsoft edge') || name === 'edge') ||
+      /Edg(?:e|A|iOS)?\//.test(ua)
+    ) {
+      return 'edge';
+    }
+
+    const hasGoogleChrome = brands.some((name) => name === 'google chrome');
+    const hasChromiumBrand = brands.some((name) => name === 'chromium');
+    if (
+      (hasChromiumBrand && !hasGoogleChrome) ||
+      (/Chromium/i.test(ua) && !/Google Chrome/i.test(ua) && !/Edg\//.test(ua) && !/Brave/i.test(ua))
+    ) {
+      return 'chromium';
+    }
+    return 'chrome';
+  }
 
   function normalizePageUrl(url) {
     if (!url || typeof url !== 'string') {
@@ -171,6 +228,7 @@
     DEFAULT_SETTINGS,
     DEFAULT_STATUS,
     DEFAULT_LATEST_CLIP,
+    detectBrowserLabel,
     normalizePageUrl,
     normalizeSettings,
     normalizeStatus,

@@ -6,7 +6,7 @@
 //   status: adopted
 //   owner: ""
 //   created: 2026-03-17
-//   updated: 2026-06-13
+//   updated: 2026-10-20
 //   related: ["001-project-file-metadata-spec"]
 //   tags: ["test"]
 //   usage: test
@@ -20,7 +20,11 @@ const {
   getMarkdownTitleBaseName,
   resolveImagePath,
   buildImageDownloadFilename,
-  getImageFilename
+  getImageFilename,
+  isRestrictedTabUrl,
+  isScriptingAccessError,
+  getRestrictedPageMessage,
+  createRestrictedPageError
 } = require('../../shared/url-utils');
 
 describe('URL utils', () => {
@@ -260,6 +264,32 @@ describe('URL utils', () => {
         jest.resetModules();
         global.markSnipTemplateUtils = previousTemplateUtils;
       }
+    });
+  });
+
+  describe('restricted pages', () => {
+    test('blocks browser-internal and store URLs', () => {
+      const blocked = [
+        'chrome://settings',
+        'brave://extensions',
+        'edge://flags',
+        'about:config',
+        'view-source:https://example.com',
+        'https://chromewebstore.google.com/detail/x',
+        'https://chrome.google.com/webstore/detail/x',
+        'https://addons.mozilla.org/en-US/firefox/addon/x'
+      ];
+      for (const url of blocked) {
+        expect(isRestrictedTabUrl(url)).toBe(true);
+      }
+      expect(isRestrictedTabUrl('https://example.com/article')).toBe(false);
+    });
+
+    test('maps executeScript access failures to a restricted-page error', () => {
+      expect(isScriptingAccessError(new Error('Cannot access a chrome:// URL'))).toBe(true);
+      const error = createRestrictedPageError('brave://settings');
+      expect(error.code).toBe('restricted_page');
+      expect(getRestrictedPageMessage('brave://settings')).toContain("This page can't be clipped.");
     });
   });
 });

@@ -220,6 +220,10 @@
     "message": "रीडर व्यू टॉगल करें",
     "description": "Command description"
   },
+  "pageCannotBeClipped": {
+      "message": "यह पृष्ठ क्लिप नहीं किया जा सकता।",
+      "description": "प्रतिबंधित ब्राउज़र पृष्ठ पर क्लिप न हो पाने पर दिखने वाला संदेश"
+  },
   "popupReaderRestricted": {
     "message": "इस पेज को रीडर व्यू में नहीं पढ़ा जा सकता।",
     "description": "Toast shown when Reader View is invoked on a restricted page"

@@ -130,6 +130,9 @@ jobs:
         working-directory: src
         run: npm run check:file-metadata
 
+      - name: Test release output resolver
+        run: python3 .github/scripts/test_resolve_release_outputs.py
+
       - name: Run ESLint
         working-directory: src
         run: npm run lint:js
